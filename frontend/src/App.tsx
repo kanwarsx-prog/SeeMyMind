@@ -495,14 +495,13 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const isHandoverAcknowledged = latestHandover?.acknowledged_by_staff;
 
   const topBarConfig = {
     teacher: {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
-        ? `${currentUser.school_name || "Inclusive School"} · ${child?.room_name || 'Room 4'} Classroom Hub · ${pupils.length} SEND Learners · ${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`
-        : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}${child?.support_profile?.primary_need ? ` (${child.support_profile.primary_need})` : ''}`,
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${child?.room_name || 'Room 4'} (Year 5)`
+        : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
       actionButton: {
         label: 'Log Observation',
         onClick: () => setIsObsModalOpen(true),
@@ -511,7 +510,7 @@ const AppContent: React.FC = () => {
     },
     senco: {
       title: `Inclusion & SEND Caseload · ${currentUser.full_name}`,
-      subtitle: `${currentUser.school_name || "Assigned School"} · Academic Year 2026/2027 · ${pupils.length} Pupils on Caseload · ${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`,
+      subtitle: `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Academic Year 2026/2027`,
       actionButton: {
         label: 'Register SEND Pupil',
         onClick: () => setIsRegisterModalOpen(true),
@@ -520,11 +519,11 @@ const AppContent: React.FC = () => {
     },
     parent: {
       title: `${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''} · Parent Hub`,
-      subtitle: `${currentUser.full_name}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}${isHandoverAcknowledged ? ' · Handover Acknowledged' : ' · Handover Sent'}`,
+      subtitle: `${currentUser.full_name}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}`,
     },
     child: {
       title: `My Day · ${child?.preferred_name || child?.first_name || 'Pupil'} ⭐`,
-      subtitle: `${currentUser.school_name || "Inclusive School"} · Pupil Voice · Feeling Great`,
+      subtitle: `Pupil Voice · ${currentUser.school_name || "St. Jude's Inclusive Academy"}`,
     },
     ta: {
       title: `Teaching Assistant View · ${currentUser.full_name}`,
@@ -537,11 +536,11 @@ const AppContent: React.FC = () => {
     },
     parentplus: {
       title: 'Parent Plus · Post-16 Pathways',
-      subtitle: 'Longitudinal Strengths & Careers · Year 10+ · Top Match: Game Design',
+      subtitle: 'Longitudinal Strengths & Careers · Year 10+',
     },
     admin: {
       title: 'Admin & School Governance Hub',
-      subtitle: `${currentUser.full_name} · Platform Governance · Multi-School Isolation`,
+      subtitle: `${currentUser.full_name} · Platform Governance`,
     },
   }[activeView];
 
@@ -572,23 +571,19 @@ const AppContent: React.FC = () => {
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
           actionButton={topBarConfig.actionButton}
-          pupils={currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
+          pupils={currentUser.role === 'senco' ? pupils : undefined}
           overviewLabel={
-            activeView === 'teacher'
-              ? `🏫 ${child?.room_name || 'Room 4'} Classroom Hub (All Pupils)`
-              : activeView === 'senco'
+            activeView === 'senco'
               ? '🏫 Whole-School Provision Register'
               : undefined
           }
           selectedChildId={
-            (activeView === 'teacher' && teacherSubView === 'matrix') ||
-            (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'))
+            activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team')
               ? 'overview'
               : child?.id
           }
           onSelectChild={handleChildSelect}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
-          onOpenTour={() => setIsTourModalOpen(true)}
         />
 
         <div className="p-3.5 sm:p-5 lg:p-7 max-w-7xl w-full mx-auto flex-1 animate-in fade-in duration-200">

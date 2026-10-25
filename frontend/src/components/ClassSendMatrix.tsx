@@ -66,18 +66,18 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
   return (
     <div className="space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-cardBg p-4 sm:p-5 rounded-2xl border border-borderMain shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-cardBg p-3.5 sm:p-4 rounded-2xl border border-borderMain shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>🏫 {matrixData?.room_name || 'Room 4'} SEND Classroom Matrix</span>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-                {matrixData?.year_group || 'Year 5'} · {matrixData?.lead_teacher || 'Ms Clara Johnson'}
+            <h2 className="text-sm sm:text-base font-bold text-navy dark:text-white flex items-center gap-2">
+              <span>{matrixData?.room_name || 'Room 4'} SEND Classroom Matrix</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
+                {cohort.length} Pupils
               </span>
             </h2>
           </div>
-          <p className="text-xs text-textDim dark:text-slate-400 mt-1">
-            Whole-class overview of differentiated adaptations, sensory triggers, and today&apos;s readiness signals for all {cohort.length} SEND pupils.
+          <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
+            Differentiated adaptations, sensory triggers, and arrival intelligence for all {cohort.length} pupils.
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
           <button
             onClick={handleOpenProvisionMap}
             disabled={loadingProvision}
-            className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0 disabled:opacity-60"
+            className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0 disabled:opacity-60"
             title="SEND Code of Practice CoP 6.44-6.56 Termly Graduated Response Review"
           >
             {loadingProvision ? (
@@ -98,7 +98,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
 
           <button
             onClick={() => setShowSupplyModal(true)}
-            className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-navy to-slate-800 hover:from-slate-800 hover:to-navy text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0"
+            className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-navy to-slate-800 hover:from-slate-800 hover:to-navy text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0"
           >
             <Printer className="w-4 h-4 text-mint" />
             <span>60s Supply Teacher Briefing</span>

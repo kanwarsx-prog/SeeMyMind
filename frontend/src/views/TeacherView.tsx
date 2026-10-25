@@ -102,14 +102,14 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Level View Switcher: Classroom Hub vs 1:1 Support Focus */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-cardBg p-2.5 rounded-2xl border border-borderMain shadow-xs">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-cardBg p-1.5 sm:p-2 rounded-2xl border border-borderMain shadow-xs">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => handleTabChange('matrix')}
-            className={`px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
               activeTab === 'matrix'
                 ? 'bg-teal text-white shadow-xs'
-                : 'bg-cardSubtle text-textDim hover:text-textMain hover:bg-slate-100 dark:hover:bg-[#1A2E44] border border-borderMain'
+                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
             }`}
           >
             <span>🏫</span>
@@ -118,22 +118,22 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
           <button
             onClick={() => handleTabChange('focused')}
-            className={`px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
               activeTab === 'focused'
                 ? 'bg-teal text-white shadow-xs'
-                : 'bg-cardSubtle text-textDim hover:text-textMain hover:bg-slate-100 dark:hover:bg-[#1A2E44] border border-borderMain'
+                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
             }`}
           >
             <span>🧒</span>
             <span>
               {activeTab === 'focused'
-                ? `${child?.preferred_name || child?.first_name || 'Pupil'} · 1:1 Focus`
+                ? `${child?.preferred_name || child?.first_name || 'Pupil'} (1:1 Focus)`
                 : '1:1 Pupil Focus'}
             </span>
           </button>
         </div>
 
-        <div className="text-[11px] text-textDim font-medium px-2 hidden sm:block">
+        <div className="text-[11px] text-textDim font-medium px-3 hidden sm:block">
           {activeTab === 'matrix' ? 'Whole-class differentiated adaptations' : 'Personalized EHCP interventions'}
         </div>
       </div>

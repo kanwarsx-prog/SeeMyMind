@@ -1,7 +1,6 @@
 import React from 'react';
-import { UserCheck, Menu, Sparkles } from 'lucide-react';
+import { UserCheck, Menu } from 'lucide-react';
 import { Child } from '../types';
-import { ThemeToggle } from './ThemeToggle';
 
 interface TopBarProps {
   title: string;
@@ -16,7 +15,6 @@ interface TopBarProps {
   overviewLabel?: string;
   onSelectChild?: (childId: string) => void;
   onToggleMobileMenu?: () => void;
-  onOpenTour?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -28,7 +26,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   overviewLabel,
   onSelectChild,
   onToggleMobileMenu,
-  onOpenTour,
 }) => {
   const hasPupilsSelector = Boolean(pupils && pupils.length > 1 && onSelectChild);
 
@@ -78,34 +75,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
 
-        {/* Right Side: Action Toolbar (Interactive Controls Only) */}
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
-          <ThemeToggle />
-
-          {onOpenTour && (
-            <button
-              onClick={onOpenTour}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cardSubtle hover:bg-slate-200/70 dark:hover:bg-slate-800 text-textMain border border-borderMain text-xs font-semibold cursor-pointer transition-all active:scale-95 shadow-2xs"
-              title="Open Guided Tour"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse flex-shrink-0" />
-              <span className="hidden sm:inline">Tour</span>
-            </button>
-          )}
-
-          {actionButton && (
-            <>
-              <div className="hidden sm:block h-5 w-px bg-borderMain mx-0.5" aria-hidden="true" />
-              <button
-                onClick={actionButton.onClick}
-                className="flex items-center gap-1.5 bg-teal hover:bg-teal-medium text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95 whitespace-nowrap"
-              >
-                {actionButton.icon}
-                <span className="hidden sm:inline">{actionButton.label}</span>
-              </button>
-            </>
-          )}
-        </div>
+        {/* Right Side: Primary Action Only */}
+        {actionButton && (
+          <button
+            onClick={actionButton.onClick}
+            className="flex items-center gap-1.5 bg-teal hover:bg-teal-medium text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95 whitespace-nowrap flex-shrink-0"
+          >
+            {actionButton.icon}
+            <span className="hidden sm:inline">{actionButton.label}</span>
+          </button>
+        )}
       </div>
 
       {/* Mobile Pupil Selector Row: Only shown on small mobile screens (< sm) */}

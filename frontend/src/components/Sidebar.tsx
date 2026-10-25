@@ -1,5 +1,6 @@
 import React from 'react';
 import { RoleView, UserProfile } from '../types';
+import { ThemeToggle } from './ThemeToggle';
 import {
   Sparkles,
   GraduationCap,
@@ -487,19 +488,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer: User Profile & Session Logout - pinned at bottom */}
         <div className="flex-shrink-0 p-2.5 sm:p-3 border-t border-sidebarBorder bg-black/[0.03] dark:bg-black/30 space-y-1.5">
-          {onOpenTour && (
-            <button
-              onClick={() => {
-                onOpenTour();
-                onCloseMobile?.();
-              }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-teal/15 hover:bg-teal/25 text-teal-900 dark:text-teal-200 text-xs font-bold transition-all cursor-pointer border border-teal-300/80 dark:border-teal-700/50 shadow-2xs"
-              title="Open Guided Tour"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber animate-pulse flex-shrink-0" />
-              <span>Tour</span>
-            </button>
-          )}
+          {/* Utilities: Theme & Tour in a clean 2-column grid */}
+          <div className="grid grid-cols-2 gap-1.5">
+            <ThemeToggle className="w-full justify-center" />
+            {onOpenTour && (
+              <button
+                onClick={() => {
+                  onOpenTour();
+                  onCloseMobile?.();
+                }}
+                className="w-full flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-cardSubtle hover:bg-slate-200/70 dark:hover:bg-slate-800 text-textMain border border-borderMain text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95"
+                title="Open Guided Tour"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse flex-shrink-0" />
+                <span>Tour</span>
+              </button>
+            )}
+          </div>
 
           <button
             onClick={() => {
