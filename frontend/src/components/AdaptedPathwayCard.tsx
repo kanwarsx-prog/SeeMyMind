@@ -22,6 +22,57 @@ import {
 import { api } from '../api';
 import { VisualDeskStripModal } from './VisualDeskStripModal';
 
+const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
+  {
+    id: 'maths-graphs',
+    subject: 'Maths',
+    year_group: 'Year 5',
+    title: 'Straight Line Graphs & Gradients',
+    strand: 'Geometry & Algebra',
+    default_objective: 'Understand gradient as rate of change (steepness) and connect visual slope to y = mx + c.',
+  },
+  {
+    id: 'maths-fractions',
+    subject: 'Maths',
+    year_group: 'Year 5',
+    title: 'Equivalent Fractions & Visual Bar Models',
+    strand: 'Number & Fractions',
+    default_objective: 'Recognise and show equivalent fractions using visual bar models and tactile counters.',
+  },
+  {
+    id: 'english-highwayman',
+    subject: 'English',
+    year_group: 'Year 5',
+    title: 'The Highwayman — Narrative Inference',
+    strand: 'Reading Comprehension',
+    default_objective: 'Infer character motives and atmospheric tension from figurative language and sensory imagery.',
+  },
+  {
+    id: 'science-circuits',
+    subject: 'Science',
+    year_group: 'Year 5',
+    title: 'Electrical Circuits & Switches',
+    strand: 'Physics',
+    default_objective: 'Investigate how varying switch states and cell count affects bulb brightness in series circuits.',
+  },
+  {
+    id: 'computing-loops',
+    subject: 'Computing',
+    year_group: 'Year 5',
+    title: 'Algorithmic Loops & Game Design',
+    strand: 'Computer Science',
+    default_objective: 'Design game character movement loops and debug condition-triggered actions.',
+  },
+  {
+    id: 'history-saxons',
+    subject: 'History',
+    year_group: 'Year 5',
+    title: 'Anglo-Saxon Settlements & Artifact Analysis',
+    strand: 'Historical Enquiry',
+    default_objective: 'Deduce daily life and cultural practices from archaeological evidence and physical artifacts.',
+  },
+];
+
 interface AdaptedPathwayCardProps {
   child?: Child | null;
   onOpenWorksheet: (worksheetKey: string) => void;
@@ -33,8 +84,10 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   onOpenWorksheet,
   onLogMilestone,
 }) => {
+  const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
+
   const [isOpen, setIsOpen] = useState(true);
-  const [curriculumUnits, setCurriculumUnits] = useState<CurriculumUnit[]>([]);
+  const [curriculumUnits, setCurriculumUnits] = useState<CurriculumUnit[]>(DEFAULT_CURRICULUM_UNITS);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('maths-graphs');
   const [customTopic, setCustomTopic] = useState<string>('');
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
@@ -69,7 +122,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     {
       number: 4,
       title: '4. The equation emerges — y = mx + c',
-      description: 'Only once gradient is felt intuitively. Algebra labels what he already understands.',
+      description: 'Only once gradient is felt intuitively. Algebra labels what they already understand.',
       status: 'locked',
       badge: 'Unlocks after step 3',
       sensory_pause_after: false,
@@ -107,7 +160,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     "Do NOT introduce the algebraic formula y = mx + c until Step 3 is verified. Offer the scheduled proactive sensory reset token at Step 2 after coordinate plotting."
   );
   const [rationale, setRationale] = useState<string>(
-    "Phoenix is a visual-spatial learner with high pattern recognition capacity. Abstract notation (y = mx + c) triggers cognitive shutdown. Today's slope is framed as 'how fast does the game character move up a hill?' before any equation appears. Draw first, equation second."
+    `${pupilName} is a visual-spatial learner with high pattern recognition capacity. Abstract notation (y = mx + c) triggers cognitive shutdown. Today's slope is framed as 'how fast does the game character move up a hill?' before any equation appears. Draw first, equation second.`
   );
 
   const [loggingMilestone, setLoggingMilestone] = useState(false);
@@ -124,6 +177,16 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       })
       .catch((err) => console.warn('Could not fetch curriculum units, using defaults:', err));
   }, []);
+
+  // Re-generate pathway deterministically when pupil changes (zero token overhead)
+  useEffect(() => {
+    if (child?.id) {
+      setRationale(
+        `${pupilName} is a visual-spatial learner with high pattern recognition capacity. Abstract notation triggers cognitive shutdown. Loading individualized scaffolding pathway...`
+      );
+      handleGenerate(undefined, undefined, undefined, false);
+    }
+  }, [child?.id]);
 
   const handleGenerate = async (
     topicToUse?: string,
@@ -206,7 +269,6 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     try {
       const activeStep = steps.find((s) => s.status === 'active') || steps[1] || steps[0];
       const activeTopic = pathway?.topic || 'Straight Line Graphs';
-      const pupilName = child?.preferred_name || child?.first_name || 'Phoenix';
 
       await onLogMilestone(
         `${activeTopic} Breakthrough: ${activeStep.title}`,
@@ -223,7 +285,6 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
 
   const currentTopic = pathway?.topic || 'Straight Line Graphs & Gradients';
   const currentSubject = pathway?.subject || 'Maths';
-  const pupilName = child?.preferred_name || child?.first_name || 'Phoenix';
 
   return (
     <div className="card overflow-hidden">
@@ -304,11 +365,11 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
             </div>
 
             {!isCustomMode ? (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
                 <select
                   value={selectedUnitId}
                   onChange={(e) => handleUnitChange(e.target.value)}
-                  className="flex-1 text-xs px-3 py-2 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
+                  className="flex-1 min-w-0 w-full text-xs px-3 py-2.5 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium truncate"
                 >
                   {curriculumUnits.length > 0 ? (
                     curriculumUnits.map((u) => (
@@ -330,7 +391,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   type="button"
                   onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway}
-                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0 active:scale-95"
+                  className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
                   title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
@@ -338,13 +399,13 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
                 <input
                   type="text"
                   value={customTopic}
                   onChange={(e) => setCustomTopic(e.target.value)}
                   placeholder="e.g. Science — States of matter & particle arrangements"
-                  className="flex-1 text-xs px-3 py-2 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
+                  className="flex-1 min-w-0 w-full text-xs px-3 py-2.5 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleGenerate(undefined, undefined, undefined, true);
                   }}
@@ -353,7 +414,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   type="button"
                   onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway || !customTopic.trim()}
-                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0 active:scale-95"
+                  className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
                   title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
@@ -523,20 +584,20 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
           </div>
 
           {/* Parallel Peer Adaptations in Room 4 */}
-          <div className="pt-2 border-t border-borderMain space-y-2">
+          <div className="pt-3 border-t border-borderMain space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 block">
               Other Room 4 Pupils — Parallel Adapted Routes
             </span>
 
-            <div className="space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {peerAdaptations.map((p) => (
                 <div
                   key={p.name}
-                  className="p-2 bg-cardSubtle rounded-xl flex items-center justify-between gap-2 border border-borderMain text-xs"
+                  className="p-2.5 bg-cardSubtle rounded-xl flex items-center justify-between gap-2 border border-borderMain text-xs"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${p.color}`}
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] flex-shrink-0 ${p.color}`}
                     >
                       {p.initials}
                     </div>

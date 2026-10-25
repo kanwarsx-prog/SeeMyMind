@@ -48,6 +48,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [acknowledging, setAcknowledging] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(true);
+  const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
 
   React.useEffect(() => {
     if (activeSubView && activeSubView !== activeTab) {
@@ -460,18 +461,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
           {/* Real-Time Sensory De-Escalation Palette */}
           <DeEscalationPalette
-            pupilName={child?.preferred_name || child?.first_name || 'Phoenix'}
+            pupilName={pupilName}
             onLogStrategyResult={handleLogStrategyResult}
           />
-
-          {/* Adapted Learning Pathway — This Lesson */}
-          <div id="adapted-pathway" className="scroll-mt-6">
-            <AdaptedPathwayCard
-              child={child}
-              onOpenWorksheet={onOpenWorksheet}
-              onLogMilestone={onLogMilestone}
-            />
-          </div>
         </div>
 
         {/* Right Column: Live Timeline of Events */}
@@ -523,6 +515,15 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Full-Width Section: Adapted Learning Pathway & Scaffolding Ladder */}
+      <div id="adapted-pathway" className="mt-5 scroll-mt-6 w-full">
+        <AdaptedPathwayCard
+          child={child}
+          onOpenWorksheet={onOpenWorksheet}
+          onLogMilestone={onLogMilestone}
+        />
       </div>
         </>
       )}
