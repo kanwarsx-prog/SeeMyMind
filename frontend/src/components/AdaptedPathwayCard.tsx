@@ -21,6 +21,7 @@ import {
 } from '../types';
 import { api } from '../api';
 import { VisualDeskStripModal } from './VisualDeskStripModal';
+import { SensoryTokenModal } from './SensoryTokenModal';
 
 const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
   // Year 1
@@ -241,24 +242,24 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       number: 1,
       title: '1. Real-world hook — the game level slope',
       description: '"A game character moves up a slope. How steep is it?" Draw on paper first.',
-      status: 'done',
-      badge: '✓ Completed',
+      status: 'active',
+      badge: '→ Step 1 (Start Here)',
       sensory_pause_after: false,
     },
     {
       number: 2,
       title: '2. Draw it — plot the slope visually',
       description: 'Plot coordinates on visual grid. No algebra equation yet. Feel the slope geometry.',
-      status: 'active',
-      badge: '→ In progress now',
+      status: 'next',
+      badge: 'Step 2',
       sensory_pause_after: true,
     },
     {
       number: 3,
       title: '3. Name the pattern — rise ÷ run',
       description: 'Label the triangle. Rise = how high (6). Run = how far (2). Gradient = 6 ÷ 2 = 3.',
-      status: 'next',
-      badge: 'Up next',
+      status: 'locked',
+      badge: 'Step 3',
       sensory_pause_after: false,
     },
     {
@@ -266,7 +267,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       title: '4. The equation emerges — y = mx + c',
       description: 'Only once gradient is felt intuitively. Algebra labels what they already understand.',
       status: 'locked',
-      badge: 'Unlocks after step 3',
+      badge: 'Step 4',
       sensory_pause_after: false,
     },
   ]);
@@ -308,6 +309,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [loggingMilestone, setLoggingMilestone] = useState(false);
   const [milestoneLogged, setMilestoneLogged] = useState(false);
   const [showDeskStripModal, setShowDeskStripModal] = useState(false);
+  const [showSensoryModal, setShowSensoryModal] = useState(false);
 
   const handleGenerate = async (
     topicToUse?: string,
@@ -461,6 +463,40 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
         return s;
       });
     });
+  };
+
+  const handleResetSteps = () => {
+    setSteps((prev) =>
+      prev.map((s) => ({
+        ...s,
+        status: s.number === 1 ? 'active' : (s.number === 2 ? 'next' : 'locked'),
+        badge: s.number === 1 ? '→ Step 1 (Start Here)' : `Step ${s.number}`,
+      }))
+    );
+  };
+
+  const handleCompleteSensoryReset = async () => {
+    if (onLogMilestone) {
+      try {
+        await onLogMilestone(
+          'Proactive Regulation: 2-Min Sensory Reset Token',
+          `Administered scheduled 2-minute proactive sensory/movement pause before Step 3 for ${pupilName}. Pupil successfully regulated and transitioned into Step 3 in green zone.`
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.number <= 2) {
+          return { ...s, status: 'done', badge: '✓ Completed' };
+        }
+        if (s.number === 3) {
+          return { ...s, status: 'active', badge: '→ In progress now' };
+        }
+        return s;
+      })
+    );
   };
 
   const handleLogBreakthrough = async () => {
@@ -712,8 +748,18 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={handleResetSteps}
+                  className="text-[10px] font-semibold text-textDim hover:text-textMain dark:hover:text-white flex items-center gap-1 px-1.5 py-0.5 rounded border border-borderMain/60 hover:bg-cardSubtle transition-all cursor-pointer"
+                  title="Reset pathway back to Step 1"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Reset to Step 1</span>
+                </button>
+                <button
+                  type="button"
                   onClick={handleAdvanceStep}
                   className="text-[10px] font-semibold text-teal dark:text-teal-300 hover:underline cursor-pointer flex items-center gap-1"
+                  title="Mark current active step complete and advance"
                 >
                   <span>Advance Step</span>
                   <ArrowRight className="w-3 h-3" />
@@ -780,14 +826,30 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                     </div>
                   </div>
 
-                  {/* Scheduled Sensory Token Indicator */}
+                  {/* Scheduled Sensory Token Indicator - Interactive Trigger */}
                   {st.sensory_pause_after && (
-                    <div className="px-3 py-1.5 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-dashed border-amber-300 dark:border-amber-700/50 flex items-center justify-between text-[10px] text-amber-900 dark:text-amber-200">
-                      <div className="flex items-center gap-1.5">
-                        <BatteryCharging className="w-3.5 h-3.5 text-amber-600" />
-                        <span className="font-semibold">Scheduled 2-Min Sensory / Movement Token</span>
+                    <div
+                      onClick={() => setShowSensoryModal(true)}
+                      className="px-3 py-2 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/90 dark:hover:bg-amber-900/60 rounded-xl border border-dashed border-amber-400 dark:border-amber-700/70 flex items-center justify-between text-[11px] text-amber-900 dark:text-amber-200 cursor-pointer transition-all shadow-xs hover:shadow group select-none"
+                      title="Click to launch interactive 2-minute countdown timer and co-regulation guidance"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <BatteryCharging className="w-3.5 h-3.5 animate-pulse" />
+                        </div>
+                        <div>
+                          <span className="font-bold">Scheduled 2-Min Sensory / Movement Token</span>
+                          <span className="text-[10px] text-amber-700 dark:text-amber-300 block sm:inline sm:ml-2 opacity-90">
+                            Proactive break before Step 3
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[9px] font-mono opacity-80">Trigger before Step 3</span>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-200/80 dark:bg-amber-800 text-amber-950 dark:text-amber-100 border border-amber-300 dark:border-amber-700 flex items-center gap-1">
+                          <span>⚡ Start 2-Min Timer</span>
+                          <ArrowRight className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -925,6 +987,17 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sensory Token Regulation Modal */}
+      {showSensoryModal && (
+        <SensoryTokenModal
+          isOpen={showSensoryModal}
+          onClose={() => setShowSensoryModal(false)}
+          child={child}
+          onCompleteReset={handleCompleteSensoryReset}
+          targetStepNumber={3}
+        />
       )}
 
       {/* Visual Desk Strip Modal */}

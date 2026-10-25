@@ -84,9 +84,15 @@ def test_generate_pathway_maths(client):
     assert data["child_name"] == "Phoenix"
     assert data["subject"] == "Mathematics"
     assert len(data["steps"]) == 4
-    # Step 1 should be done, step 2 active, step 3 next, step 4 locked
+    # Step 1 should start active, step 2 next, step 3 locked, step 4 locked
     assert data["steps"][0]["number"] == 1
+    assert data["steps"][0]["status"] == "active"
+    assert "Start Here" in data["steps"][0]["badge"]
     assert data["steps"][1]["number"] == 2
+    assert data["steps"][1]["status"] == "next"
+    assert data["steps"][1]["sensory_pause_after"] is True
+    assert data["steps"][2]["status"] == "locked"
+    assert data["steps"][3]["status"] == "locked"
     assert "cognitive_rationale" in data
     assert "ta_briefing" in data
     assert len(data["peer_adaptations"]) >= 1
@@ -122,7 +128,49 @@ def test_generate_pathway_english(client):
     data = resp.json()
     assert data["child_name"] == "Riya"
     assert len(data["steps"]) == 4
+    assert data["steps"][0]["status"] == "active"
+    assert data["steps"][1]["status"] == "next"
+    assert "galleon" in data["steps"][0]["description"]
     assert "ta_briefing" in data
+
+
+def test_generate_pathway_iron_man(client):
+    """Test generating an English pathway for The Iron Man, ensuring it does NOT bleed into The Highwayman."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "preferred_name": "Phoenix",
+            "date_of_birth": "2015-04-12",
+            "year_group": "Year 4",
+            "room_name": "Room 4",
+            "primary_need": "Autism Spectrum Condition (ASC)",
+            "has_ehcp": True,
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    resp = client.post(
+        "/api/v1/noya/pathway/generate",
+        json={
+            "child_id": child_id,
+            "subject": "English",
+            "topic": "The Iron Man — Figurative Personification",
+            "learning_objective": "Identify and analyse powerful verbs, similes, and mechanical metaphors.",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["child_name"] == "Phoenix"
+    assert len(data["steps"]) == 4
+    # Step 1 must start as active, not done
+    assert data["steps"][0]["status"] == "active"
+    assert "Start Here" in data["steps"][0]["badge"]
+    # Verify it has Iron Man personification content, not Highwayman
+    assert "Iron Man" in data["steps"][0]["description"] or "tractor" in data["steps"][0]["description"]
+    assert "galleon" not in data["steps"][0]["description"]
+    assert "highwayman" not in data["steps"][2]["description"].lower()
 
 
 def test_generate_pathway_not_found(client):

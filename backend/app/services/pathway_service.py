@@ -232,8 +232,8 @@ class PathwayService:
                                 number=s["number"],
                                 title=s["title"],
                                 description=s["description"],
-                                status="done" if s["number"] == 1 else ("active" if s["number"] == 2 else ("next" if s["number"] == 3 else "locked")),
-                                badge=s.get("badge", f"Step {s['number']}"),
+                                status="active" if s["number"] == 1 else ("next" if s["number"] == 2 else "locked"),
+                                badge="→ Step 1 (Start Here)" if s["number"] == 1 else s.get("badge", f"Step {s['number']}"),
                                 sensory_pause_after=s.get("sensory_pause_after", s["number"] == 2),
                             )
                             for s in ai_result.get("steps", [])
@@ -392,24 +392,24 @@ class PathwayService:
                     number=1,
                     title="1. Real-world hook — the game level slope",
                     description='"A game character moves up a slope. How steep is it?" Draw on paper first.',
-                    status="done",
-                    badge="✓ Completed",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
                     number=2,
                     title="2. Draw it — plot the slope visually",
                     description="Plot coordinates on visual grid. No algebra equation yet. Feel the slope geometry.",
-                    status="active",
-                    badge="→ In progress now",
+                    status="next",
+                    badge="Step 2",
                     sensory_pause_after=True,
                 ),
                 PathwayStepSchema(
                     number=3,
                     title="3. Name the pattern — rise ÷ run",
                     description="Label the triangle. Rise = how high (6). Run = how far (2). Gradient = 6 ÷ 2 = 3.",
-                    status="next",
-                    badge="Up next",
+                    status="locked",
+                    badge="Step 3",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
@@ -417,7 +417,7 @@ class PathwayService:
                     title="4. The equation emerges — y = mx + c",
                     description="Only once gradient is felt intuitively. Algebra labels what he already understands.",
                     status="locked",
-                    badge="Unlocks after step 3",
+                    badge="Step 4",
                     sensory_pause_after=False,
                 ),
             ]
@@ -436,24 +436,24 @@ class PathwayService:
                     number=1,
                     title=f"1. Sensory landscape immersion — {topic}",
                     description=f"Explore high-resolution visual cross-sections and real-world audio cues of {topic}.",
-                    status="done",
-                    badge="✓ Completed",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
                     number=2,
                     title="2. Layer-by-layer organism & feature mapping",
                     description=f"Map physical components and wildlife tokens onto the dual-coded {topic} vertical diagram.",
-                    status="active",
-                    badge="→ In progress now",
+                    status="next",
+                    badge="Step 2",
                     sensory_pause_after=True,
                 ),
                 PathwayStepSchema(
                     number=3,
                     title="3. Interdependence & adaptation bridge",
                     description="Connect survival traits and physical processes to environmental conditions with structured cue cards.",
-                    status="next",
-                    badge="Up next",
+                    status="locked",
+                    badge="Step 3",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
@@ -461,7 +461,7 @@ class PathwayService:
                     title="4. Synthesis & human impact analysis",
                     description=f"Evaluate environmental balance and conservation using a 3-stage cause-and-effect scaffold.",
                     status="locked",
-                    badge="Unlocks after step 3",
+                    badge="Step 4",
                     sensory_pause_after=False,
                 ),
             ]
@@ -480,24 +480,24 @@ class PathwayService:
                     number=1,
                     title="1. Concrete strip partitioning",
                     description="Fold paper strips into 4 equal segments to physically experience denominators.",
-                    status="done",
-                    badge="✓ Completed",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
                     number=2,
                     title="2. Interactive visual bar model",
                     description="Shade 3/4 on the digital dual-coded fraction bar and compare alongside 6/8.",
-                    status="active",
-                    badge="→ In progress now",
+                    status="next",
+                    badge="Step 2",
                     sensory_pause_after=True,
                 ),
                 PathwayStepSchema(
                     number=3,
                     title="3. Multiplier bridge identification",
                     description="Discover the multiplier rule: multiply top and bottom by 2 (3×2=6, 4×2=8).",
-                    status="next",
-                    badge="Up next",
+                    status="locked",
+                    badge="Step 3",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
@@ -505,7 +505,7 @@ class PathwayService:
                     title="4. Mixed numbers & problem solving",
                     description="Convert improper fractions into mixed numbers with zero visual overload.",
                     status="locked",
-                    badge="Unlocks after step 3",
+                    badge="Step 4",
                     sensory_pause_after=False,
                 ),
             ]
@@ -513,9 +513,9 @@ class PathwayService:
                 f"TA Protocol: Keep fraction bars physically aligned on desk. "
                 f"Reinforce verbal script: 'Equal parts of the same whole'. Trigger movement pause after Step 2."
             )
-        elif "highwayman" in topic_lower or "english" in subject.lower() or "infer" in topic_lower:
+        elif "highwayman" in topic_lower:
             rationale = (
-                f"{child_name} experiences cognitive overload with dense literary texts but excels at visual scene deduction. "
+                f"{child_name} experiences cognitive overload with dense 18th-century poetic texts. "
                 f"Pre-teaching vocabulary and breaking figurative imagery into dual-coded scenes eliminates anxiety."
             )
             steps = [
@@ -523,24 +523,24 @@ class PathwayService:
                     number=1,
                     title="1. Atmosphere scene illustration",
                     description="Examine the 'ghostly galleon tossed upon cloudy seas' illustration to decode mood.",
-                    status="done",
-                    badge="✓ Completed",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
                     number=2,
                     title="2. Sensory cue mapping",
                     description="Highlight auditory metaphors ('clatter and clash') using color-coded highlighters.",
-                    status="active",
-                    badge="→ In progress now",
+                    status="next",
+                    badge="Step 2",
                     sensory_pause_after=True,
                 ),
                 PathwayStepSchema(
                     number=3,
                     title="3. Character motive deduction",
                     description="Complete 2-sentence inference frame: 'The highwayman came because...'.",
-                    status="next",
-                    badge="Up next",
+                    status="locked",
+                    badge="Step 3",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
@@ -548,13 +548,100 @@ class PathwayService:
                     title="4. Analytical paragraph synthesis",
                     description="Synthesize evidence with PEEL scaffold strip for independent writing.",
                     status="locked",
-                    badge="Unlocks after step 3",
+                    badge="Step 4",
                     sensory_pause_after=False,
                 ),
             ]
             ta_briefing = (
                 f"TA Protocol: Pre-teach words 'galleon', 'moor', and 'rapier' before reading aloud. "
                 f"Allow non-verbal card selections for mood if speech anxiety rises."
+            )
+        elif any(w in topic_lower for w in ["iron man", "ironman"]):
+            rationale = (
+                f"Ted Hughes' 'The Iron Man' relies on vivid sensory scale and mechanical personification. "
+                f"For {child_name}, dual-coding the giant's physical magnitude and acoustic imagery anchors comprehension "
+                f"before analysing figurative language."
+            )
+            steps = [
+                PathwayStepSchema(
+                    number=1,
+                    title="1. Physical scale & soundscape hook",
+                    description="Compare the Iron Man's hand to a tractor and listen to heavy metallic clanking sounds to anchor sensory scale.",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=2,
+                    title="2. Visual personification mapping",
+                    description="Map mechanical metaphors (headlamps for eyes, torso like a furnace) onto a dual-coded robot anatomy sheet.",
+                    status="next",
+                    badge="Step 2",
+                    sensory_pause_after=True,
+                ),
+                PathwayStepSchema(
+                    number=3,
+                    title="3. Figurative verb & simile deduction",
+                    description="Complete guided figurative inference frame: 'The Iron Man stepped... like a...' using word bank tokens.",
+                    status="locked",
+                    badge="Step 3",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=4,
+                    title="4. Descriptive stanza synthesis",
+                    description="Synthesize 3 personification lines describing the giant's arrival using a visual success checklist.",
+                    status="locked",
+                    badge="Step 4",
+                    sensory_pause_after=False,
+                ),
+            ]
+            ta_briefing = (
+                f"TA Protocol: Pre-teach mechanical vocabulary ('headlamp', 'torso', 'chasm') with visual flashcards. "
+                f"Administer scheduled 2-minute regulation token after Step 2. Keep text density low."
+            )
+        elif "english" in subject.lower() or any(w in topic_lower for w in ["reading", "inference", "poetry", "figurative", "narrative", "spag", "grammar", "phonics", "writing"]):
+            rationale = (
+                f"{child_name} experiences cognitive overload with dense literary texts but excels at visual scene deduction. "
+                f"Breaking figurative imagery and narrative structure in {topic} into dual-coded scenes eliminates anxiety."
+            )
+            steps = [
+                PathwayStepSchema(
+                    number=1,
+                    title=f"1. Visual scene & context hook — {topic}",
+                    description=f"Anchor {topic} with dual-coded illustrations and core vocabulary cards before reading.",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=2,
+                    title="2. Sensory cue & language mapping",
+                    description=f"Identify key descriptive language and sensory metaphors in {topic} with color-coded highlighters.",
+                    status="next",
+                    badge="Step 2",
+                    sensory_pause_after=True,
+                ),
+                PathwayStepSchema(
+                    number=3,
+                    title="3. Structured inference & theme bridge",
+                    description=f"Complete guided cause-and-effect sentence frames to explore core ideas in {topic}.",
+                    status="locked",
+                    badge="Step 3",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=4,
+                    title="4. Scaffolded expression & synthesis",
+                    description=f"Apply {objective} using structured sentence starters and non-verbal check tokens.",
+                    status="locked",
+                    badge="Step 4",
+                    sensory_pause_after=False,
+                ),
+            ]
+            ta_briefing = (
+                f"TA Protocol: Pre-teach 3-4 unfamiliar vocabulary words from {topic} before text encounter. "
+                f"Administer scheduled 2-minute regulation token after Step 2."
             )
         else:
             # Universal 4-step scaffold for any generic subject
@@ -568,24 +655,24 @@ class PathwayService:
                     number=1,
                     title=f"1. Real-world context hook — {topic}",
                     description=f"Anchor {topic} in practical everyday experience before introducing formal terminology.",
-                    status="done",
-                    badge="✓ Completed",
+                    status="active",
+                    badge="→ Step 1 (Start Here)",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
                     number=2,
                     title=f"2. Visual model & dual-coded organizer",
                     description=f"Represent key relationships in {topic} with diagrams and color-coded components.",
-                    status="active",
-                    badge="→ In progress now",
+                    status="next",
+                    badge="Step 2",
                     sensory_pause_after=True,
                 ),
                 PathwayStepSchema(
                     number=3,
                     title="3. Guided practice & concept naming",
                     description="Name core terminology with guided TA scaffolding and partner checks.",
-                    status="next",
-                    badge="Up next",
+                    status="locked",
+                    badge="Step 3",
                     sensory_pause_after=False,
                 ),
                 PathwayStepSchema(
@@ -593,7 +680,7 @@ class PathwayService:
                     title="4. Independent mastery & challenge",
                     description=f"Apply {objective} independently with scaffolded checklist verification.",
                     status="locked",
-                    badge="Unlocks after step 3",
+                    badge="Step 4",
                     sensory_pause_after=False,
                 ),
             ]
