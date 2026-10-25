@@ -394,41 +394,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 lg:w-64 bg-sidebarBg text-sidebarPrimary min-h-screen flex flex-col justify-between border-r border-sidebarBorder shadow-2xl select-none transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:z-30 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 lg:w-64 bg-sidebarBg text-sidebarPrimary h-screen max-h-screen flex flex-col justify-between border-r border-sidebarBorder shadow-2xl select-none transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:z-30 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div>
-          {/* Brand header */}
-          <div className="p-4 border-b border-sidebarBorder flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-coral via-amber to-mint flex items-center justify-center p-0.5 shadow-sm">
-                <div className="w-full h-full bg-sidebarBg rounded-[14px] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-teal dark:text-mint" />
-                </div>
-              </div>
-              <div>
-                <div className="font-serif font-bold text-base tracking-wide text-sidebarPrimary">See My Mind</div>
-                <div className="text-[10px] text-sidebarMuted tracking-wider uppercase font-medium">
-                  {currentUser?.school_name || "SEND Inclusive Education"}
-                </div>
+        {/* Brand header - pinned at top */}
+        <div className="flex-shrink-0 p-3.5 sm:p-4 border-b border-sidebarBorder flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-coral via-amber to-mint flex items-center justify-center p-0.5 shadow-sm">
+              <div className="w-full h-full bg-sidebarBg rounded-[14px] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-teal dark:text-mint" />
               </div>
             </div>
-
-            {/* Mobile Close Button */}
-            {onCloseMobile && (
-              <button
-                onClick={onCloseMobile}
-                className="lg:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white flex items-center justify-center cursor-pointer transition-colors"
-                title="Close menu"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            <div>
+              <div className="font-serif font-bold text-base tracking-wide text-sidebarPrimary">See My Mind</div>
+              <div className="text-[10px] text-sidebarMuted tracking-wider uppercase font-medium">
+                {currentUser?.school_name || "SEND Inclusive Education"}
+              </div>
+            </div>
           </div>
 
+          {/* Mobile Close Button */}
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="lg:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white flex items-center justify-center cursor-pointer transition-colors"
+              title="Close menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Scrollable Middle Content Area */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           {/* Current Authenticated Persona Banner */}
-          <div className="p-3.5 mx-3 mt-4 rounded-2xl bg-sidebarBadge border border-sidebarBorder">
+          <div className="p-3 mx-3 mt-3 rounded-2xl bg-sidebarBadge border border-sidebarBorder">
             <div className="flex items-center gap-2.5">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm flex-shrink-0"
@@ -469,7 +470,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       item.action?.();
                       onCloseMobile?.();
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer ${
                       active
                         ? 'bg-sidebarActive text-sidebarActiveText shadow-sm font-bold'
                         : 'text-sidebarSecondary hover:text-sidebarPrimary hover:bg-sidebarHover'
@@ -484,19 +485,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Footer: User Profile & Session Logout */}
-        <div className="p-3 border-t border-sidebarBorder bg-black/[0.03] dark:bg-black/30 space-y-2">
+        {/* Footer: User Profile & Session Logout - pinned at bottom */}
+        <div className="flex-shrink-0 p-2.5 sm:p-3 border-t border-sidebarBorder bg-black/[0.03] dark:bg-black/30 space-y-1.5">
           {onOpenTour && (
             <button
               onClick={() => {
                 onOpenTour();
                 onCloseMobile?.();
               }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-teal/15 hover:bg-teal/25 text-teal-900 dark:text-teal-200 text-xs font-bold transition-all cursor-pointer border border-teal-300/80 dark:border-teal-700/50 shadow-2xs"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-teal/15 hover:bg-teal/25 text-teal-900 dark:text-teal-200 text-xs font-bold transition-all cursor-pointer border border-teal-300/80 dark:border-teal-700/50 shadow-2xs"
               title="Open Guided Tour"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber animate-pulse flex-shrink-0" />
-              <span>✨ Tour</span>
+              <span>Tour</span>
             </button>
           )}
 
@@ -505,7 +506,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onSwitchPersona();
               onCloseMobile?.();
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white/90 text-xs font-semibold transition-all cursor-pointer border border-slate-300/70 dark:border-white/10 shadow-2xs"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/70 hover:bg-white dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white/90 text-xs font-semibold transition-all cursor-pointer border border-slate-300/70 dark:border-white/10 shadow-2xs"
             title="Switch to another persona for testing"
           >
             <Repeat className="w-3.5 h-3.5 text-amber-600 dark:text-amber flex-shrink-0" />
@@ -517,7 +518,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onLogout();
               onCloseMobile?.();
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer border border-rose-300/70 dark:border-rose-500/20"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer border border-rose-300/70 dark:border-rose-500/20"
           >
             <LogOut className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
             <span>Sign Out</span>
