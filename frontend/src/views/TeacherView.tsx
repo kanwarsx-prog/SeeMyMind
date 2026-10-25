@@ -149,23 +149,6 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
         />
       ) : (
         <>
-          {/* Breadcrumb Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-cardBg p-3.5 rounded-2xl border border-borderMain shadow-xs">
-            <button
-              onClick={() => handleTabChange('matrix')}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cardSubtle hover:bg-slate-100 dark:hover:bg-[#1E324A] text-navy dark:text-white border border-borderMain text-xs font-bold transition-all cursor-pointer w-fit shadow-2xs active:scale-95"
-            >
-              <span>←</span>
-              <span>Back to {child?.room_name || 'Room 4'} Classroom Hub</span>
-            </button>
-            <div className="flex items-center gap-2 text-xs text-textDim dark:text-slate-400">
-              <span>Viewing 1:1 Profile:</span>
-              <strong className="text-navy dark:text-white">{child?.preferred_name || child?.first_name || 'Pupil'} {child?.last_name || ''}</strong>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-                {child?.year_group || 'Year 5'}
-              </span>
-            </div>
-          </div>
           {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <div className="stat-card border border-gray-100 border-l-4 border-l-rose-500">
