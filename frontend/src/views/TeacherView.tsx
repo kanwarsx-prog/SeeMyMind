@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Child, ChildEvent, MorningBriefing, TransitionLogDetail } from '../types';
-import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock } from 'lucide-react';
+import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView } from '../types';
+import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
@@ -11,8 +11,8 @@ interface TeacherViewProps {
   timeline: ChildEvent[];
   briefing: MorningBriefing | null;
   latestHandover?: TransitionLogDetail | null;
-  activeSubView?: 'focused' | 'matrix';
-  onSubViewChange?: (view: 'focused' | 'matrix') => void;
+  activeSubView?: TeacherSubView;
+  onSubViewChange?: (view: TeacherSubView) => void;
   onSelectPupil?: (pupilId: string) => void;
   onRefreshBriefing: () => Promise<void>;
   onAcknowledgeHandover?: (transitionId: string) => Promise<void>;
@@ -44,7 +44,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   onLogMilestone,
   onLogDeEscalation,
 }) => {
-  const [activeTab, setActiveTab] = useState<'focused' | 'matrix'>(activeSubView || 'matrix');
+  const [activeTab, setActiveTab] = useState<TeacherSubView>(activeSubView || 'matrix');
   const [refreshing, setRefreshing] = useState(false);
   const [acknowledging, setAcknowledging] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(true);
@@ -56,7 +56,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
     }
   }, [activeSubView]);
 
-  const handleTabChange = (tab: 'focused' | 'matrix') => {
+  const handleTabChange = (tab: TeacherSubView) => {
     setActiveTab(tab);
     onSubViewChange?.(tab);
   };
@@ -102,9 +102,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Level View Switcher: Classroom Hub vs 1:1 Support Focus */}
+      {/* Top Level View Switcher: Classroom Hub vs 1:1 Support Focus vs Adapted Pathways */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-cardBg p-1.5 sm:p-2 rounded-2xl border border-borderMain shadow-xs">
-        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => handleTabChange('matrix')}
             className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
@@ -128,18 +128,34 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             <span>🧒</span>
             <span>
               {activeTab === 'focused'
-                ? `${child?.preferred_name || child?.first_name || 'Pupil'} (1:1 Focus)`
+                ? `${pupilName} (1:1 Focus)`
                 : '1:1 Pupil Focus'}
             </span>
           </button>
+
+          <button
+            onClick={() => handleTabChange('pathways')}
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
+              activeTab === 'pathways'
+                ? 'bg-teal text-white shadow-xs'
+                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
+            }`}
+          >
+            <span>📚</span>
+            <span>Adapted Lesson Pathways</span>
+          </button>
         </div>
 
-        <div className="text-[11px] text-textDim font-medium px-3 hidden sm:block">
-          {activeTab === 'matrix' ? 'Whole-class differentiated adaptations' : 'Personalized EHCP interventions'}
+        <div className="text-[11px] text-textDim font-medium px-3 hidden lg:block">
+          {activeTab === 'matrix'
+            ? 'Whole-class differentiated adaptations'
+            : activeTab === 'pathways'
+            ? 'National Curriculum scaffolding & 1:1 TA protocols'
+            : 'Personalized EHCP interventions'}
         </div>
       </div>
 
-      {activeTab === 'matrix' ? (
+      {activeTab === 'matrix' && (
         <ClassSendMatrix
           onSelectPupil={(pupilId) => {
             if (onSelectPupil) {
@@ -148,7 +164,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             handleTabChange('focused');
           }}
         />
-      ) : (
+      )}
+
+      {activeTab === 'focused' && (
         <>
           {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
@@ -517,16 +535,78 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
         </div>
       </div>
 
-      {/* Full-Width Section: Adapted Learning Pathway & Scaffolding Ladder */}
-      <div id="adapted-pathway" className="mt-5 scroll-mt-6 w-full">
-        <AdaptedPathwayCard
-          child={child}
-          onOpenWorksheet={onOpenWorksheet}
-          onLogMilestone={onLogMilestone}
-        />
+        {/* Pathway Springboard Banner */}
+        <div className="card p-3.5 bg-gradient-to-r from-teal/10 via-cardBg to-cardBg border border-teal/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-teal/15 dark:bg-teal-950/60 flex items-center justify-center text-teal dark:text-teal-300 border border-teal/20">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-navy dark:text-white flex items-center gap-2">
+                <span>Adapted Lesson Pathways Scaffolding</span>
+                <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 px-1.5 py-0.5 rounded">
+                  CoP 6.44
+                </span>
+              </div>
+              <div className="text-[11px] text-textDim dark:text-slate-400">
+                Individualized National Curriculum scaffolds, step ladders & 1:1 TA protocols for {pupilName}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => handleTabChange('pathways')}
+            className="px-3.5 py-1.5 rounded-xl bg-teal hover:bg-teal-dark text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs flex-shrink-0 active:scale-95"
+          >
+            <span>Open Pathways Workspace</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </>
+    )}
+
+    {activeTab === 'pathways' && (
+      <div className="space-y-5 animate-in fade-in duration-200">
+        {/* Dedicated Pupil Pathway Header */}
+        <div className="card p-4 bg-gradient-to-r from-teal/10 via-cardBg to-cardBg border border-teal/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-teal text-white font-bold text-sm flex items-center justify-center shadow-xs">
+              {(child?.first_name?.[0] || 'P') + (child?.last_name?.[0] || '')}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-navy dark:text-white">
+                  {pupilName} {child?.last_name || ''} — Learning Pathways & Scaffolding
+                </h3>
+                <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal/20">
+                  {child?.room_name || 'Room 4'} · {child?.year_group || 'Year 5'}
+                </span>
+              </div>
+              <div className="text-xs text-textDim dark:text-slate-400 mt-0.5">
+                Primary Need: <strong className="text-navy dark:text-white">{child?.support_profile?.primary_need || 'Autism Spectrum Condition (ASC)'}</strong> · CoP 6.44 Scaffolding Framework
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleTabChange('focused')}
+              className="text-xs font-bold text-teal dark:text-teal-300 hover:underline flex items-center gap-1 px-3 py-1.5 rounded-xl bg-cardSubtle border border-borderMain cursor-pointer"
+            >
+              <span>← Return to 1:1 Focus</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Dedicated Adapted Pathway Scaffolding Engine */}
+        <div id="adapted-pathway" className="w-full">
+          <AdaptedPathwayCard
+            child={child}
+            onOpenWorksheet={onOpenWorksheet}
+            onLogMilestone={onLogMilestone}
+          />
+        </div>
       </div>
-        </>
-      )}
+    )}
     </div>
   );
 };

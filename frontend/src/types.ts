@@ -214,6 +214,7 @@ export interface LessonPathwayResponse {
 }
 
 export type RoleView = 'teacher' | 'senco' | 'parent' | 'child' | 'ta' | 'parentplus' | 'admin';
+export type TeacherSubView = 'focused' | 'matrix' | 'pathways';
 
 export interface EmailPreview {
   to_email: string;

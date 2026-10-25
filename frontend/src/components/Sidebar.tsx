@@ -97,11 +97,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'preflight-handover',
-          label: 'Pre-Flight Handovers',
+          label: 'Pre-Flight Handovers & 1:1 Focus',
           icon: Sun,
           action: () => {
             onSelectNav?.('preflight-handover');
-            scrollTo('preflight-handover');
           },
         },
         {
@@ -110,11 +109,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: BookOpen,
           action: () => {
             onSelectNav?.('lesson-pathways');
-            if (onOpenWorksheet) {
-              onOpenWorksheet('graphs');
-            } else {
-              scrollTo('adapted-pathway');
-            }
           },
         },
         {

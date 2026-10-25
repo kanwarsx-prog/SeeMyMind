@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   RoleView,
+  TeacherSubView,
   Child,
   ChildEvent,
   MorningBriefing,
@@ -30,7 +31,7 @@ import { AdminView } from './views/AdminView';
 import { PersonaTourModal } from './components/PersonaTourModal';
 import { AITransparencyModal } from './components/AITransparencyModal';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { Plus } from 'lucide-react';
+import { Plus, BookOpen } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { syncUserTheme } = useTheme();
@@ -58,7 +59,7 @@ const AppContent: React.FC = () => {
 
   // Sub-Navigation state per persona
   const [activeNavId, setActiveNavId] = useState<string>('');
-  const [teacherSubView, setTeacherSubView] = useState<'focused' | 'matrix'>('matrix');
+  const [teacherSubView, setTeacherSubView] = useState<TeacherSubView>('matrix');
   const [parentSubTab, setParentSubTab] = useState<'bridge' | 'handover' | 'correlation' | 'wins'>('bridge');
   const [sencoSubTab, setSencoSubTab] = useState<SencoTab>('provision_map');
   const [adminSubTab, setAdminSubTab] = useState<'schools' | 'staff' | 'delegation' | 'audit'>('schools');
@@ -128,6 +129,8 @@ const AppContent: React.FC = () => {
     if (activeView === 'teacher') {
       if (navId === 'room4-matrix') {
         setTeacherSubView('matrix');
+      } else if (navId === 'lesson-pathways') {
+        setTeacherSubView('pathways');
       } else {
         setTeacherSubView('focused');
       }
@@ -173,10 +176,14 @@ const AppContent: React.FC = () => {
     if (!selected) return;
     setChild(selected);
 
-    // If teacher selects a pupil from the dropdown, automatically drill down to 1:1 view
+    // If teacher selects a pupil from the dropdown, automatically drill down to 1:1 view (or stay on pathways)
     if (activeView === 'teacher') {
-      setTeacherSubView('focused');
-      setActiveNavId('preflight-handover');
+      if (teacherSubView !== 'pathways') {
+        setTeacherSubView('focused');
+        setActiveNavId('preflight-handover');
+      } else {
+        setActiveNavId('lesson-pathways');
+      }
     } else if (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team')) {
       setSencoSubTab('review_pack');
       setActiveNavId('review_pack');
@@ -503,12 +510,20 @@ const AppContent: React.FC = () => {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
         ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${child?.room_name || 'Room 4'} (Year 5)`
+        : teacherSubView === 'pathways'
+        ? `Adapted Lesson Pathways · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`
         : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
-      actionButton: {
-        label: 'Log Observation',
-        onClick: () => setIsObsModalOpen(true),
-        icon: <Plus className="w-4 h-4" />,
-      },
+      actionButton: teacherSubView === 'pathways'
+        ? {
+            label: 'Interactive Worksheet',
+            onClick: () => handleOpenWorksheet('graphs'),
+            icon: <BookOpen className="w-4 h-4" />,
+          }
+        : {
+            label: 'Log Observation',
+            onClick: () => setIsObsModalOpen(true),
+            icon: <Plus className="w-4 h-4" />,
+          },
     },
     senco: {
       title: sencoSubTab === 'review_pack' && child
@@ -612,7 +627,13 @@ const AppContent: React.FC = () => {
               activeSubView={teacherSubView}
               onSubViewChange={(view) => {
                 setTeacherSubView(view);
-                setActiveNavId(view === 'matrix' ? 'room4-matrix' : 'preflight-handover');
+                setActiveNavId(
+                  view === 'matrix'
+                    ? 'room4-matrix'
+                    : view === 'pathways'
+                    ? 'lesson-pathways'
+                    : 'preflight-handover'
+                );
               }}
               onSelectPupil={handleChildSelect}
               onRefreshBriefing={handleRefreshBriefing}
