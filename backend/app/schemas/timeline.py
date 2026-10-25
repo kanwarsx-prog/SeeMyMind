@@ -34,6 +34,8 @@ class TransitionLogResponse(TransitionLogCreate):
     event_id: UUID
     acknowledged_by_staff: bool
     acknowledged_at: datetime | None = None
+    created_at: datetime | None = None
+    event_time: datetime | None = None
 
 
 class ChildCheckInCreate(BaseModel):

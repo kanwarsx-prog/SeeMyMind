@@ -36,6 +36,19 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
   const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
   const isAcknowledged = localAcknowledged || Boolean(latestHandover?.acknowledged_by_staff);
 
+  // Real date and time intelligence (zero hardcoding)
+  const handoverDateRaw = latestHandover?.event_time || latestHandover?.created_at;
+  const handoverDate = handoverDateRaw ? new Date(handoverDateRaw) : null;
+  const isToday = handoverDate
+    ? handoverDate.toDateString() === new Date().toDateString()
+    : false;
+  const formattedTime = handoverDate
+    ? handoverDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
+  const formattedDay = handoverDate
+    ? handoverDate.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })
+    : null;
+
   const handleAcknowledge = async () => {
     if (!onAcknowledgeHandover || acknowledging || isAcknowledged) return;
     try {
@@ -76,8 +89,12 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
 
         {/* Loop health badge */}
         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-textDim">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Active Loop for Today</span>
+          <span
+            className={`inline-block w-2 h-2 rounded-full ${
+              isToday ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
+            }`}
+          />
+          <span>{isToday ? 'Active Loop for Today' : "Ready for Today's Check-In"}</span>
         </div>
       </div>
 
@@ -89,7 +106,7 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
         <div
           onClick={onOpenMorningCheckIn}
           className={`p-3 rounded-xl border transition-all ${
-            latestHandover
+            latestHandover && isToday
               ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/60'
               : 'bg-cardSubtle border-borderMain'
           } ${onOpenMorningCheckIn ? 'cursor-pointer hover:shadow-xs' : ''}`}
@@ -101,19 +118,27 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
             </div>
             <span
               className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                latestHandover
+                latestHandover && isToday
                   ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200'
                   : 'bg-cardBg text-textDim border border-borderMain'
               }`}
             >
-              {latestHandover ? '✓ Sent 07:42' : '⏳ Awaiting'}
+              {latestHandover && isToday
+                ? `✓ Sent ${formattedTime || ''}`
+                : latestHandover
+                ? '⏳ Due Today'
+                : '⏳ Awaiting'}
             </span>
           </div>
 
           <p className="text-[11px] text-textDim leading-snug mb-2">
-            {latestHandover ? (
+            {latestHandover && isToday ? (
               <span>
                 Mood: <strong className="text-textHead capitalize">{latestHandover.morning_mood || 'Calm'}</strong> · Sleep: <strong className="text-textHead">{latestHandover.sleep_quality || 'Good'}</strong>
+              </span>
+            ) : latestHandover ? (
+              <span>
+                No note sent yet today. Last note ({formattedDay}): Mood was <strong className="text-textHead capitalize">{latestHandover.morning_mood || 'Calm'}</strong>.
               </span>
             ) : (
               'No home note yet today. Standing classroom baselines active.'
@@ -122,8 +147,10 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
 
           <div className="flex items-center gap-1.5 text-[10px] text-textDim pt-1 border-t border-borderMain/50">
             <span className="font-semibold text-amber-700 dark:text-amber-400">Home &rarr; School</span>
-            {latestHandover?.special_notes_for_day && (
+            {latestHandover && isToday && latestHandover.special_notes_for_day ? (
               <span className="truncate italic">· &ldquo;{latestHandover.special_notes_for_day}&rdquo;</span>
+            ) : (
+              <span className="truncate italic">· Tap to submit today&apos;s morning note</span>
             )}
           </div>
         </div>
@@ -133,9 +160,9 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
         {/* ========================================================= */}
         <div
           className={`p-3 rounded-xl border transition-all ${
-            isAcknowledged
+            isToday && isAcknowledged
               ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60'
-              : latestHandover
+              : isToday && latestHandover
               ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60 ring-1 ring-rose-300'
               : 'bg-cardSubtle border-borderMain'
           }`}
@@ -144,40 +171,44 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
             <div className="flex items-center gap-1.5 text-xs font-bold text-textHead">
               <CheckCircle2
                 className={`w-3.5 h-3.5 flex-shrink-0 ${
-                  isAcknowledged ? 'text-emerald-600 dark:text-emerald-400' : 'text-textDim'
+                  isToday && isAcknowledged ? 'text-emerald-600 dark:text-emerald-400' : 'text-textDim'
                 }`}
               />
               <span>2. School Heads-Up</span>
             </div>
             <span
               className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                isAcknowledged
+                isToday && isAcknowledged
                   ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200'
-                  : latestHandover
+                  : isToday && latestHandover
                   ? 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 animate-pulse'
                   : 'bg-cardBg text-textDim border border-borderMain'
               }`}
             >
-              {isAcknowledged ? '✓ Seen by Staff' : latestHandover ? 'Needs Check' : 'Standby'}
+              {isToday && isAcknowledged
+                ? '✓ Seen by Staff'
+                : isToday && latestHandover
+                ? 'Needs Check'
+                : 'Baseline Active'}
             </span>
           </div>
 
           <p className="text-[11px] text-textDim leading-snug mb-2">
-            {isAcknowledged ? (
+            {isToday && isAcknowledged ? (
               <span className="text-emerald-800 dark:text-emerald-300 font-medium">
-                Miss Johnson acknowledged note. Parent confirmed receipt.
+                Staff acknowledged today&apos;s note. Parent confirmed receipt.
               </span>
-            ) : latestHandover ? (
+            ) : isToday && latestHandover ? (
               <span className="text-rose-700 dark:text-rose-300 font-medium">
-                New morning note ready for teacher review before class.
+                Today&apos;s morning note ready for teacher review before class.
               </span>
             ) : (
-              'Classroom team notified when morning note arrives.'
+              'Classroom team ready. Baseline profile active until check-in.'
             )}
           </p>
 
           {/* Interactive Teacher Action Button */}
-          {!isAcknowledged && latestHandover && (currentUserRole === 'teacher' || currentUserRole === 'ta' || currentUserRole === 'senco') ? (
+          {isToday && !isAcknowledged && latestHandover && (currentUserRole === 'teacher' || currentUserRole === 'ta' || currentUserRole === 'senco') ? (
             <button
               onClick={handleAcknowledge}
               disabled={acknowledging}
@@ -188,7 +219,7 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
             </button>
           ) : (
             <div className="text-[10px] text-textDim pt-1 border-t border-borderMain/50 font-medium">
-              {isAcknowledged ? '✓ Read receipt active' : 'Classroom arrival gate'}
+              {isToday && isAcknowledged ? '✓ Read receipt active' : 'Classroom arrival gate'}
             </div>
           )}
         </div>

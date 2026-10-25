@@ -120,6 +120,10 @@ class TransitionLog(TimestampedUUIDModel):
 
     event = relationship("ChildEvent", back_populates="transition_log")
 
+    @property
+    def event_time(self):
+        return self.event.event_time if self.event else self.created_at
+
 
 class ChildCheckIn(TimestampedUUIDModel):
     __tablename__ = "child_check_ins"

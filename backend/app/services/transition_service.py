@@ -59,11 +59,14 @@ class TransitionService:
 
     @staticmethod
     def get_latest_handover(db: Session, child_id: UUID) -> TransitionLog | None:
-        """Retrieve the most recent morning handover for a child."""
+        """Retrieve the most recent morning handover for a child (excluding evening check-ins)."""
         return (
             db.query(TransitionLog)
             .join(ChildEvent, TransitionLog.event_id == ChildEvent.id)
-            .filter(ChildEvent.child_id == child_id)
+            .filter(
+                ChildEvent.child_id == child_id,
+                TransitionLog.transition_type != "End of Day (Home)",
+            )
             .order_by(ChildEvent.event_time.desc())
             .first()
         )

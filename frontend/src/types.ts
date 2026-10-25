@@ -47,6 +47,8 @@ export interface TransitionLogDetail {
   special_notes_for_day?: string;
   acknowledged_by_staff: boolean;
   acknowledged_at?: string;
+  created_at?: string;
+  event_time?: string;
 }
 
 export interface ChildCheckInDetail {
