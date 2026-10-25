@@ -496,92 +496,52 @@ const AppContent: React.FC = () => {
   }
 
   const isHandoverAcknowledged = latestHandover?.acknowledged_by_staff;
-  const isBreakfastSkipped = latestHandover?.breakfast_eaten === false;
 
   const topBarConfig = {
     teacher: {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
-        ? `${currentUser.school_name || "Inclusive School"} · ${child?.room_name || 'Room 4'} Classroom Hub · ${pupils.length} SEND Learners`
-        : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
-      pills: teacherSubView === 'matrix'
-        ? [
-            { label: `🏫 ${pupils.length} SEND Learners`, color: 'teal' as const },
-            { label: `📋 ${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`, color: 'purple' as const },
-            latestHandover && !isHandoverAcknowledged
-              ? { label: '🔔 Handover Needs Ack', color: 'red' as const }
-              : { label: '✓ Handovers Logged', color: 'green' as const },
-            { label: '⚡ Assembly 9:05am', color: 'amber' as const },
-          ]
-        : [
-            latestHandover && !isHandoverAcknowledged
-              ? { label: '🔔 Handover Needs Ack', color: 'red' as const }
-              : { label: '✓ Handover Acknowledged', color: 'green' as const },
-            isBreakfastSkipped
-              ? { label: '🍽 Skipped Breakfast', color: 'amber' as const }
-              : { label: '🥣 Breakfast Eaten', color: 'teal' as const },
-            { label: '⚡ Assembly 9:05am', color: 'red' as const },
-            { label: '📚 Maths: Straight Lines', color: 'gold' as const },
-          ],
+        ? `${currentUser.school_name || "Inclusive School"} · ${child?.room_name || 'Room 4'} Classroom Hub · ${pupils.length} SEND Learners · ${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`
+        : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}${child?.support_profile?.primary_need ? ` (${child.support_profile.primary_need})` : ''}`,
       actionButton: {
-        label: '+ Log Observation',
+        label: 'Log Observation',
         onClick: () => setIsObsModalOpen(true),
         icon: <Plus className="w-4 h-4" />,
       },
     },
     senco: {
       title: `Inclusion & SEND Caseload · ${currentUser.full_name}`,
-      subtitle: `${currentUser.school_name || "Assigned School"} · Academic Year 2026/2027`,
-      pills: [
-        { label: `${pupils.length} Pupils on Caseload`, color: 'teal' as const },
-        { label: `${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`, color: 'purple' as const },
-      ],
+      subtitle: `${currentUser.school_name || "Assigned School"} · Academic Year 2026/2027 · ${pupils.length} Pupils on Caseload · ${pupils.filter(p => p.support_profile?.has_ehcp).length} Active EHCPs`,
       actionButton: {
-        label: '+ Register SEND Pupil',
+        label: 'Register SEND Pupil',
         onClick: () => setIsRegisterModalOpen(true),
         icon: <Plus className="w-4 h-4" />,
       },
     },
     parent: {
       title: `${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''} · Parent Hub`,
-      subtitle: `${currentUser.full_name}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}`,
-      pills: [
-        isHandoverAcknowledged
-          ? { label: '✓ Read by Teacher', color: 'green' as const }
-          : { label: '⏳ Handover Sent · Awaiting Check-In', color: 'amber' as const },
-        { label: '🎧 Noise Defenders in Bag', color: 'teal' as const },
-      ],
+      subtitle: `${currentUser.full_name}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}${isHandoverAcknowledged ? ' · Handover Acknowledged' : ' · Handover Sent'}`,
     },
     child: {
       title: `My Day · ${child?.preferred_name || child?.first_name || 'Pupil'} ⭐`,
-      subtitle: `${currentUser.school_name || "Inclusive School"} · Pupil Voice`,
-      pills: [{ label: '😊 Feeling Great', color: 'green' as const }],
+      subtitle: `${currentUser.school_name || "Inclusive School"} · Pupil Voice · Feeling Great`,
     },
     ta: {
       title: `Teaching Assistant View · ${currentUser.full_name}`,
-      subtitle: `1-to-1 Support Focus${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}`,
-      pills: [
-        { label: `⚡ ${child?.preferred_name || child?.first_name || 'Pupil'}: High Priority`, color: 'red' as const },
-        { label: '🎧 Headphones at Door (8:55am)', color: 'amber' as const },
-      ],
+      subtitle: `1-to-1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}`,
       actionButton: {
-        label: '+ Log Note',
+        label: 'Log Note',
         onClick: () => setIsObsModalOpen(true),
         icon: <Plus className="w-4 h-4" />,
       },
     },
     parentplus: {
       title: 'Parent Plus · Post-16 Pathways',
-      subtitle: 'Longitudinal Strengths & Careers · Year 10+',
-      pills: [{ label: 'Top Match: Game Design (92%)', color: 'gold' as const }],
+      subtitle: 'Longitudinal Strengths & Careers · Year 10+ · Top Match: Game Design',
     },
     admin: {
       title: 'Admin & School Governance Hub',
-      subtitle: `${currentUser.full_name} · Platform Governance`,
-      pills: [
-        { label: '🏛️ Multi-School Isolation', color: 'indigo' as const },
-        { label: '📜 Audit Trail Active', color: 'teal' as const },
-      ],
+      subtitle: `${currentUser.full_name} · Platform Governance · Multi-School Isolation`,
     },
   }[activeView];
 
@@ -611,7 +571,6 @@ const AppContent: React.FC = () => {
         <TopBar
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
-          pills={topBarConfig.pills}
           actionButton={topBarConfig.actionButton}
           pupils={currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
           overviewLabel={
