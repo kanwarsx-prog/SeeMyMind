@@ -153,6 +153,7 @@ export interface PathwayStep {
   description: string;
   status: 'done' | 'active' | 'next' | 'locked';
   badge: string;
+  sensory_pause_after?: boolean;
 }
 
 export interface PeerAdaptation {
@@ -160,8 +161,39 @@ export interface PeerAdaptation {
   name: string;
   need: string;
   route: string;
-  method: 'Auditory' | 'Kinesthetic' | 'Written';
+  method: 'Auditory' | 'Kinesthetic' | 'Written' | 'Visual';
   color: string;
+}
+
+export interface CurriculumUnit {
+  id: string;
+  subject: string;
+  year_group: string;
+  title: string;
+  strand: string;
+  default_objective: string;
+}
+
+export interface PathwayGenerateRequest {
+  child_id: string;
+  subject?: string;
+  topic: string;
+  learning_objective?: string;
+  scaffolding_method?: string;
+}
+
+export interface LessonPathwayResponse {
+  child_id: string;
+  child_name: string;
+  subject: string;
+  topic: string;
+  learning_objective: string;
+  cognitive_rationale: string;
+  steps: PathwayStep[];
+  ta_briefing: string;
+  peer_adaptations: PeerAdaptation[];
+  generated_at: string;
+  model_used: string;
 }
 
 export type RoleView = 'teacher' | 'senco' | 'parent' | 'child' | 'ta' | 'parentplus' | 'admin';

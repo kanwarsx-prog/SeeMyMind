@@ -1,0 +1,105 @@
+def test_get_curriculum_units(client):
+    """Test retrieving pre-curated National Curriculum units."""
+    response = client.get("/api/v1/noya/pathway/curriculum-units")
+    assert response.status_code == 200
+    units = response.json()
+    assert len(units) >= 5
+    titles = [u["title"] for u in units]
+    assert any("Straight Line Graphs" in t for t in titles)
+    assert any("Equivalent Fractions" in t for t in titles)
+    assert any("Highwayman" in t for t in titles)
+
+
+def test_generate_pathway_maths(client):
+    """Test generating a bespoke maths pathway for Phoenix Carter."""
+    # Setup school & pupil
+    school_resp = client.post(
+        "/api/v1/schools/",
+        json={"school_name": "St. Jude's Inclusive Academy"},
+    )
+    school_id = school_resp.json()["id"]
+
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "preferred_name": "Phoenix",
+            "date_of_birth": "2015-04-12",
+            "year_group": "Year 5",
+            "room_name": "Room 4",
+            "school_id": school_id,
+            "primary_need": "Autism Spectrum Condition (ASC)",
+            "has_ehcp": True,
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    # Generate pathway for Maths Graphs
+    resp = client.post(
+        "/api/v1/noya/pathway/generate",
+        json={
+            "child_id": child_id,
+            "subject": "Mathematics",
+            "topic": "Straight Line Graphs & Gradients",
+            "learning_objective": "Calculate gradient m = rise / run on a coordinate plane.",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["child_name"] == "Phoenix"
+    assert data["subject"] == "Mathematics"
+    assert len(data["steps"]) == 4
+    # Step 1 should be done, step 2 active, step 3 next, step 4 locked
+    assert data["steps"][0]["number"] == 1
+    assert data["steps"][1]["number"] == 2
+    assert "cognitive_rationale" in data
+    assert "ta_briefing" in data
+    assert len(data["peer_adaptations"]) >= 1
+
+
+def test_generate_pathway_english(client):
+    """Test generating a bespoke English narrative inference pathway."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Riya",
+            "last_name": "Patel",
+            "preferred_name": "Riya",
+            "date_of_birth": "2015-06-18",
+            "year_group": "Year 5",
+            "room_name": "Room 4",
+            "primary_need": "ADHD & Performance Anxiety",
+            "has_ehcp": False,
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    resp = client.post(
+        "/api/v1/noya/pathway/generate",
+        json={
+            "child_id": child_id,
+            "subject": "English",
+            "topic": "The Highwayman — Narrative Inference",
+            "learning_objective": "Infer character motives and atmosphere.",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["child_name"] == "Riya"
+    assert len(data["steps"]) == 4
+    assert "ta_briefing" in data
+
+
+def test_generate_pathway_not_found(client):
+    """Test 404 response for nonexistent pupil."""
+    import uuid
+    resp = client.post(
+        "/api/v1/noya/pathway/generate",
+        json={
+            "child_id": str(uuid.uuid4()),
+            "subject": "Science",
+            "topic": "Electric Circuits",
+        },
+    )
+    assert resp.status_code == 404

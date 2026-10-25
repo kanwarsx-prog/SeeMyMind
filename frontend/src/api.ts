@@ -37,6 +37,9 @@ import {
   SenInformationReportResponse,
   CamhsClinicalDossierResponse,
   ClassroomProvisionSummary,
+  CurriculumUnit,
+  PathwayGenerateRequest,
+  LessonPathwayResponse,
 } from './types';
 
 const API_BASE =
@@ -364,6 +367,27 @@ export const api = {
       body: JSON.stringify({ child_id: childId, question }),
     });
     if (!res.ok) throw new Error('Failed to query NOYA');
+    return res.json();
+  },
+
+  async getCurriculumUnits(): Promise<CurriculumUnit[]> {
+    const res = await fetch(`${API_BASE}/noya/pathway/curriculum-units`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch curriculum units');
+    return res.json();
+  },
+
+  async generatePathway(payload: PathwayGenerateRequest): Promise<LessonPathwayResponse> {
+    const res = await fetch(`${API_BASE}/noya/pathway/generate`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to generate adapted pathway');
+    }
     return res.json();
   },
 

@@ -449,6 +449,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
           {/* Adapted Learning Pathway — This Lesson */}
           <div id="adapted-pathway" className="scroll-mt-6">
             <AdaptedPathwayCard
+              child={child}
               onOpenWorksheet={onOpenWorksheet}
               onLogMilestone={onLogMilestone}
             />
