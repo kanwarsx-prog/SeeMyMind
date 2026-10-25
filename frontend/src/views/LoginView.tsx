@@ -16,12 +16,21 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
   const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Demo Mode visibility (hidden by default unless ?demo=true or #demo in URL)
+  const [showDemoMode, setShowDemoMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('demo') === 'true' || window.location.hash === '#demo';
+    }
+    return false;
+  });
+
   // Staff / Parent fields
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
 
   // Pupil Voice fields
-  const [pupilUsername, setPupilUsername] = useState('phoenix');
+  const [pupilUsername, setPupilUsername] = useState('');
   const [pupilPin, setPupilPin] = useState('');
 
   // Token input for direct invitation entry
@@ -173,13 +182,26 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
         <div className="flex items-center gap-2">
           <ThemeToggle />
 
+          <button
+            onClick={() => setShowDemoMode((prev) => !prev)}
+            className={`text-xs px-2.5 sm:px-3.5 py-1.5 rounded-xl border font-bold transition-all flex items-center gap-1.5 flex-shrink-0 shadow-xs active:scale-95 cursor-pointer ${
+              showDemoMode
+                ? 'border-amber-500/50 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white hover:border-slate-600'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>{showDemoMode ? '✕ Hide Demo' : '✨ Demo Mode'}</span>
+          </button>
+
           {onOpenTour && (
             <button
               onClick={onOpenTour}
-              className="text-xs px-3 sm:px-4 py-1.5 rounded-xl border border-teal/40 bg-teal/20 hover:bg-teal/30 text-mint font-bold transition-all flex items-center gap-1.5 flex-shrink-0 shadow-xs active:scale-95 cursor-pointer"
+              className="text-xs px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-teal/40 bg-teal/20 hover:bg-teal/30 text-mint font-bold transition-all flex items-center gap-1.5 flex-shrink-0 shadow-xs active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber animate-pulse" />
-              <span>✨ Interactive Tour</span>
+              <span className="hidden sm:inline">Interactive Tour</span>
+              <span className="sm:hidden">Tour</span>
             </button>
           )}
 
@@ -188,8 +210,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
             className="text-xs px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-medium transition-colors flex items-center gap-1.5 flex-shrink-0"
           >
             <KeyRound className="w-3.5 h-3.5 text-teal" />
-            <span className="hidden sm:inline">Have an invite token?</span>
-            <span className="sm:hidden">Invite Token</span>
+            <span className="hidden md:inline">Have an invite token?</span>
+            <span className="md:hidden">Token</span>
           </button>
         </div>
       </header>
@@ -225,287 +247,502 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
       )}
 
       {/* Main Container */}
-      <main className="max-w-6xl w-full mx-auto px-4 py-6 z-10 flex flex-col lg:flex-row gap-8 items-center">
-        {/* Left: Login Card */}
-        <div className="w-full lg:w-5/12 bg-slate-800/90 backdrop-blur-md border border-slate-700/80 rounded-3xl p-4 sm:p-7 shadow-2xl space-y-6">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-teal">Role-Based Access Control</span>
-            <h1 className="text-2xl font-bold font-serif text-white mt-1">Sign in to your account</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Select your login method below to access your role-specific dashboard.
-            </p>
-          </div>
-
-          {/* Tab Selector */}
-          <div className="flex rounded-xl bg-slate-900/80 p-1 border border-slate-700/80 text-xs font-semibold">
-            <button
-              onClick={() => {
-                setTab('portal');
-                setError(null);
-              }}
-              className={`flex-1 py-2 rounded-lg transition-all ${
-                tab === 'portal'
-                  ? 'bg-slate-800 text-white shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Staff & Parents 🏢
-            </button>
-            <button
-              onClick={() => {
-                setTab('pupil');
-                setError(null);
-              }}
-              className={`flex-1 py-2 rounded-lg transition-all ${
-                tab === 'pupil'
-                  ? 'bg-slate-800 text-white shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Pupil Voice 🧒
-            </button>
-          </div>
-
-          {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-200 text-xs flex items-center gap-2 animate-fade-in">
-              <span>⚠️</span>
-              <span>{error}</span>
+      {!showDemoMode ? (
+        <main className="max-w-xl w-full mx-auto px-4 py-8 z-10 flex flex-col items-center justify-center flex-1">
+          {/* Centered Login Card */}
+          <div className="w-full bg-slate-800/90 backdrop-blur-md border border-slate-700/80 rounded-3xl p-5 sm:p-8 shadow-2xl space-y-6">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-teal">Role-Based Access Control</span>
+              <h1 className="text-2xl font-bold font-serif text-white mt-1">Sign in to your account</h1>
+              <p className="text-xs text-slate-400 mt-1">
+                Select your login method below to access your role-specific dashboard.
+              </p>
             </div>
-          )}
 
-          {/* TAB 1: Staff & Parent Login */}
-          {tab === 'portal' && (
-            <form onSubmit={handlePortalLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Email Address or Username
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. senco@stjudes.sch.uk"
-                  value={emailOrUsername}
-                  onChange={(e) => setEmailOrUsername(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
-                />
-              </div>
-
+            {/* Tab Selector */}
+            <div className="flex rounded-xl bg-slate-900/80 p-1 border border-slate-700/80 text-xs font-semibold">
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-white text-xs font-bold transition-all shadow-md shadow-teal/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                onClick={() => {
+                  setTab('portal');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all ${
+                  tab === 'portal'
+                    ? 'bg-slate-800 text-white shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
-                {loading ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Sign In to Portal →</span>
-                  </>
-                )}
+                Staff & Parents 🏢
               </button>
-            </form>
-          )}
+              <button
+                onClick={() => {
+                  setTab('pupil');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all ${
+                  tab === 'pupil'
+                    ? 'bg-slate-800 text-white shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Pupil Voice 🧒
+              </button>
+            </div>
 
-          {/* TAB 2: Pupil Voice PIN Login */}
-          {tab === 'pupil' && (
-            <form onSubmit={handlePupilLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Pupil Username
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. phoenix"
-                  value={pupilUsername}
-                  onChange={(e) => setPupilUsername(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-coral text-center font-bold"
-                />
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-200 text-xs flex items-center gap-2 animate-fade-in">
+                <span>⚠️</span>
+                <span>{error}</span>
               </div>
+            )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5 text-center">
-                  Enter 4-Digit Secret PIN
-                </label>
-                {/* Visual PIN Dots */}
-                <div className="flex justify-center gap-3 mb-3">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <div
-                      key={idx}
-                      className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-lg ${
-                        pupilPin.length > idx
-                          ? 'border-coral bg-coral/20 text-coral shadow-xs'
-                          : 'border-slate-700 bg-slate-900 text-slate-600'
-                      }`}
-                    >
-                      {pupilPin.length > idx ? '●' : ''}
-                    </div>
-                  ))}
+            {/* TAB 1: Staff & Parent Login */}
+            {tab === 'portal' && (
+              <form onSubmit={handlePortalLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Email Address or Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. senco@stjudes.sch.uk"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                  />
                 </div>
 
-                {/* Keypad */}
-                <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
-                  {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-white text-xs font-bold transition-all shadow-md shadow-teal/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Sign In to Portal →</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* TAB 2: Pupil Voice PIN Login */}
+            {tab === 'pupil' && (
+              <form onSubmit={handlePupilLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Pupil Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. child username"
+                    value={pupilUsername}
+                    onChange={(e) => setPupilUsername(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-coral text-center font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 text-center">
+                    Enter 4-Digit Secret PIN
+                  </label>
+                  {/* Visual PIN Dots */}
+                  <div className="flex justify-center gap-3 mb-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div
+                        key={idx}
+                        className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-lg ${
+                          pupilPin.length > idx
+                            ? 'border-coral bg-coral/20 text-coral shadow-xs'
+                            : 'border-slate-700 bg-slate-900 text-slate-600'
+                        }`}
+                      >
+                        {pupilPin.length > idx ? '●' : ''}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Keypad */}
+                  <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                    {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                      <button
+                        type="button"
+                        key={digit}
+                        onClick={() => handlePinKeyClick(digit)}
+                        className="py-2.5 rounded-xl bg-slate-750 hover:bg-slate-700 text-white font-bold text-base transition-all active:scale-95 border border-slate-700/60"
+                      >
+                        {digit}
+                      </button>
+                    ))}
                     <button
                       type="button"
-                      key={digit}
-                      onClick={() => handlePinKeyClick(digit)}
-                      className="py-2.5 rounded-xl bg-slate-700/60 hover:bg-slate-700 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
+                      onClick={() => setPupilPin('')}
+                      className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
                     >
-                      {digit}
+                      Clear
                     </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setPupilPin('')}
-                    className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handlePinKeyClick('0')}
-                    className="py-2.5 rounded-xl bg-slate-700/60 hover:bg-slate-700 text-white font-bold text-sm transition-all active:scale-95"
-                  >
-                    0
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePinBackspace}
-                    className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
-                  >
-                    ⌫
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading || pupilPin.length < 4}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-coral to-rose-600 hover:from-rose-600 hover:to-coral text-white text-xs font-bold transition-all shadow-md shadow-coral/20 flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
-              >
-                <span>⭐</span>
-                <span>Enter Pupil Voice Check-In</span>
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* Right: Quick Demo Persona Picker */}
-        <div className="w-full lg:w-7/12 space-y-4">
-          {onOpenTour && (
-            <div
-              onClick={onOpenTour}
-              className="p-3.5 rounded-2xl bg-gradient-to-r from-teal/20 via-purple-600/20 to-teal/20 border border-teal/40 hover:border-teal text-white flex items-center justify-between transition-all hover:scale-[1.01] cursor-pointer shadow-lg shadow-teal/10 group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber via-coral to-mint p-0.5 flex items-center justify-center flex-shrink-0">
-                  <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-mint animate-pulse" />
+                    <button
+                      type="button"
+                      onClick={() => handlePinKeyClick('0')}
+                      className="py-2.5 rounded-xl bg-slate-750 hover:bg-slate-700 text-white font-bold text-sm transition-all active:scale-95"
+                    >
+                      0
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePinBackspace}
+                      className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
+                    >
+                      ⌫
+                    </button>
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-1.5 font-serif">
-                    <span>✨ Interactive Persona Tour & Demo Animation</span>
-                    <span className="text-[9px] bg-teal/30 text-mint px-2 py-0.5 rounded-full font-mono">
-                      Explore Flow
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-300">
-                    See how Teacher, Parent, TA, SENCO & Pupil connect through real-world operational loops
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-mint group-hover:translate-x-1 transition-transform flex-shrink-0 ml-2">
-                <span className="hidden sm:inline">Start Tour</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          )}
 
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-mint flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber" />
-                Stakeholder & Investor Demo Mode
-              </span>
-              <h2 className="text-xl font-bold font-serif text-white mt-0.5">
-                1-Click Persona Quick Login
-              </h2>
-            </div>
-            <span className="text-[10px] text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-full font-medium">
-              Single-Persona View
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Select any persona below to authenticate with a live JWT token and experience their dedicated, role-locked dashboard:
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-            {demoPersonas.map((p) => {
-              const Icon = p.icon;
-              const isCurrentLoading = demoLoadingRole === p.role;
-              return (
                 <button
-                  key={p.role}
-                  disabled={demoLoadingRole !== null}
-                  onClick={() => handleDemoLogin(p.role)}
-                  className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 hover:border-slate-600 text-left transition-all hover:scale-[1.01] hover:shadow-lg flex flex-col justify-between group cursor-pointer disabled:opacity-50"
+                  type="submit"
+                  disabled={loading || pupilPin.length < 4}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-coral to-rose-600 hover:from-rose-600 hover:to-coral text-white text-xs font-bold transition-all shadow-md shadow-coral/20 flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${p.color} text-white flex items-center justify-center shadow-xs`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white group-hover:text-teal transition-colors">
-                          {p.name}
-                        </div>
-                        <div className="text-[10px] text-slate-400">{p.subtitle}</div>
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700">
-                      {p.badge}
-                    </span>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 leading-snug line-clamp-2 mb-2">
-                    {p.desc}
-                  </p>
-
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 pt-1 border-t border-slate-700/50">
-                    <span className="text-teal group-hover:underline">Launch Persona</span>
-                    {isCurrentLoading ? (
-                      <div className="w-3.5 h-3.5 border-2 border-teal border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-teal group-hover:translate-x-0.5 transition-all" />
-                    )}
-                  </div>
+                  <span>⭐</span>
+                  <span>Enter Pupil Voice Check-In</span>
                 </button>
-              );
-            })}
+              </form>
+            )}
+
+            {/* Subtle Evaluator Prompt */}
+            <div className="pt-4 border-t border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => setShowDemoMode(true)}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-700/60 hover:border-teal/40 text-slate-400 hover:text-slate-200 text-xs flex items-center justify-between transition-all group cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span>Evaluating See My Mind without credentials?</span>
+                </span>
+                <span className="font-bold text-mint flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                  <span>View Demo Personas</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
-      </main>
+
+          {/* Trust & Compliance Badges */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-teal" /> DfE SEND Code of Practice (2015) Aligned</span>
+            <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-teal" /> Multi-Tenant Role Isolation</span>
+            <span className="flex items-center gap-1.5"><HeartHandshake className="w-3.5 h-3.5 text-coral" /> UK GDPR Compliant</span>
+          </div>
+        </main>
+      ) : (
+        <main className="max-w-6xl w-full mx-auto px-4 py-6 z-10 flex flex-col lg:flex-row gap-8 items-start flex-1 animate-fade-in">
+          {/* Left: Login Card */}
+          <div className="w-full lg:w-5/12 bg-slate-800/90 backdrop-blur-md border border-slate-700/80 rounded-3xl p-4 sm:p-7 shadow-2xl space-y-6">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-teal">Role-Based Access Control</span>
+              <h1 className="text-2xl font-bold font-serif text-white mt-1">Sign in to your account</h1>
+              <p className="text-xs text-slate-400 mt-1">
+                Select your login method below to access your role-specific dashboard.
+              </p>
+            </div>
+
+            {/* Tab Selector */}
+            <div className="flex rounded-xl bg-slate-900/80 p-1 border border-slate-700/80 text-xs font-semibold">
+              <button
+                onClick={() => {
+                  setTab('portal');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all ${
+                  tab === 'portal'
+                    ? 'bg-slate-800 text-white shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Staff & Parents 🏢
+              </button>
+              <button
+                onClick={() => {
+                  setTab('pupil');
+                  setError(null);
+                }}
+                className={`flex-1 py-2 rounded-lg transition-all ${
+                  tab === 'pupil'
+                    ? 'bg-slate-800 text-white shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Pupil Voice 🧒
+              </button>
+            </div>
+
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-200 text-xs flex items-center gap-2 animate-fade-in">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* TAB 1: Staff & Parent Login */}
+            {tab === 'portal' && (
+              <form onSubmit={handlePortalLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Email Address or Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. senco@stjudes.sch.uk"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-white text-xs font-bold transition-all shadow-md shadow-teal/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Sign In to Portal →</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* TAB 2: Pupil Voice PIN Login */}
+            {tab === 'pupil' && (
+              <form onSubmit={handlePupilLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Pupil Username
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. child username"
+                    value={pupilUsername}
+                    onChange={(e) => setPupilUsername(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-900 text-white text-sm focus:outline-none focus:ring-2 focus:ring-coral text-center font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 text-center">
+                    Enter 4-Digit Secret PIN
+                  </label>
+                  <div className="flex justify-center gap-3 mb-3">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div
+                        key={idx}
+                        className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-lg ${
+                          pupilPin.length > idx
+                            ? 'border-coral bg-coral/20 text-coral shadow-xs'
+                            : 'border-slate-700 bg-slate-900 text-slate-600'
+                        }`}
+                      >
+                        {pupilPin.length > idx ? '●' : ''}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                    {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                      <button
+                        type="button"
+                        key={digit}
+                        onClick={() => handlePinKeyClick(digit)}
+                        className="py-2.5 rounded-xl bg-slate-750 hover:bg-slate-700 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
+                      >
+                        {digit}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setPupilPin('')}
+                      className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePinKeyClick('0')}
+                      className="py-2.5 rounded-xl bg-slate-750 hover:bg-slate-700 text-white font-bold text-sm transition-all active:scale-95"
+                    >
+                      0
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePinBackspace}
+                      className="py-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs"
+                    >
+                      ⌫
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || pupilPin.length < 4}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-coral to-rose-600 hover:from-rose-600 hover:to-coral text-white text-xs font-bold transition-all shadow-md shadow-coral/20 flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+                >
+                  <span>⭐</span>
+                  <span>Enter Pupil Voice Check-In</span>
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Right: Quick Demo Persona Picker */}
+          <div className="w-full lg:w-7/12 space-y-4">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-mint flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber" />
+                  Stakeholder & Investor Demo Mode
+                </span>
+                <h2 className="text-lg font-bold font-serif text-white mt-0.5">
+                  1-Click Persona Quick Login
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDemoMode(false)}
+                className="px-3 py-1.5 rounded-xl bg-slate-700/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-600 active:scale-95"
+              >
+                <span>✕</span>
+                <span>Hide Demo Mode</span>
+              </button>
+            </div>
+
+            {onOpenTour && (
+              <div
+                onClick={onOpenTour}
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-teal/20 via-purple-600/20 to-teal/20 border border-teal/40 hover:border-teal text-white flex items-center justify-between transition-all hover:scale-[1.01] cursor-pointer shadow-lg shadow-teal/10 group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber via-coral to-mint p-0.5 flex items-center justify-center flex-shrink-0">
+                    <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-mint animate-pulse" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5 font-serif">
+                      <span>✨ Interactive Persona Tour & Demo Animation</span>
+                      <span className="text-[9px] bg-teal/30 text-mint px-2 py-0.5 rounded-full font-mono">
+                        Explore Flow
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      See how Teacher, Parent, TA, SENCO & Pupil connect through real-world operational loops
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs font-bold text-mint group-hover:translate-x-1 transition-transform flex-shrink-0 ml-2">
+                  <span className="hidden sm:inline">Start Tour</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Select any persona below to authenticate with a live JWT token and experience their dedicated, role-locked dashboard:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+              {demoPersonas.map((p) => {
+                const Icon = p.icon;
+                const isCurrentLoading = demoLoadingRole === p.role;
+                return (
+                  <button
+                    key={p.role}
+                    disabled={demoLoadingRole !== null}
+                    onClick={() => handleDemoLogin(p.role)}
+                    className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 hover:border-slate-600 text-left transition-all hover:scale-[1.01] hover:shadow-lg flex flex-col justify-between group cursor-pointer disabled:opacity-50"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${p.color} text-white flex items-center justify-center shadow-xs`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white group-hover:text-teal transition-colors">
+                            {p.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400">{p.subtitle}</div>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700">
+                        {p.badge}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400 leading-snug line-clamp-2 mb-2">
+                      {p.desc}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 pt-1 border-t border-slate-700/50">
+                      <span className="text-teal group-hover:underline">Launch Persona</span>
+                      {isCurrentLoading ? (
+                        <div className="w-3.5 h-3.5 border-2 border-teal border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-teal group-hover:translate-x-0.5 transition-all" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </main>
+      )}
 
       {/* Footer */}
       <footer className="p-6 text-center text-xs text-slate-500 z-10 border-t border-slate-800/60">

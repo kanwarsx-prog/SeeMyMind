@@ -509,7 +509,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title="Switch to another persona for testing"
           >
             <Repeat className="w-3.5 h-3.5 text-amber-600 dark:text-amber flex-shrink-0" />
-            <span>Switch Account (Demo)</span>
+            <span>Switch Account</span>
           </button>
 
           <button
