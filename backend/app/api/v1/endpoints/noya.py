@@ -98,3 +98,18 @@ def get_ai_audit_runs(
     runs = query.order_by(AIRun.created_at.desc()).limit(limit).all()
     return runs
 
+
+@router.delete("/audit-runs")
+def clear_ai_audit_runs(
+    only_mocks: bool = Query(False, description="If true, only deletes local-mock historical runs"),
+    db: Session = Depends(get_db),
+):
+    """Purge historical AI audit runs for a clean testing slate."""
+    query = db.query(AIRun)
+    if only_mocks:
+        query = query.filter(AIRun.model_name == "local-mock")
+    count = query.delete(synchronize_session=False)
+    db.commit()
+    return {"deleted_count": count}
+
+

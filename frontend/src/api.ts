@@ -386,6 +386,15 @@ export const api = {
     return res.json();
   },
 
+  async clearAIAuditRuns(onlyMocks: boolean = false): Promise<{ deleted_count: number }> {
+    const res = await fetch(`${API_BASE}/noya/audit-runs?only_mocks=${onlyMocks}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to clear audit runs');
+    return res.json();
+  },
+
   async askNoya(childId: string, question: string): Promise<AskNoyaResponse> {
     const res = await fetch(`${API_BASE}/noya/ask`, {
       method: 'POST',

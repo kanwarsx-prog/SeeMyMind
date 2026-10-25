@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Sparkles,
   Layers,
+  Trash2,
 } from 'lucide-react';
 import { AIRunAuditItem, Child } from '../types';
 import { api } from '../api';
@@ -36,6 +37,8 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'prompt' | 'output'>('prompt');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const [purging, setPurging] = useState(false);
 
   // Close on Escape key
   useEffect(() => {
@@ -66,6 +69,21 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
     }
   };
 
+  const handleClearLogs = async () => {
+    if (!window.confirm('Clear all historical AI audit logs? This gives you an empty, clean audit table to verify fresh manual requests.')) {
+      return;
+    }
+    setPurging(true);
+    try {
+      await api.clearAIAuditRuns(false);
+      await fetchRuns();
+    } catch (err) {
+      console.error('Failed to clear logs:', err);
+    } finally {
+      setPurging(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchRuns();
@@ -82,11 +100,11 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
 
   // Aggregated metrics
   const totalRuns = runs.length;
-  const totalInputTokens = runs.reduce((acc, r) => acc + (r.input_tokens || 0), 0);
-  const totalOutputTokens = runs.reduce((acc, r) => acc + (r.output_tokens || 0), 0);
-  const totalTokens = totalInputTokens + totalOutputTokens;
-  const aiGpt4oRuns = runs.filter((r) => r.model_name.includes('gpt-4o') || r.model_name.includes('noya')).length;
+  const liveGpt4oRuns = runs.filter((r) => r.model_name.includes('gpt-4o') || r.model_name.includes('noya-gpt4o'));
+  const liveGpt4oTokens = liveGpt4oRuns.reduce((acc, r) => acc + (r.input_tokens || 0) + (r.output_tokens || 0), 0);
   const standardRuns = runs.filter((r) => r.model_name === 'curriculum-standard').length;
+  const mockRuns = runs.filter((r) => r.model_name === 'local-mock').length;
+  const mockTokens = runs.filter((r) => r.model_name === 'local-mock').reduce((acc, r) => acc + (r.input_tokens || 0) + (r.output_tokens || 0), 0);
 
   const pupilName = child?.preferred_name || child?.first_name || 'Current Pupil';
 
@@ -122,6 +140,15 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleClearLogs}
+              disabled={purging || loading}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Clear historical audit logs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{purging ? 'Purging...' : 'Clear Logs'}</span>
+            </button>
+            <button
               onClick={fetchRuns}
               disabled={loading}
               className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
@@ -144,27 +171,27 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
         <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800">
           <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
-              <span>Total API Logs</span>
+              <span>Audit Entries</span>
               <Terminal className="w-3.5 h-3.5 text-teal-600" />
             </div>
             <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">
               {totalRuns}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Across all endpoints
+              {totalRuns === 50 ? 'Capped at latest 50 entries' : 'Across all endpoints'}
             </div>
           </div>
 
           <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
-              <span>Total Tokens</span>
+              <span>Live Tokens (GPT-4o)</span>
               <Zap className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-              {totalTokens.toLocaleString()}
+              {liveGpt4oTokens.toLocaleString()}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-              {totalInputTokens.toLocaleString()} in &bull; {totalOutputTokens.toLocaleString()} out
+              {mockRuns > 0 ? `+ ${mockTokens.toLocaleString()} historical mock tokens` : '0 live tokens consumed'}
             </div>
           </div>
 
@@ -174,7 +201,7 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-purple-500" />
             </div>
             <div className="text-xl font-bold text-purple-700 dark:text-purple-300 mt-1">
-              {aiGpt4oRuns}
+              {liveGpt4oRuns.length}
             </div>
             <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
               Manual opt-in triggers only
