@@ -60,7 +60,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
   child,
   timeline,
   currentUser,
-  pupils = [],
+  pupils: _pupils = [],
   activeTab: propActiveTab,
   onTabChange,
   onOpenDocModal,
@@ -341,51 +341,6 @@ export const SencoView: React.FC<SencoViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* SENCO Dynamic Header Bar & Contextual Action */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-cardBg p-4 sm:p-5 rounded-2xl border border-borderMain shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>
-                {activeTab === 'provision_map' && 'Inclusion Caseload & Provision Mapping'}
-                {activeTab === 'staff_team' && 'School Staff & Provisioning Directory'}
-                {activeTab === 'review_pack' && 'Statutory EHCP Annual Review Pack'}
-                {activeTab === 'assistant' && 'NOYA AI Evidence & Longitudinal Search'}
-                {activeTab === 'reports_analytics' && 'SEND Operational Reports & Evidence Analytics'}
-              </span>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-                {currentUser?.school_name || provisionMatrix?.school_name || "School Inclusion"}
-              </span>
-            </h2>
-          </div>
-          <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-            {activeTab === 'provision_map' && `${provisionMatrix?.lead_senco || currentUser?.full_name || 'Lead SENCO'} • ${provisionMatrix?.total_send_count ?? pupils.length} SEND pupils, ${provisionMatrix?.high_needs_funding_total || '£0'} High Needs Funding, ${provisionMatrix?.total_ta_hours_weekly ?? 0} weekly 1:1 TA hours.`}
-            {activeTab === 'staff_team' && 'Directly recruit and manage classroom teachers, 1:1 TAs, and specialists assigned to SEND pupils.'}
-            {activeTab === 'review_pack' && (child || reviewPack ? `Statutory Section 44 longitudinal evidence synthesis for ${child?.full_name || reviewPack?.child_name || 'Pupil'}.` : `No pupil registered yet for ${currentUser?.school_name || 'this school'}.`)}
-            {activeTab === 'assistant' && 'Query longitudinal observation history, morning handovers, and provision records with verifiable citations.'}
-            {activeTab === 'reports_analytics' && 'Empirical longitudinal analytics for Local Authority panels, Ofsted compliance, and multi-agency CAMHS evidence.'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {activeTab === 'staff_team' ? (
-            <button
-              onClick={() => setIsAddStaffModalOpen(true)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-teal hover:bg-teal-dark text-white text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>+ Add Staff Member</span>
-            </button>
-          ) : onRegisterChild ? (
-            <button
-              onClick={onRegisterChild}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-teal hover:bg-teal-dark text-white text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-            >
-              <span>📋</span>
-              <span>+ Register SEND Pupil</span>
-            </button>
-          ) : null}
-        </div>
-      </div>
 
       {/* ============================================================== */}
       {/* TAB 1: STATUTORY ANNUAL REVIEW EVIDENCE PACK                   */}

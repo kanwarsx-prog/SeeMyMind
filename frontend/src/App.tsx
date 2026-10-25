@@ -509,8 +509,18 @@ const AppContent: React.FC = () => {
       },
     },
     senco: {
-      title: `Inclusion & SEND Caseload · ${currentUser.full_name}`,
-      subtitle: `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Academic Year 2026/2027`,
+      title: sencoSubTab === 'review_pack' && child
+        ? `Statutory EHCP Review · ${child.preferred_name || child.first_name} ${child.last_name || ''}`
+        : sencoSubTab === 'staff_team'
+        ? `Staff & Inclusion Directory · ${currentUser.full_name}`
+        : sencoSubTab === 'assistant'
+        ? `NOYA Longitudinal Query · ${currentUser.full_name}`
+        : sencoSubTab === 'reports_analytics'
+        ? `SEND Reports & Analytics · ${currentUser.full_name}`
+        : `Inclusion & SEND Caseload · ${currentUser.full_name}`,
+      subtitle: sencoSubTab === 'review_pack' && child
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Section 44 Evidence Synthesis`
+        : `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Academic Year 2026/2027`,
       actionButton: {
         label: 'Register SEND Pupil',
         onClick: () => setIsRegisterModalOpen(true),
