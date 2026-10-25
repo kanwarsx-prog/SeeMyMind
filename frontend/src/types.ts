@@ -180,7 +180,24 @@ export interface PathwayGenerateRequest {
   topic: string;
   learning_objective?: string;
   scaffolding_method?: string;
+  use_ai?: boolean;
 }
+
+export interface AIRunAuditItem {
+  id: string;
+  created_at: string;
+  requester_role: string;
+  prompt_type: string;
+  model_name: string;
+  input_tokens: number;
+  output_tokens: number;
+  latency_ms: number;
+  status: string;
+  child_id?: string | null;
+  input_prompt?: string | null;
+  output_text?: string | null;
+}
+
 
 export interface LessonPathwayResponse {
   child_id: string;

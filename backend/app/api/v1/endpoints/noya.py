@@ -1,11 +1,17 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.ai.rag_service import NoyaRAGService
 from app.core.database import get_db
-from app.schemas.ai import AskNoyaRequest, AskNoyaResponse, MorningBriefingResponse
+from app.models.ai_noya import AIRun
+from app.schemas.ai import (
+    AIRunAuditResponse,
+    AskNoyaRequest,
+    AskNoyaResponse,
+    MorningBriefingResponse,
+)
 from app.schemas.pathway import (
     CurriculumUnit,
     LessonPathwayResponse,
@@ -16,9 +22,22 @@ from app.services.pathway_service import PathwayService
 router = APIRouter()
 
 
+@router.get("/morning-briefing/{child_id}/latest", response_model=MorningBriefingResponse | None)
+def get_latest_morning_briefing(child_id: UUID, db: Session = Depends(get_db)):
+    """Retrieve the latest cached Morning Briefing without triggering an AI API call."""
+    try:
+        return NoyaRAGService.get_latest_morning_briefing(db=db, child_id=child_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch latest morning briefing: {e!s}"
+        )
+
+
 @router.post("/morning-briefing/{child_id}", response_model=MorningBriefingResponse)
 def generate_morning_briefing(child_id: UUID, db: Session = Depends(get_db)):
-    """Generate NOYA's 3-bullet Morning Transition Briefing for classroom staff."""
+    """Generate NOYA's 3-bullet Morning Transition Briefing for classroom staff (Manual AI Trigger)."""
     try:
         return NoyaRAGService.generate_morning_briefing(db=db, child_id=child_id)
     except ValueError as e:
@@ -52,6 +71,7 @@ def generate_lesson_pathway(
 ):
     """Generate a neurodiversity-adapted 4-step scaffolding ladder and TA briefing
     tailored to the pupil's support profile and the lesson objective.
+    Uses instant deterministic scaffolding by default, or GPT-4o if use_ai=True.
     """
     try:
         return PathwayService.generate_pathway(db=db, request=request)
@@ -61,3 +81,20 @@ def generate_lesson_pathway(
         raise HTTPException(
             status_code=500, detail=f"Pathway generation failed: {e!s}"
         )
+
+
+@router.get("/audit-runs", response_model=list[AIRunAuditResponse])
+def get_ai_audit_runs(
+    child_id: UUID | None = Query(None, description="Filter audit logs to a specific pupil"),
+    limit: int = Query(50, ge=1, le=200, description="Max audit entries to return"),
+    db: Session = Depends(get_db),
+):
+    """Exposes all AI/LLM and deterministic scaffolding audit runs with complete
+    input prompts, raw outputs, token usage, and latency for live transparency.
+    """
+    query = db.query(AIRun)
+    if child_id:
+        query = query.filter(AIRun.child_id == child_id)
+    runs = query.order_by(AIRun.created_at.desc()).limit(limit).all()
+    return runs
+

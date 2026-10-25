@@ -28,6 +28,7 @@ import { TaView } from './views/TaView';
 import { ParentPlusView } from './views/ParentPlusView';
 import { AdminView } from './views/AdminView';
 import { PersonaTourModal } from './components/PersonaTourModal';
+import { AITransparencyModal } from './components/AITransparencyModal';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Plus } from 'lucide-react';
 
@@ -53,6 +54,7 @@ const AppContent: React.FC = () => {
   const [isWorksheetModalOpen, setIsWorksheetModalOpen] = useState(false);
   const [activeWorksheet, setActiveWorksheet] = useState('graphs');
   const [isTourModalOpen, setIsTourModalOpen] = useState(false);
+  const [isAITransparencyOpen, setIsAITransparencyOpen] = useState(false);
 
   // Sub-Navigation state per persona
   const [activeNavId, setActiveNavId] = useState<string>('');
@@ -183,7 +185,7 @@ const AppContent: React.FC = () => {
     try {
       const [events, brief, handover] = await Promise.all([
         api.getTimeline(selected.id),
-        api.getMorningBriefing(selected.id).catch(() => null),
+        api.getLatestMorningBriefing(selected.id).catch(() => null),
         api.getLatestHandover(selected.id).catch(() => null),
       ]);
       setTimeline(events);
@@ -214,7 +216,7 @@ const AppContent: React.FC = () => {
 
           const [events, brief, handover, recentInvites] = await Promise.all([
             api.getTimeline(selected.id),
-            api.getMorningBriefing(selected.id).catch(() => null),
+            api.getLatestMorningBriefing(selected.id).catch(() => null),
             api.getLatestHandover(selected.id).catch(() => null),
             api.getRecentInvitations().catch(() => []),
           ]);
@@ -308,7 +310,7 @@ const AppContent: React.FC = () => {
   const handleRefreshBriefing = async () => {
     if (!child) return;
     try {
-      const brief = await api.getMorningBriefing(child.id);
+      const brief = await api.generateMorningBriefing(child.id);
       setBriefing(brief);
     } catch (err) {
       console.error(err);
@@ -596,6 +598,7 @@ const AppContent: React.FC = () => {
               : child?.id
           }
           onSelectChild={handleChildSelect}
+          onOpenAIAudit={() => setIsAITransparencyOpen(true)}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
         />
 
@@ -734,6 +737,12 @@ const AppContent: React.FC = () => {
         userRole={currentUser.role as RoleView}
         schoolName={currentUser.school_name}
         userName={currentUser.full_name}
+      />
+
+      <AITransparencyModal
+        isOpen={isAITransparencyOpen}
+        onClose={() => setIsAITransparencyOpen(false)}
+        child={child}
       />
     </div>
   );

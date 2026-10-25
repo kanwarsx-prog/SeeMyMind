@@ -28,6 +28,7 @@ class PathwayGenerateRequest(BaseModel):
     topic: str
     learning_objective: str | None = None
     scaffolding_method: str | None = None  # e.g. "Concrete-Pictorial-Abstract", "Dual-Coding", "Kinesthetic-Chunking"
+    use_ai: bool = False
 
 
 class LessonPathwayResponse(BaseModel):

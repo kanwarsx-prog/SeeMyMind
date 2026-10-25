@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -32,3 +33,19 @@ class AskNoyaResponse(BaseModel):
     citations: list[EvidenceCitation]
     model_used: str
     latency_ms: int
+
+
+class AIRunAuditResponse(BaseModel):
+    id: UUID
+    created_at: datetime
+    requester_role: str
+    prompt_type: str
+    model_name: str
+    input_tokens: int
+    output_tokens: int
+    latency_ms: int
+    status: str
+    child_id: UUID | None = None
+    input_prompt: str | None = None
+    output_text: str | None = None
+

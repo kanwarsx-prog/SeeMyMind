@@ -74,3 +74,79 @@ def test_noya_ask_rag_query(client):
     )
     assert "answer_markdown" in ask_data
     assert "model_used" in ask_data
+
+
+def test_noya_latest_morning_briefing_and_audit_runs(client):
+    # Setup pupil
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    # 1. Before generating, latest briefing should be None
+    latest_resp = client.get(f"/api/v1/noya/morning-briefing/{child_id}/latest")
+    assert latest_resp.status_code == 200
+    assert latest_resp.json() is None
+
+    # 2. Trigger generation
+    gen_resp = client.post(f"/api/v1/noya/morning-briefing/{child_id}")
+    assert gen_resp.status_code == 200
+
+    # 3. Now latest briefing returns the cached briefing without an AI call
+    latest_resp2 = client.get(f"/api/v1/noya/morning-briefing/{child_id}/latest")
+    assert latest_resp2.status_code == 200
+    assert latest_resp2.json() is not None
+    assert latest_resp2.json()["child_id"] == child_id
+
+    # 4. Check audit runs endpoint
+    audit_resp = client.get(f"/api/v1/noya/audit-runs?child_id={child_id}")
+    assert audit_resp.status_code == 200
+    audit_data = audit_resp.json()
+    assert len(audit_data) >= 1
+    first_run = audit_data[0]
+    assert first_run["prompt_type"] == "MorningBriefing"
+    assert first_run["input_prompt"] is not None
+    assert first_run["output_text"] is not None
+
+
+def test_pathway_deterministic_vs_manual_ai(client):
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    # Deterministic generation (use_ai=False by default)
+    det_resp = client.post(
+        "/api/v1/noya/pathway/generate",
+        json={
+            "child_id": child_id,
+            "subject": "Mathematics",
+            "topic": "Straight Line Graphs & Gradients",
+            "use_ai": False,
+        },
+    )
+    assert det_resp.status_code == 200
+    det_data = det_resp.json()
+    assert len(det_data["steps"]) == 4
+
+    # Verify audit log captures the run
+    audit_resp = client.get(f"/api/v1/noya/audit-runs?child_id={child_id}")
+    assert audit_resp.status_code == 200
+    audit_runs = audit_resp.json()
+    pathway_run = next(r for r in audit_runs if r["prompt_type"] == "LessonPathwayScaffolding")
+    assert pathway_run["input_tokens"] == 0
+    assert pathway_run["output_tokens"] == 0
+    assert pathway_run["model_name"] == "curriculum-standard"
+

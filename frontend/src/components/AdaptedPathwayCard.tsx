@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Printer,
   ShieldCheck,
-  RefreshCw,
   BatteryCharging,
   Layers,
 } from 'lucide-react';
@@ -126,7 +125,12 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       .catch((err) => console.warn('Could not fetch curriculum units, using defaults:', err));
   }, []);
 
-  const handleGenerate = async (topicToUse?: string, subjectToUse?: string, objectiveToUse?: string) => {
+  const handleGenerate = async (
+    topicToUse?: string,
+    subjectToUse?: string,
+    objectiveToUse?: string,
+    useAi: boolean = false
+  ) => {
     if (!child?.id) return;
 
     let targetTopic = topicToUse;
@@ -157,6 +161,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
         subject: targetSubject,
         topic: targetTopic,
         learning_objective: targetObjective,
+        use_ai: useAi,
       });
 
       setPathway(result);
@@ -178,7 +183,8 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     setIsCustomMode(false);
     const unit = curriculumUnits.find((u) => u.id === unitId);
     if (unit) {
-      handleGenerate(unit.title, unit.subject, unit.default_objective);
+      // Deterministic scaffolding: zero tokens, instant response
+      handleGenerate(unit.title, unit.subject, unit.default_objective, false);
     }
   };
 
@@ -238,6 +244,16 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
               <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 border border-teal/20 px-2 py-0.5 rounded-md">
                 CoP 6.44 Scaffolding
               </span>
+              {pathway?.model_used && (pathway.model_used.includes('gpt-4o') || pathway.model_used.includes('noya-gpt4o')) ? (
+                <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>AI Adapted (GPT-4o)</span>
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded-md">
+                  ✓ Standard Scaffold (0 Tokens)
+                </span>
+              )}
             </div>
             <p className="text-[10px] text-textDim dark:text-slate-400 mt-0.5">
               {currentSubject} &bull; {currentTopic} &bull; {pupilName}&apos;s Cognitive Route
@@ -312,12 +328,13 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => handleGenerate()}
+                  onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway}
-                  className="px-3.5 py-2 rounded-xl bg-teal hover:bg-teal-dark text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
+                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0 active:scale-95"
+                  title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Re-Synthesize via NOYA'}</span>
+                  <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
+                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
                 </button>
               </div>
             ) : (
@@ -329,17 +346,18 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   placeholder="e.g. Science — States of matter & particle arrangements"
                   className="flex-1 text-xs px-3 py-2 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleGenerate();
+                    if (e.key === 'Enter') handleGenerate(undefined, undefined, undefined, true);
                   }}
                 />
                 <button
                   type="button"
-                  onClick={() => handleGenerate()}
+                  onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway || !customTopic.trim()}
-                  className="px-3.5 py-2 rounded-xl bg-teal hover:bg-teal-dark text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
+                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0 active:scale-95"
+                  title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Generate Adaptation'}</span>
+                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
                 </button>
               </div>
             )}

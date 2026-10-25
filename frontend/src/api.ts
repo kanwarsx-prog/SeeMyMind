@@ -40,6 +40,7 @@ import {
   CurriculumUnit,
   PathwayGenerateRequest,
   LessonPathwayResponse,
+  AIRunAuditItem,
 } from './types';
 
 const API_BASE =
@@ -351,12 +352,37 @@ export const api = {
   },
 
   // NOYA AI Engine
-  async getMorningBriefing(childId: string): Promise<MorningBriefing> {
+  async getLatestMorningBriefing(childId: string): Promise<MorningBriefing | null> {
+    const res = await fetch(`${API_BASE}/noya/morning-briefing/${childId}/latest`, {
+      headers: getHeaders(),
+    });
+    if (res.status === 404 || res.status === 204) return null;
+    if (!res.ok) return null;
+    return res.json();
+  },
+
+  async generateMorningBriefing(childId: string): Promise<MorningBriefing> {
     const res = await fetch(`${API_BASE}/noya/morning-briefing/${childId}`, {
       method: 'POST',
       headers: getHeaders(),
     });
     if (!res.ok) throw new Error('Failed to generate NOYA briefing');
+    return res.json();
+  },
+
+  // Retain getMorningBriefing as alias to generateMorningBriefing for backwards compatibility
+  async getMorningBriefing(childId: string): Promise<MorningBriefing> {
+    return this.generateMorningBriefing(childId);
+  },
+
+  async getAIAuditRuns(childId?: string, limit: number = 50): Promise<AIRunAuditItem[]> {
+    const query = new URLSearchParams();
+    if (childId) query.set('child_id', childId);
+    query.set('limit', String(limit));
+    const res = await fetch(`${API_BASE}/noya/audit-runs?${query.toString()}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch AI audit runs');
     return res.json();
   },
 

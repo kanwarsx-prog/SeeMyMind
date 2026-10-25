@@ -373,24 +373,42 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 <span className="font-serif text-sm font-semibold text-white tracking-wide">
                   NOYA · Morning Transition Intelligence
                 </span>
+                <span className="text-[10px] font-bold text-mint bg-mint/10 border border-mint/20 px-2 py-0.5 rounded-md hidden sm:inline">
+                  Manual AI Trigger
+                </span>
               </div>
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="flex items-center gap-1.5 text-[11px] font-medium text-white/70 hover:text-white bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Synthesizing...' : 'Re-generate'}</span>
-              </button>
-            </div>
-
-            <div className="text-xs text-white/90 leading-relaxed space-y-2 whitespace-pre-line font-normal">
-              {briefing ? (
-                briefing.summary_markdown
-              ) : (
-                <p>Loading real-time arrival intelligence from Supabase...</p>
+              {briefing && (
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="flex items-center gap-1.5 text-[11px] font-medium text-white/70 hover:text-white bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                >
+                  <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span>{refreshing ? 'Synthesizing...' : '⚡ Re-generate (AI)'}</span>
+                </button>
               )}
             </div>
+
+            {briefing ? (
+              <div className="text-xs text-white/90 leading-relaxed space-y-2 whitespace-pre-line font-normal">
+                {briefing.summary_markdown}
+              </div>
+            ) : (
+              <div className="py-4 text-center space-y-3">
+                <p className="text-xs text-white/80 max-w-md mx-auto leading-relaxed">
+                  Morning transition briefing is on standby. To preserve AI API quota, briefings are generated on-demand grounded in parent morning handover, sleep logs, and EHCP profile.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-mint hover:bg-mint/90 text-navy text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
+                >
+                  <Sparkles className={`w-4 h-4 text-navy ${refreshing ? 'animate-spin' : ''}`} />
+                  <span>{refreshing ? 'Synthesizing with NOYA AI...' : `⚡ Generate Morning Briefing with NOYA AI`}</span>
+                </button>
+              </div>
+            )}
 
             {briefing && briefing.citations && briefing.citations.length > 0 && (
               <div className="mt-3.5 pt-2.5 border-t border-white/10 flex items-center gap-2 text-[10px] text-white/50">

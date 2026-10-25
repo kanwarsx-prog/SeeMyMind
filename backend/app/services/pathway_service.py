@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.ai.client import get_openai_client
 from app.core.config import settings
+from app.models.ai_noya import AIRun
 from app.models.pupil import Child
 from app.schemas.pathway import (
     CurriculumUnit,
@@ -120,11 +122,11 @@ class PathwayService:
         )
         peer_adaptations = PathwayService._build_peer_adaptations(peers)
 
-        # Attempt OpenAI synthesis
+        # Attempt OpenAI synthesis ONLY if explicitly requested by user (opt-in manual trigger)
         client = get_openai_client()
-        if client and settings.OPENAI_API_KEY:
+        if request.use_ai and client and settings.OPENAI_API_KEY:
             try:
-                ai_result = PathwayService._call_openai(
+                ai_data = PathwayService._call_openai(
                     client=client,
                     child_name=child_name,
                     full_name=full_child_name,
@@ -135,7 +137,28 @@ class PathwayService:
                     topic=request.topic,
                     objective=objective,
                 )
-                if ai_result:
+                if ai_data and ai_data.get("parsed"):
+                    ai_result = ai_data["parsed"]
+                    # Log audit record for AI execution
+                    try:
+                        ai_run = AIRun(
+                            child_id=child.id,
+                            requester_role="Teacher",
+                            prompt_type="LessonPathwayScaffolding",
+                            model_name=settings.OPENAI_MODEL or "gpt-4o",
+                            input_prompt=f"SYSTEM:\n{ai_data['system_prompt']}\n\nUSER:\n{ai_data['user_prompt']}",
+                            output_text=ai_data["raw_response"],
+                            input_tokens=ai_data["input_tokens"],
+                            output_tokens=ai_data["output_tokens"],
+                            latency_ms=ai_data["latency_ms"],
+                            status="Success",
+                        )
+                        db.add(ai_run)
+                        db.commit()
+                    except Exception as err:
+                        logger.warning("Could not persist AIRun for pathway: %s", err)
+                        db.rollback()
+
                     return LessonPathwayResponse(
                         child_id=child.id,
                         child_name=child_name,
@@ -157,13 +180,13 @@ class PathwayService:
                         ta_briefing=ai_result.get("ta_briefing", ""),
                         peer_adaptations=peer_adaptations,
                         generated_at=datetime.now(UTC),
-                        model_used="noya-gpt4o",
+                        model_used=settings.OPENAI_MODEL or "gpt-4o",
                     )
             except Exception as e:
                 logger.warning("OpenAI pathway generation encountered an issue, falling back to deterministic synthesis: %s", e)
 
-        # High-fidelity deterministic fallback synthesis
-        return PathwayService._generate_deterministic_pathway(
+        # High-fidelity deterministic fallback / standard synthesis (0 tokens, instant)
+        deterministic_res = PathwayService._generate_deterministic_pathway(
             child_id=child.id,
             child_name=child_name,
             subject=request.subject,
@@ -173,6 +196,32 @@ class PathwayService:
             triggers=triggers,
             peer_adaptations=peer_adaptations,
         )
+
+        # Log zero-token audit record for transparency
+        try:
+            ai_run = AIRun(
+                child_id=child.id,
+                requester_role="Teacher",
+                prompt_type="LessonPathwayScaffolding",
+                model_name="curriculum-standard",
+                input_prompt=f"Subject: {request.subject}\nTopic: {request.topic}\nObjective: {objective}\nPupil Primary Need: {primary_need}",
+                output_text=json.dumps({
+                    "cognitive_rationale": deterministic_res.cognitive_rationale,
+                    "steps": [s.model_dump() for s in deterministic_res.steps],
+                    "ta_briefing": deterministic_res.ta_briefing,
+                }, indent=2),
+                input_tokens=0,
+                output_tokens=0,
+                latency_ms=1,
+                status="Success",
+            )
+            db.add(ai_run)
+            db.commit()
+        except Exception as err:
+            logger.warning("Could not persist deterministic AIRun: %s", err)
+            db.rollback()
+
+        return deterministic_res
 
     @staticmethod
     def _call_openai(
@@ -217,6 +266,7 @@ class PathwayService:
             f"Generate the adapted 4-step pathway and 1:1 TA briefing."
         )
 
+        start_time = time.time()
         response = client.chat.completions.create(
             model=settings.OPENAI_MODEL or "gpt-4o",
             messages=[
@@ -227,11 +277,22 @@ class PathwayService:
             temperature=0.3,
             max_tokens=1000,
         )
+        latency_ms = int((time.time() - start_time) * 1000)
 
         content = response.choices[0].message.content
-        if content:
-            return json.loads(content)
-        return None
+        input_tokens = response.usage.prompt_tokens if response.usage else 0
+        output_tokens = response.usage.completion_tokens if response.usage else 0
+
+        parsed = json.loads(content) if content else None
+        return {
+            "parsed": parsed,
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "raw_response": content or "",
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "latency_ms": latency_ms,
+        }
 
     @staticmethod
     def _generate_deterministic_pathway(

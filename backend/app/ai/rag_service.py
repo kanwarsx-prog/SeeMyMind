@@ -105,9 +105,12 @@ class NoyaRAGService:
 
         # Save audit record in AIRun
         ai_run = AIRun(
+            child_id=child_id,
             requester_role="Teacher",
             prompt_type="MorningBriefing",
             model_name=settings.OPENAI_MODEL if client else "local-mock",
+            input_prompt=prompt,
+            output_text=output_text,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             latency_ms=latency_ms,
@@ -152,6 +155,51 @@ class NoyaRAGService:
             ],
             citations=citations,
             confidence_level="High",
+        )
+
+    @staticmethod
+    def get_latest_morning_briefing(db: Session, child_id: UUID) -> MorningBriefingResponse | None:
+        """Retrieves the most recent cached Morning Briefing for a pupil without consuming any AI tokens."""
+        child = db.query(Child).filter(Child.id == child_id).first()
+        if not child:
+            raise ValueError(f"Pupil with ID {child_id} not found")
+
+        insight = (
+            db.query(AIInsight)
+            .filter(
+                AIInsight.child_id == child_id,
+                AIInsight.insight_type == "MorningBriefing",
+            )
+            .order_by(AIInsight.created_at.desc())
+            .first()
+        )
+        if not insight:
+            return None
+
+        citations = [
+            EvidenceCitation(
+                citation_text=ev.citation_text,
+                snippet=ev.snippet,
+                event_id=ev.event_id,
+                chunk_id=ev.chunk_id,
+            )
+            for ev in insight.evidence_citations
+        ]
+
+        child_name = child.preferred_name or child.first_name
+
+        return MorningBriefingResponse(
+            child_id=child_id,
+            child_name=child_name,
+            briefing_date=insight.created_at.strftime("%Y-%m-%d"),
+            summary_markdown=insight.content_markdown,
+            recommended_focus=[
+                "Sensory check upon arrival",
+                "Check visual timetable",
+                "Acknowledge morning mood",
+            ],
+            citations=citations,
+            confidence_level=insight.confidence_level or "High",
         )
 
     @staticmethod
@@ -203,6 +251,8 @@ class NoyaRAGService:
 
         client = get_openai_client()
         start_time = time.time()
+        input_tokens = 0
+        output_tokens = 0
 
         if client:
             try:
@@ -214,6 +264,9 @@ class NoyaRAGService:
                 answer = response.choices[0].message.content or ""
                 latency_ms = int((time.time() - start_time) * 1000)
                 model_used = settings.OPENAI_MODEL
+                if response.usage:
+                    input_tokens = response.usage.prompt_tokens
+                    output_tokens = response.usage.completion_tokens
             except Exception as e:
                 answer = f"Error generating answer: {e!s}"
                 latency_ms = int((time.time() - start_time) * 1000)
@@ -229,6 +282,27 @@ class NoyaRAGService:
             )
             latency_ms = 12
             model_used = "local-mock"
+            input_tokens = 60
+            output_tokens = 85
+
+        # Immutable Audit Record
+        try:
+            ai_run = AIRun(
+                child_id=child_id,
+                requester_role="SENCO",
+                prompt_type="AskNOYA",
+                model_name=model_used,
+                input_prompt=prompt,
+                output_text=answer,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                latency_ms=latency_ms,
+                status="Success" if model_used != "error" else "Failed",
+            )
+            db.add(ai_run)
+            db.commit()
+        except Exception:
+            db.rollback()
 
         return AskNoyaResponse(
             question=question,
@@ -237,3 +311,4 @@ class NoyaRAGService:
             model_used=model_used,
             latency_ms=latency_ms,
         )
+

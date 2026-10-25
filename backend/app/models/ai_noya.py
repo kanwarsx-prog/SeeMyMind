@@ -86,6 +86,15 @@ class AIRun(TimestampedUUIDModel):
     model_name = Column(String(50), nullable=False)  # "gpt-4o", "gpt-4o-mini"
     prompt_version = Column(String(20), default="1.0")
 
+    child_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("children.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    input_prompt = Column(Text, nullable=True)
+    output_text = Column(Text, nullable=True)
+
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)
     latency_ms = Column(Integer, default=0)
