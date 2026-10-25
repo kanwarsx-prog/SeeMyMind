@@ -571,14 +571,17 @@ const AppContent: React.FC = () => {
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
           actionButton={topBarConfig.actionButton}
-          pupils={currentUser.role === 'senco' ? pupils : undefined}
+          pupils={currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
           overviewLabel={
-            activeView === 'senco'
+            activeView === 'teacher'
+              ? `🏫 ${child?.room_name || 'Room 4'} Classroom Hub (All Pupils)`
+              : activeView === 'senco'
               ? '🏫 Whole-School Provision Register'
               : undefined
           }
           selectedChildId={
-            activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team')
+            (activeView === 'teacher' && teacherSubView === 'matrix') ||
+            (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'))
               ? 'overview'
               : child?.id
           }
