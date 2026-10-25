@@ -125,7 +125,11 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             }`}
           >
             <span>🧒</span>
-            <span>{child?.preferred_name || child?.first_name || 'Pupil'} {child?.last_name || ''} · 1:1 Focus</span>
+            <span>
+              {activeTab === 'focused'
+                ? `${child?.preferred_name || child?.first_name || 'Pupil'} · 1:1 Focus`
+                : '1:1 Pupil Focus'}
+            </span>
           </button>
         </div>
 

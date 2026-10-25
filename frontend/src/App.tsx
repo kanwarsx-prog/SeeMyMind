@@ -154,11 +154,32 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // Switch active pupil
+  // Switch active pupil or return to whole-class/school overview
   const handleChildSelect = async (childId: string) => {
+    if (childId === 'overview') {
+      if (activeView === 'teacher') {
+        setTeacherSubView('matrix');
+        setActiveNavId('room4-matrix');
+      } else if (activeView === 'senco') {
+        setSencoSubTab('provision_map');
+        setActiveNavId('provision_map');
+      }
+      return;
+    }
+
     const selected = pupils.find((p) => p.id === childId);
     if (!selected) return;
     setChild(selected);
+
+    // If teacher selects a pupil from the dropdown, automatically drill down to 1:1 view
+    if (activeView === 'teacher') {
+      setTeacherSubView('focused');
+      setActiveNavId('preflight-handover');
+    } else if (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team')) {
+      setSencoSubTab('review_pack');
+      setActiveNavId('review_pack');
+    }
+
     try {
       const [events, brief, handover] = await Promise.all([
         api.getTimeline(selected.id),
@@ -614,7 +635,19 @@ const AppContent: React.FC = () => {
           pills={topBarConfig.pills}
           actionButton={topBarConfig.actionButton}
           pupils={currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
-          selectedChildId={child?.id}
+          overviewLabel={
+            activeView === 'teacher'
+              ? `🏫 ${child?.room_name || 'Room 4'} Classroom Hub (All Pupils)`
+              : activeView === 'senco'
+              ? '🏫 Whole-School Provision Register'
+              : undefined
+          }
+          selectedChildId={
+            (activeView === 'teacher' && teacherSubView === 'matrix') ||
+            (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'))
+              ? 'overview'
+              : child?.id
+          }
           onSelectChild={handleChildSelect}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
           onOpenTour={() => setIsTourModalOpen(true)}

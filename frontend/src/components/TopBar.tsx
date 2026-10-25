@@ -14,6 +14,7 @@ interface TopBarProps {
   };
   pupils?: Child[];
   selectedChildId?: string;
+  overviewLabel?: string;
   onSelectChild?: (childId: string) => void;
   onToggleMobileMenu?: () => void;
   onOpenTour?: () => void;
@@ -26,6 +27,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   actionButton,
   pupils,
   selectedChildId,
+  overviewLabel,
   onSelectChild,
   onToggleMobileMenu,
   onOpenTour,
@@ -67,6 +69,11 @@ export const TopBar: React.FC<TopBarProps> = ({
               onChange={(e) => onSelectChild(e.target.value)}
               className="text-xs font-semibold text-textMain bg-transparent border-none focus:outline-none cursor-pointer max-w-[140px] sm:max-w-none truncate"
             >
+              {overviewLabel && (
+                <option value="overview" className="bg-cardBg text-textMain font-bold">
+                  {overviewLabel}
+                </option>
+              )}
               {pupils.map((p) => (
                 <option key={p.id} value={p.id} className="bg-cardBg text-textMain">
                   Pupil: {p.full_name || `${p.first_name} ${p.last_name}`} ({p.year_group || 'SEND'})
