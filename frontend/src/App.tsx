@@ -31,6 +31,7 @@ import { ParentPlusView } from './views/ParentPlusView';
 import { AdminView } from './views/AdminView';
 import { PersonaTourModal } from './components/PersonaTourModal';
 import { AITransparencyModal } from './components/AITransparencyModal';
+import { NoyaCopilotDrawer } from './components/NoyaCopilotDrawer';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Plus, BookOpen } from 'lucide-react';
 
@@ -58,6 +59,13 @@ const AppContent: React.FC = () => {
   const [activePathwayData, setActivePathwayData] = useState<LessonPathwayResponse | null>(null);
   const [isTourModalOpen, setIsTourModalOpen] = useState(false);
   const [isAITransparencyOpen, setIsAITransparencyOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [copilotInitialQuery, setCopilotInitialQuery] = useState<string | undefined>(undefined);
+
+  const handleOpenCopilot = (query?: string) => {
+    if (query) setCopilotInitialQuery(query);
+    setIsCopilotOpen(true);
+  };
 
   // Sub-Navigation state per persona
   const [activeNavId, setActiveNavId] = useState<string>('');
@@ -617,6 +625,8 @@ const AppContent: React.FC = () => {
           }
           onSelectChild={handleChildSelect}
           onOpenAIAudit={() => setIsAITransparencyOpen(true)}
+          onToggleCopilot={() => setIsCopilotOpen((prev) => !prev)}
+          isCopilotOpen={isCopilotOpen}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
         />
 
@@ -677,6 +687,7 @@ const AppContent: React.FC = () => {
               onOpenDocModal={() => setIsDocModalOpen(true)}
               onOpenIncidentModal={() => setIsIncidentModalOpen(true)}
               onRegisterChild={() => setIsRegisterModalOpen(true)}
+              onOpenCopilot={handleOpenCopilot}
             />
           )}
 
@@ -769,6 +780,16 @@ const AppContent: React.FC = () => {
         isOpen={isAITransparencyOpen}
         onClose={() => setIsAITransparencyOpen(false)}
         child={child}
+      />
+
+      <NoyaCopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        child={child}
+        activeView={activeView}
+        currentUser={currentUser}
+        initialQuery={copilotInitialQuery}
+        onClearInitialQuery={() => setCopilotInitialQuery(undefined)}
       />
     </div>
   );

@@ -101,6 +101,42 @@ export interface AskNoyaResponse {
   latency_ms: number;
 }
 
+export interface NoyaChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface NoyaActionCard {
+  card_type: 'contact_card' | 'handover_card' | 'de_escalation_card' | string;
+  title: string;
+  subtitle?: string;
+  primary_action?: {
+    type: 'phone' | 'email' | 'url';
+    label: string;
+    value: string;
+  };
+  details?: Record<string, any>;
+  badges?: string[];
+  restricted?: boolean;
+}
+
+export interface NoyaCopilotChatRequest {
+  child_id?: string;
+  active_view?: string;
+  message: string;
+  history?: NoyaChatMessage[];
+}
+
+export interface NoyaCopilotChatResponse {
+  answer_markdown: string;
+  action_card?: NoyaActionCard | null;
+  suggested_followups?: string[];
+  tool_called?: string | null;
+  citations?: EvidenceCitation[];
+  model_used?: string;
+  latency_ms?: number;
+}
+
 export interface IncidentDetail {
   id: string;
   event_id: string;

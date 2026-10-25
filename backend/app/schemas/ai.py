@@ -49,3 +49,25 @@ class AIRunAuditResponse(BaseModel):
     input_prompt: str | None = None
     output_text: str | None = None
 
+
+class NoyaChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
+
+class NoyaCopilotChatRequest(BaseModel):
+    child_id: UUID | None = None
+    active_view: str | None = None
+    message: str
+    history: list[NoyaChatMessage] = []
+
+
+class NoyaCopilotChatResponse(BaseModel):
+    answer_markdown: str
+    action_card: dict | None = None
+    suggested_followups: list[str] = []
+    tool_called: str | None = None
+    citations: list[EvidenceCitation] = []
+    model_used: str = "noya-agent"
+    latency_ms: int = 0
+

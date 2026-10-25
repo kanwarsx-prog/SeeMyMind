@@ -54,6 +54,7 @@ interface SencoViewProps {
   onOpenDocModal?: () => void;
   onOpenIncidentModal?: () => void;
   onRegisterChild?: () => void;
+  onOpenCopilot?: (initialQuery?: string) => void;
 }
 
 export const SencoView: React.FC<SencoViewProps> = ({
@@ -66,6 +67,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
   onOpenDocModal,
   onOpenIncidentModal,
   onRegisterChild,
+  onOpenCopilot,
 }) => {
   const [activeTab, setActiveTab] = useState<SencoTab>(
     propActiveTab || 'review_pack'
@@ -305,6 +307,10 @@ export const SencoView: React.FC<SencoViewProps> = ({
   const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+    if (onOpenCopilot) {
+      onOpenCopilot(query);
+      return;
+    }
     if (!child?.id) {
       alert('Please register or select a pupil first.');
       return;
@@ -821,9 +827,21 @@ export const SencoView: React.FC<SencoViewProps> = ({
           <div className="lg:col-span-7 space-y-4">
             {/* Ask NOYA RAG & Evidence Tool */}
             <div className="card p-5 border-l-4 border-l-teal">
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
-                <Sparkles className="w-4 h-4 text-teal" />
-                <h3 className="text-sm font-bold text-navy">Ask NOYA &bull; SEND Longitudinal Evidence Retrieval</h3>
+              <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-teal" />
+                  <h3 className="text-sm font-bold text-navy">Ask NOYA &bull; SEND Longitudinal Evidence Retrieval</h3>
+                </div>
+                {onOpenCopilot && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenCopilot(query)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal border border-teal-200 text-xs font-bold transition-all cursor-pointer active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-teal" />
+                    <span>Open Copilot Drawer</span>
+                  </button>
+                )}
               </div>
               <p className="text-xs text-gray-500 mb-4 leading-relaxed">
                 Ask questions across {child?.preferred_name || child?.first_name || 'the pupil'}&apos;s observation history, morning handovers, and EHCP provision records. Answers include verifiable citations.

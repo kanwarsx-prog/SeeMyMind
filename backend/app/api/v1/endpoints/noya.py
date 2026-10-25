@@ -3,6 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app import models
+from app.api.deps import get_current_user
 from app.ai.rag_service import NoyaRAGService
 from app.core.database import get_db
 from app.models.ai_noya import AIRun
@@ -11,6 +13,8 @@ from app.schemas.ai import (
     AskNoyaRequest,
     AskNoyaResponse,
     MorningBriefingResponse,
+    NoyaCopilotChatRequest,
+    NoyaCopilotChatResponse,
 )
 from app.schemas.pathway import (
     CurriculumMetadataResponse,
@@ -61,6 +65,25 @@ def ask_noya(request: AskNoyaRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"NOYA RAG failed: {e!s}")
+
+
+@router.post("/copilot/chat", response_model=NoyaCopilotChatResponse)
+def copilot_chat(
+    request: NoyaCopilotChatRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Context-aware conversational copilot chat powered by Approach C agentic tool calling."""
+    try:
+        return NoyaRAGService.copilot_chat(
+            db=db,
+            current_user=current_user,
+            request=request,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"NOYA Copilot failed: {e!s}")
 
 
 @router.get("/pathway/curriculum-units", response_model=list[CurriculumUnit])

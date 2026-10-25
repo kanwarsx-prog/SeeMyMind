@@ -3,6 +3,8 @@ import {
   ChildEvent,
   MorningBriefing,
   AskNoyaResponse,
+  NoyaCopilotChatRequest,
+  NoyaCopilotChatResponse,
   TransitionLogDetail,
   ChildRegistrationRequest,
   ChildRegistrationResponse,
@@ -404,6 +406,19 @@ export const api = {
       body: JSON.stringify({ child_id: childId, question }),
     });
     if (!res.ok) throw new Error('Failed to query NOYA');
+    return res.json();
+  },
+
+  async copilotChat(payload: NoyaCopilotChatRequest): Promise<NoyaCopilotChatResponse> {
+    const res = await fetch(`${API_BASE}/noya/copilot/chat`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to communicate with NOYA copilot');
+    }
     return res.json();
   },
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCheck, Menu, ShieldCheck } from 'lucide-react';
+import { UserCheck, Menu, ShieldCheck, Sparkles } from 'lucide-react';
 import { Child } from '../types';
 
 interface TopBarProps {
@@ -11,6 +11,8 @@ interface TopBarProps {
     icon?: React.ReactNode;
   };
   onOpenAIAudit?: () => void;
+  onToggleCopilot?: () => void;
+  isCopilotOpen?: boolean;
   pupils?: Child[];
   selectedChildId?: string;
   overviewLabel?: string;
@@ -23,6 +25,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   subtitle,
   actionButton,
   onOpenAIAudit,
+  onToggleCopilot,
+  isCopilotOpen,
   pupils,
   selectedChildId,
   overviewLabel,
@@ -79,6 +83,22 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Side: Primary Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {onToggleCopilot && (
+            <button
+              onClick={onToggleCopilot}
+              type="button"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
+                isCopilotOpen
+                  ? 'bg-teal text-white ring-2 ring-teal/30 shadow-sm'
+                  : 'bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal dark:text-teal-300 border border-teal-200 dark:border-teal-800'
+              }`}
+              title="Open NOYA Context-Aware Copilot"
+            >
+              <Sparkles className={`w-4 h-4 ${isCopilotOpen ? 'text-amber-300' : 'text-teal animate-pulse'}`} />
+              <span>✨ Ask NOYA</span>
+            </button>
+          )}
+
           {onOpenAIAudit && (
             <button
               onClick={onOpenAIAudit}
