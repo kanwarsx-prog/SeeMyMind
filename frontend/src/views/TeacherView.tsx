@@ -408,10 +408,10 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 onClick={handleRefresh}
                 disabled={refreshing}
                 className="flex items-center gap-1.5 text-xs font-bold bg-mint hover:bg-mint/90 text-navy px-3 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50 active:scale-95"
-                title="Ask NOVA to synthesize fresh morning transition intelligence"
+                title="Ask NOYA to synthesize fresh morning transition intelligence"
               >
                 <Sparkles className={`w-3.5 h-3.5 text-navy ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Synthesizing...' : 'Ask NOVA'}</span>
+                <span>{refreshing ? 'Synthesizing...' : 'Ask NOYA'}</span>
               </button>
             </div>
 
@@ -431,7 +431,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-mint hover:bg-mint/90 text-navy text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
                 >
                   <Sparkles className={`w-4 h-4 text-navy ${refreshing ? 'animate-spin' : ''}`} />
-                  <span>{refreshing ? 'Synthesizing with NOVA...' : '✨ Ask NOVA for Morning Briefing'}</span>
+                  <span>{refreshing ? 'Synthesizing with NOYA...' : '✨ Ask NOYA for Morning Briefing'}</span>
                 </button>
               </div>
             )}
