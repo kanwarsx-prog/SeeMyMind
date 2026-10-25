@@ -481,13 +481,6 @@ const AppContent: React.FC = () => {
         <LoginView
           onLoginSuccess={handleLoginSuccess}
           onOpenInvitation={handleOpenParentOnboarding}
-          onOpenTour={() => setIsTourModalOpen(true)}
-        />
-        <PersonaTourModal
-          isOpen={isTourModalOpen}
-          onClose={() => setIsTourModalOpen(false)}
-          onSelectRole={handleTourSelectRole}
-          initialRole="teacher"
         />
         <ParentOnboardingModal
           isOpen={isParentOnboardingOpen}
@@ -785,8 +778,10 @@ const AppContent: React.FC = () => {
       <PersonaTourModal
         isOpen={isTourModalOpen}
         onClose={() => setIsTourModalOpen(false)}
+        userRole={currentUser.role as RoleView}
+        schoolName={currentUser.school_name}
+        userName={currentUser.full_name}
         onSelectRole={handleTourSelectRole}
-        initialRole={activeView}
       />
     </div>
   );

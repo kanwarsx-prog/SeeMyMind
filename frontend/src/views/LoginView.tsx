@@ -7,10 +7,9 @@ import { ThemeToggle } from '../components/ThemeToggle';
 interface LoginViewProps {
   onLoginSuccess: (user: UserProfile) => void;
   onOpenInvitation?: (token: string) => void;
-  onOpenTour?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvitation, onOpenTour }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvitation }) => {
   const [tab, setTab] = useState<'portal' | 'pupil'>('portal');
   const [loading, setLoading] = useState(false);
   const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
@@ -194,16 +193,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
             <span>{showDemoMode ? '✕ Hide Demo' : '✨ Demo Mode'}</span>
           </button>
 
-          {onOpenTour && (
-            <button
-              onClick={onOpenTour}
-              className="text-xs px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-teal/40 bg-teal/20 hover:bg-teal/30 text-mint font-bold transition-all flex items-center gap-1.5 flex-shrink-0 shadow-xs active:scale-95 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber animate-pulse" />
-              <span className="hidden sm:inline">Interactive Tour</span>
-              <span className="sm:hidden">Tour</span>
-            </button>
-          )}
+
 
           <button
             onClick={() => setShowTokenInput(!showTokenInput)}
@@ -662,35 +652,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
               </button>
             </div>
 
-            {onOpenTour && (
-              <div
-                onClick={onOpenTour}
-                className="p-3.5 rounded-2xl bg-gradient-to-r from-teal/20 via-purple-600/20 to-teal/20 border border-teal/40 hover:border-teal text-white flex items-center justify-between transition-all hover:scale-[1.01] cursor-pointer shadow-lg shadow-teal/10 group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber via-coral to-mint p-0.5 flex items-center justify-center flex-shrink-0">
-                    <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-mint animate-pulse" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5 font-serif">
-                      <span>✨ Interactive Persona Tour & Demo Animation</span>
-                      <span className="text-[9px] bg-teal/30 text-mint px-2 py-0.5 rounded-full font-mono">
-                        Explore Flow
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-300">
-                      See how Teacher, Parent, TA, SENCO & Pupil connect through real-world operational loops
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-bold text-mint group-hover:translate-x-1 transition-transform flex-shrink-0 ml-2">
-                  <span className="hidden sm:inline">Start Tour</span>
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            )}
+
 
             <p className="text-xs text-slate-400 leading-relaxed">
               Select any persona below to authenticate with a live JWT token and experience their dedicated, role-locked dashboard:

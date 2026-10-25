@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RoleView } from '../types';
 import {
   Sparkles,
@@ -7,1246 +7,878 @@ import {
   HeartHandshake,
   User,
   Users,
-  Play,
-  Pause,
+  Building2,
   ChevronRight,
   ChevronLeft,
   X,
-  ArrowRight,
   CheckCircle2,
   Clock,
   BatteryCharging,
   Layers,
   Award,
   Bell,
-  Smartphone,
-  Check,
-  Building2,
+  Sun,
+  BookOpen,
+  Zap,
+  Target,
 } from 'lucide-react';
 
-interface PersonaTourModalProps {
+export interface PersonaTourModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectRole: (role: RoleView) => void;
-  initialRole?: RoleView;
+  userRole?: RoleView;
+  schoolName?: string;
+  userName?: string;
+  onSelectRole?: (role: RoleView) => void;
 }
 
-interface StepSimulation {
-  time: string;
-  action: string;
-  detail: string;
-  overlayBadge: string;
-  overlayText: string;
-  simType: string;
-}
-
-interface PersonaSlide {
-  role: RoleView;
-  name: string;
-  roleTitle: string;
-  avatarEmoji: string;
+interface TourStep {
+  stepNumber: number;
+  stepLabel: string;
+  title: string;
   subtitle: string;
-  color: string;
+  icon: any;
+  visualPreview: {
+    badge: string;
+    badgeColor: string;
+    title: string;
+    items: {
+      label: string;
+      value: string;
+      accent?: boolean;
+    }[];
+    highlightText: string;
+  };
+  whyItMatters: string;
+  timeSaved: string;
+}
+
+interface RoleTourConfig {
+  role: RoleView;
+  roleTitle: string;
+  personaName: string;
+  avatarEmoji: string;
+  themeColor: string;
   badgeBg: string;
   badgeText: string;
-  badgeBorder: string;
   icon: any;
-  quote: string;
-  realWorldChallenge: string;
-  solution: string;
-  loopSteps: StepSimulation[];
-  superpowers: {
-    icon: any;
-    title: string;
-    description: string;
-  }[];
-  launchButtonText: string;
+  mission: string;
+  steps: TourStep[];
 }
 
-const PERSONA_SLIDES: PersonaSlide[] = [
-  {
+const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
+  teacher: {
     role: 'teacher',
-    name: 'Ms Clara Johnson',
-    roleTitle: 'Classroom Teacher · Year 5',
+    roleTitle: 'Classroom Teacher',
+    personaName: 'Classroom Teacher Hub',
     avatarEmoji: '👩‍🏫',
-    subtitle: 'St. Jude’s Inclusive Academy · Room 4',
-    color: '#5E4D9A',
-    badgeBg: 'bg-purple-50',
-    badgeText: 'text-purple-900',
-    badgeBorder: 'border-purple-200',
+    themeColor: '#5E4D9A',
+    badgeBg: 'bg-purple-100 text-purple-900 border-purple-200',
+    badgeText: 'text-purple-700',
     icon: GraduationCap,
-    quote: '"I have 28 pupils and 4 with high-need EHCPs. I cannot spend 20 minutes reading disorganized notes before morning registration."',
-    realWorldChallenge: 'Mornings are chaotic; teachers need transition context in under 15 seconds without administrative overload.',
-    solution: 'See My Mind gives Ms Johnson a 1-click morning handover acknowledgment, instant alerts (assembly noise, skipped breakfast), and tailored curriculum differentiation.',
-    loopSteps: [
+    mission: 'Empowering morning readiness in under 15 seconds, pre-flight handovers, and tailored subject differentiation.',
+    steps: [
       {
-        time: '8:48 AM',
-        action: 'Review Pre-Flight Handover',
-        detail: 'Reads Dana’s note: Phoenix had restless sleep & skipped breakfast. Noise defenders are in his backpack.',
-        overlayBadge: '⚡ ZERO ADMIN OVERLOAD',
-        overlayText: 'Teacher scans critical sensory status in under 10 seconds before the morning bell.',
-        simType: 'teacher_handover',
-      },
-      {
-        time: '8:50 AM',
-        action: '1-Click Acknowledge Handover',
-        detail: 'Clicks "✓ Acknowledge Handover" which sends an instant read receipt straight to Dana’s phone at home.',
-        overlayBadge: '📲 INSTANT HOME LOOP',
-        overlayText: 'Instantly relieves parental anxiety at home; Dana receives confirmation that noise defenders are ready.',
-        simType: 'teacher_ack',
-      },
-      {
-        time: '9:45 AM',
-        action: 'Differentiate Lesson Live',
-        detail: 'Launches visual game design maths slopes on Phoenix’s desk while running whole-class algebra.',
-        overlayBadge: '🎯 COGNITIVE OVERLOAD PREVENTED',
-        overlayText: 'Phoenix accesses Year 5 algebra through his video game design hook without anxiety.',
-        simType: 'teacher_worksheet',
-      },
-    ],
-    superpowers: [
-      {
+        stepNumber: 1,
+        stepLabel: 'Classroom Hub',
+        title: '8:45 AM Classroom Hub & Readiness Triage',
+        subtitle: 'Whole-class visibility across all SEND learners before registration begins',
         icon: Sun,
-        title: 'Pre-Flight Morning Loop',
-        description: 'Instant home-to-classroom handover with read receipts that relieve morning parent anxiety.',
+        visualPreview: {
+          badge: '🏫 Room 4 Classroom Hub (Default View)',
+          badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          title: 'Whole-Class Morning Readiness Cockpit',
+          items: [
+            { label: 'Archie Evans (Yr 4)', value: '🟢 Sensory Battery 85% · Ready for Day', accent: true },
+            { label: 'Riya Patel (Yr 4)', value: '🟢 Visual Task Cards Placed · TA Grant assigned' },
+            { label: 'Aisha Khan (Yr 4)', value: '🟡 Arrival Caution: Skipped breakfast at home' },
+            { label: 'Phoenix Carter (Yr 5)', value: '🟡 Restless sleep · Noise defenders in bag' },
+          ],
+          highlightText: 'Scans your entire differentiated cohort in 10 seconds. No manual paper logs.',
+        },
+        whyItMatters: 'Teachers start the day with complete situational awareness of sensory triggers before the bell rings, eliminating unexpected morning dysregulation.',
+        timeSaved: 'Saves 15–20 minutes of morning paper checking.',
       },
       {
-        icon: Layers,
-        title: 'Room 4 SEND Matrix',
-        description: 'Cohort-level sensory adaptations, triggers to avoid, and 60-second supply teacher briefings.',
+        stepNumber: 2,
+        stepLabel: 'Pre-Flight Handover',
+        title: '1-Click Pre-Flight Handover & Reassurance Loop',
+        subtitle: 'Instant home-to-school communication without telephone tag',
+        icon: Bell,
+        visualPreview: {
+          badge: '📲 Home-to-Classroom Handover',
+          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          title: 'Morning Note from Dana Carter (Parent)',
+          items: [
+            { label: 'Sleep Quality', value: 'Disturbed sleep (woke at 4:30 AM)' },
+            { label: 'Sensory Flag', value: 'Anxious about loud Hall Assembly' },
+            { label: 'Adult Action', value: 'Ear defenders are packed in side pocket', accent: true },
+          ],
+          highlightText: 'Clicking [✓ Acknowledge Handover] instantly pings Dana’s phone with a read receipt.',
+        },
+        whyItMatters: 'Parents get instant peace of mind knowing the teacher is aware, and teachers receive critical context before any classroom meltdown occurs.',
+        timeSaved: 'Zero telephone tag or handwritten sticky notes.',
       },
       {
+        stepNumber: 3,
+        stepLabel: '1:1 Pupil Drill-Down',
+        title: 'Universal 1:1 Pupil Drill-Down & De-Escalation Palette',
+        subtitle: 'Individual sensory timelines, triggers to avoid, and step-by-step calming protocols',
+        icon: Target,
+        visualPreview: {
+          badge: '🧒 1:1 Focus Mode (Sticky Breadcrumb)',
+          badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+          title: 'De-Escalation Protocol & Calming Strategies',
+          items: [
+            { label: 'Level 1 (Early Warning)', value: 'Provide quiet corner with weighted lap cushion' },
+            { label: 'Level 2 (Rising Anxiety)', value: 'Deploy visual 5-minute sand timer; lower classroom lights' },
+            { label: 'Level 3 (Dysregulated)', value: 'Offer green sensory card; transition to sensory room', accent: true },
+          ],
+          highlightText: 'Sticky [← Back to Classroom Hub] breadcrumb returns to the full class anytime.',
+        },
+        whyItMatters: 'Every pupil card has a 1-click drill-down. Supply teachers and classroom staff have immediate access to validated calming steps.',
+        timeSaved: 'Eliminates frantic searching through bulky paper IEP folders.',
+      },
+      {
+        stepNumber: 4,
+        stepLabel: 'Subject Adaptations',
+        title: 'Live Subject Adaptations & Visual Task Cards',
+        subtitle: 'Filtering lesson differentiation across Maths, English, and Science side-by-side',
         icon: BookOpen,
-        title: 'Adapted Lesson Pathways',
-        description: 'Real-world visual worksheets (game slopes, fraction bars) that prevent cognitive dysregulation.',
+        visualPreview: {
+          badge: '🎯 Curriculum Differentiation',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          title: 'Subject Adaptation Matrix (Room 4)',
+          items: [
+            { label: 'Maths Adaptation', value: 'Visual game design slope angles (Phoenix hook)', accent: true },
+            { label: 'English Adaptation', value: 'Chunked reading strips with dyslexic color overlay' },
+            { label: 'Science Adaptation', value: 'Hands-on water density practical with pictorial task cards' },
+          ],
+          highlightText: 'Subject filters let you differentiate worksheets for all 4 SEND pupils in one view.',
+        },
+        whyItMatters: 'Prevents cognitive overload and classroom disengagement by meeting pupils at their exact sensory and cognitive processing level.',
+        timeSaved: 'Cuts lesson adaptation planning time in half.',
       },
     ],
-    launchButtonText: '🚀 Explore as Classroom Teacher (Ms Johnson)',
   },
-  {
-    role: 'parent',
-    name: 'Dana Carter',
-    roleTitle: 'Parent & Guardian',
-    avatarEmoji: '👩',
-    subtitle: "Phoenix's Home Hub · Zero Child Burden",
-    color: '#B87A2A',
-    badgeBg: 'bg-amber-50',
-    badgeText: 'text-amber-900',
-    badgeBorder: 'border-amber-200',
-    icon: HeartHandshake,
-    quote: '"Phoenix masks all day at school, then collapses in tears at home. I felt helpless until I could see his sensory battery and send 20-second handovers."',
-    realWorldChallenge: 'Parents bear the brunt of after-school restraint collapse without knowing how their child’s day unfolded.',
-    solution: 'Zero child logging burden: Dana logs morning context in 20 seconds, receives classroom read receipts, and gets a 3:15pm Decompression recipe for a peaceful evening.',
-    loopSteps: [
-      {
-        time: '8:47 AM',
-        action: 'Send 20-Second Handover',
-        detail: 'Logs sleep disturbance and skipped breakfast on her phone while walking Phoenix to school.',
-        overlayBadge: '💡 ZERO CHILD LOGGING BURDEN',
-        overlayText: 'Phoenix is never forced to self-report or fill out clinical forms. Adult-proxy inputs only.',
-        simType: 'parent_form',
-      },
-      {
-        time: '8:50 AM',
-        action: 'Instant Read Receipt',
-        detail: 'Phone updates: "✓ Read by Ms Johnson at 8:50am · Noise defenders ready at Room 4 door".',
-        overlayBadge: '🛡️ PARENT ANXIETY ELIMINATED',
-        overlayText: 'Dana has complete peace of mind knowing the classroom team is prepared before assembly.',
-        simType: 'parent_notification',
-      },
-      {
-        time: '3:15 PM',
-        action: '3:15 PM Decompression Bridge',
-        detail: 'Checks sensory battery gauge (48%) and follows the arrival recipe: low light, quiet snack, no interrogation.',
-        overlayBadge: '🧘 RESTRAINT COLLAPSE DECODED',
-        overlayText: 'Actionable home recipes prevent afternoon meltdowns after heavy school masking.',
-        simType: 'parent_bridge',
-      },
-    ],
-    superpowers: [
-      {
-        icon: BatteryCharging,
-        title: '3:15 PM Decompression Bridge',
-        description: 'Sensory battery depletion gauge, restraint collapse decoder, and gentle after-school arrival recipes.',
-      },
-      {
-        icon: Clock,
-        title: '24-Hour Handover Loop',
-        description: '2-way read receipts between home and school that keep both worlds calibrated.',
-      },
-      {
-        icon: Pill,
-        title: 'Medication & Routine Digest',
-        description: '30-day pediatric evidence reports correlating sleep, meds, and attention dips for CAMHS reviews.',
-      },
-    ],
-    launchButtonText: '🚀 Explore as Parent (Dana Carter)',
-  },
-  {
-    role: 'ta',
-    name: 'Melissa Grant',
-    roleTitle: '1-to-1 Teaching Assistant',
-    avatarEmoji: '🤝',
-    subtitle: 'Operational Boots on the Ground · Year 5',
-    color: '#2A6B62',
-    badgeBg: 'bg-teal-50',
-    badgeText: 'text-teal-900',
-    badgeBorder: 'border-teal-200',
-    icon: Users,
-    quote: '"I need to know exactly what to do at high-risk transition moments before dysregulation escalates, and log quick wins without leaving the child."',
-    realWorldChallenge: 'TAs are on the frontline during high-sensory transitions but often lack timely handover information or fast logging tools.',
-    solution: 'A dedicated high-risk schedule with time-stamped alerts (door arrival, assembly buddy pairing, 10am med dip crackers) and rapid <45s micro-logging.',
-    loopSteps: [
-      {
-        time: '8:55 AM',
-        action: 'Classroom Door Arrival',
-        detail: 'Positions at classroom door; hands Phoenix noise-cancelling headphones before he enters crowd noise.',
-        overlayBadge: '⚡ PROACTIVE SENSORY BUFFER',
-        overlayText: 'TA intercepts acoustic overload before Phoenix ever reaches the noisy hall.',
-        simType: 'ta_arrival',
-      },
-      {
-        time: '9:05 AM',
-        action: 'Assembly Buddy Pairing',
-        detail: 'Ensures Jake O’Brien sits alongside Phoenix near the quiet exit corridor.',
-        overlayBadge: '🤝 PEER SAFETY NET',
-        overlayText: 'Peer buddy seating provides natural social safety without segregating Phoenix.',
-        simType: 'ta_assembly',
-      },
-      {
-        time: '10:00 AM',
-        action: 'Medication Dip Preemption',
-        detail: 'Offers crackers and water during expected medication dip window, preventing hunger-induced anxiety.',
-        overlayBadge: '💊 PHYSIOLOGICAL CALIBRATION',
-        overlayText: 'Restlessness at 10:00am is identified as blood sugar/med dip rather than defiance.',
-        simType: 'ta_meds',
-      },
-    ],
-    superpowers: [
-      {
-        icon: Clock,
-        title: 'High-Risk Schedule',
-        description: 'Flagged timetable identifying peak sensory triggers and exact de-escalation actions to take.',
-      },
-      {
-        icon: FileText,
-        title: 'Rapid Micro-Logs (<45s)',
-        description: 'Fast ABC and strategy logs synced directly to Supabase without taking focus away from the child.',
-      },
-      {
-        icon: Award,
-        title: 'Breakthrough Recording',
-        description: 'Instantly logs independent wins to boost pupil self-esteem and feed the longitudinal review pack.',
-      },
-    ],
-    launchButtonText: '🚀 Explore as 1:1 TA (Melissa Grant)',
-  },
-  {
+  senco: {
     role: 'senco',
-    name: 'Amara Okafor',
     roleTitle: 'SENCO & Inclusion Lead',
-    avatarEmoji: '🛡️',
-    subtitle: 'Whole-School SEND · 34 Learners',
-    color: '#1A3A4A',
-    badgeBg: 'bg-indigo-50',
-    badgeText: 'text-indigo-900',
-    badgeBorder: 'border-indigo-200',
+    personaName: 'SENCO Provision Register',
+    avatarEmoji: '🗂️',
+    themeColor: '#1B8A8A',
+    badgeBg: 'bg-teal-100 text-teal-900 border-teal-200',
+    badgeText: 'text-teal-700',
     icon: ShieldCheck,
-    quote: '"Statutory EHCP annual reviews take hours of manual paper chasing across teachers and parents. I need a single source of longitudinal truth."',
-    realWorldChallenge: 'Managing provision across 34 SEND learners and statutory legal deadlines under intense Ofsted scrutiny.',
-    solution: 'Live 34-pupil caseload provision mapping, automated high-needs block funding tracking (£148k), and 1-click Section 44 Statutory Review Pack generation with verified citations.',
-    loopSteps: [
+    mission: 'Whole-school provision mapping, statutory EHCP review tracking, and multi-agency compliance evidence.',
+    steps: [
       {
-        time: '9:00 AM',
-        action: 'Monitor Whole-School Caseload',
-        detail: 'Reviews 34 SEND learners, high-needs block allocation, and upcoming 30-day statutory deadlines.',
-        overlayBadge: '📊 WHOLE-SCHOOL GOVERNANCE',
-        overlayText: 'Instant oversight of £148,600 High-Needs Funding and 185h weekly TA hours.',
-        simType: 'senco_matrix',
-      },
-      {
-        time: '1:00 PM',
-        action: 'Generate Section 44 Review Pack',
-        detail: 'Compiles 3 months of adult-verified observations, strategy success rates, and attendance for LA meetings.',
-        overlayBadge: '📜 1-CLICK LEGAL COMPLIANCE',
-        overlayText: 'Assembles Section B needs, Section E outcomes, and Section F provisions in seconds.',
-        simType: 'senco_review',
-      },
-      {
-        time: '3:30 PM',
-        action: 'NOYA Longitudinal RAG Query',
-        detail: 'Asks AI: "What sensory accommodations produced the highest maths engagement for Phoenix this term?"',
-        overlayBadge: '🧠 EVIDENCE-GROUNDED AI',
-        overlayText: 'Every AI synthesis is anchored to verified adult observations with clickable citations.',
-        simType: 'senco_rag',
-      },
-    ],
-    superpowers: [
-      {
+        stepNumber: 1,
+        stepLabel: 'Provision Register',
+        title: 'Whole-School Provision Register & Live Metrics',
+        subtitle: 'Dynamic caseload tracking across Statutory EHCP, SEN Support, and Monitoring tiers',
         icon: Layers,
-        title: 'Whole-School Provision Matrix',
-        description: '34-pupil register with EHCP vs K-tier filters, TA hours tracking, and funding allocations.',
+        visualPreview: {
+          badge: '🏛️ Whole-School Inclusion Cockpit',
+          badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+          title: 'Dynamic Caseload Telemetry Ribbon',
+          items: [
+            { label: 'Total SEND Caseload', value: '34 Active Pupils (Live School Scoped)', accent: true },
+            { label: 'Statutory EHCPs', value: '12 Pupils (Tier 3 Funded)' },
+            { label: 'SEN Support (K)', value: '22 Pupils with Targeted Interventions' },
+            { label: 'High Needs Funding', value: '£182,500 tracked across active provisions' },
+          ],
+          highlightText: 'Zero hardcoding: Metrics calculate directly from your school’s live pupil records.',
+        },
+        whyItMatters: 'School leaders and Ofsted inspectors see accurate, real-time provision numbers without relying on outdated termly Excel spreadsheets.',
+        timeSaved: 'Saves 4+ hours per week of manual data collation.',
       },
       {
-        icon: BookOpen,
-        title: 'Section 44 Statutory Review Pack',
-        description: 'Full legal pack generation combining Section B needs, Section E outcomes, and Section F provisions.',
+        stepNumber: 2,
+        stepLabel: 'Statutory Reviews',
+        title: '30-Day Statutory EHCP Review Countdown & Evidence',
+        subtitle: 'Automated deadline tracking and one-click Local Authority evidence compilation',
+        icon: Clock,
+        visualPreview: {
+          badge: '📅 Statutory Compliance Guard',
+          badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          title: 'Annual Review Evidence Dossier',
+          items: [
+            { label: 'Upcoming Review', value: 'Phoenix Carter · Review due in 14 days', accent: true },
+            { label: 'Section E Evidence', value: '48 teacher micro-logs & TA observations compiled' },
+            { label: 'Pupil Voice', value: 'Completed emoji check-ins & strengths summary' },
+          ],
+          highlightText: 'Clicking [Export Evidence Pack] formats an Ofsted/LA-ready PDF review dossier.',
+        },
+        whyItMatters: 'Guarantees the school never breaches statutory 12-month annual review deadlines and provides empirical evidence of provision impact.',
+        timeSaved: 'Compiles review evidence packs in seconds instead of days.',
       },
       {
-        icon: Sparkles,
-        title: 'NOYA Evidence Assistant',
-        description: 'Evidence-grounded RAG intelligence querying months of timeline logs with exact source citations.',
-      },
-    ],
-    launchButtonText: '🚀 Explore as SENCO (Amara Okafor)',
-  },
-  {
-    role: 'child',
-    name: 'Phoenix Carter',
-    roleTitle: 'Pupil Voice · Year 5',
-    avatarEmoji: '🧒',
-    subtitle: 'Strengths-First Learner · St. Jude’s',
-    color: '#C5503E',
-    badgeBg: 'bg-rose-50',
-    badgeText: 'text-rose-900',
-    badgeBorder: 'border-rose-200',
-    icon: User,
-    quote: '"I like building levels in my video game. Maths made no sense until Ms Johnson showed me gradients are just climbing hills!"',
-    realWorldChallenge: 'SEND children are often alienated by clinical assessment forms or forced into tedious text-based self-reporting.',
-    solution: 'Gentle, accessible agency: 5-emoji mood check-in, visual star wins, interactive game slope worksheets, and direct connection to his dream career (Game Designer).',
-    loopSteps: [
-      {
-        time: '8:50 AM',
-        action: '1-Tap Emoji Check-In',
-        detail: 'Taps 🙂 (Good) or 😰 (Overwhelmed) on a giant visual card without forced typing or pressure.',
-        overlayBadge: '🧒 STRESS-FREE SELF-ADVOCACY',
-        overlayText: 'Pupil voice is gathered effortlessly without clinical intimidation or test anxiety.',
-        simType: 'child_emoji',
+        stepNumber: 3,
+        stepLabel: 'Pupil Registration',
+        title: 'Universal Pupil Onboarding & 72-Hour Parent Invites',
+        subtitle: '4-step child registration wizard and secure family portal onboarding tokens',
+        icon: User,
+        visualPreview: {
+          badge: '✨ Universal Child Registration',
+          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+          title: 'New SEND Pupil Onboarding Wizard',
+          items: [
+            { label: 'Step 1: Demographics', value: 'Full name, DOB, Year group, Classroom' },
+            { label: 'Step 2: Needs Category', value: 'Autism Spectrum (ASC), ADHD, Dyspraxia' },
+            { label: 'Step 3: De-escalation', value: 'Triggers, calming strategies, emergency steps', accent: true },
+            { label: 'Step 4: Parent Invite', value: 'Generate 72-Hour SMS/Email token' },
+          ],
+          highlightText: 'Invited parents access their dedicated hub without creating administrative clutter.',
+        },
+        whyItMatters: 'Zero friction to onboard new joiners. New pupils are immediately mapped into classroom readiness matrixes.',
+        timeSaved: 'Onboards a child and family in under 3 minutes.',
       },
       {
-        time: '9:45 AM',
-        action: 'Interactive Game Slopes',
-        detail: 'Moves Rise/Run sliders on the coordinate plane to help a climber scale the mountain.',
-        overlayBadge: '🎮 GAMIFIED VISUAL STEM',
-        overlayText: 'Translates abstract linear equations into game design slopes matching his passion.',
-        simType: 'child_slope',
-      },
-      {
-        time: '3:00 PM',
-        action: 'Star Wins & Superpowers',
-        detail: 'Sees teacher praise and his progress towards his game design dream career unlocked on his dashboard.',
-        overlayBadge: '⭐ INTRINSIC RESILIENCE',
-        overlayText: 'Daily micro-breakthroughs build self-worth and confidence that carry over into home.',
-        simType: 'child_star',
-      },
-    ],
-    superpowers: [
-      {
-        icon: Sun,
-        title: '1-Tap Emoji Check-In',
-        description: 'Friendly, stress-free self-advocacy without tedious form-filling or cognitive load.',
-      },
-      {
-        icon: BookOpen,
-        title: 'Visual Game Design Worksheets',
-        description: 'Interactive STEM learning tailored to special interests (gradient slopes, visual fraction models).',
-      },
-      {
-        icon: Award,
-        title: 'Star Superpower Celebrations',
-        description: 'Visual evidence of daily wins that builds intrinsic confidence and self-regulation.',
-      },
-    ],
-    launchButtonText: '🚀 Explore as Pupil (Phoenix Carter)',
-  },
-  {
-    role: 'admin',
-    name: 'Dr. Alistair Vance',
-    roleTitle: 'Admin',
-    avatarEmoji: '🏛️',
-    subtitle: 'Platform & Multi-School Governance',
-    color: '#3B4261',
-    badgeBg: 'bg-indigo-50',
-    badgeText: 'text-indigo-900',
-    badgeBorder: 'border-indigo-200',
-    icon: Building2,
-    quote: '"Managing SEND compliance across multiple schools without strict data boundaries is a massive legal and safeguarding liability."',
-    realWorldChallenge: 'Organisations risk catastrophic data leaks if pupil records, clinical notes, or safeguarding files are commingled across schools.',
-    solution: 'Strict tenant isolation per school, delegated school-level leadership to Lead SENCOs, and an immutable audit trail for full GDPR and KCSIE governance.',
-    loopSteps: [
-      {
-        time: '9:00 AM',
-        action: 'Onboard New School Tenant',
-        detail: 'Onboards Highland Park Academy with DfE URN and isolated database schema.',
-        overlayBadge: '🏛️ STRICT DATA SEGREGATION',
-        overlayText: 'School tenants operate in sealed silos; School A staff can never query or leak School B pupils.',
-        simType: 'admin_onboard',
-      },
-      {
-        time: '9:30 AM',
-        action: 'Appoint Lead SENCO',
-        detail: 'Provisions Dr Marcus Thorne as Lead SENCO with delegated staff provisioning, pupil registration, and Section 44 pack authority.',
-        overlayBadge: '🛡️ RESPONSIBILITY DELEGATION',
-        overlayText: 'Operational SEND admissions and staff recruitment are delegated to school SENCOs while Admins retain governance oversight.',
-        simType: 'admin_appoint',
-      },
-      {
-        time: '11:00 AM',
-        action: 'Inspect Compliance Audit Log',
-        detail: 'Reviews immutable, time-stamped audit entries tracking all role provisioning, admissions, and access checks.',
-        overlayBadge: '📜 IMMUTABLE AUDIT TRAIL',
-        overlayText: 'Zero-tamper audit logs satisfy UK Data Protection Act 2018 and DfE statutory compliance.',
-        simType: 'admin_audit',
-      },
-    ],
-    superpowers: [
-      {
-        icon: Building2,
-        title: 'Multi-School Tenant Hub',
-        description: 'Provision discrete school environments with independent URNs, phases, and staff rosters.',
-      },
-      {
+        stepNumber: 4,
+        stepLabel: 'Staff Deployment',
+        title: 'Staff Directory & TA Allocation Tracking',
+        subtitle: 'Transparent weekly 1:1 hours, classroom allocations, and supply teacher briefing',
         icon: Users,
-        title: 'Cross-School Role Delegation',
-        description: 'Appoint Lead SENCOs, Teachers, and TAs with least-privilege safeguarding boundaries.',
-      },
-      {
-        icon: FileText,
-        title: 'GDPR & KCSIE Compliance Audit',
-        description: 'Cryptographically ordered audit trail tracking all data access, admissions, and account modifications.',
+        visualPreview: {
+          badge: '🤝 Team Deployment & Resource Allocation',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          title: 'Teaching Assistant Deployment Matrix',
+          items: [
+            { label: 'Melissa Grant (TA)', value: '25.0 hrs/wk · Room 4 (Phoenix 1:1 + Archie support)', accent: true },
+            { label: 'Sarah Jenkins (TA)', value: '18.5 hrs/wk · Room 2 (Speech & Language loops)' },
+            { label: 'Supply Teacher Mode', value: '60-second classroom sensory brief ready' },
+          ],
+          highlightText: 'Ensures High Needs funding hours are deployed directly into classroom support.',
+        },
+        whyItMatters: 'Provides complete accountability for Local Authority funding audits and ensures TAs are allocated where the need is highest.',
+        timeSaved: 'Full audit transparency with zero spreadsheet recalculations.',
       },
     ],
-    launchButtonText: '🚀 Explore as Admin (Dr. Alistair Vance)',
   },
-];
-
-// Fallback helper icons
-function Sun(props: any) {
-  return <Clock {...props} />;
-}
-function BookOpen(props: any) {
-  return <Award {...props} />;
-}
-function Pill(props: any) {
-  return <HeartHandshake {...props} />;
-}
-function FileText(props: any) {
-  return <Layers {...props} />;
-}
+  parent: {
+    role: 'parent',
+    roleTitle: 'Parent & Family',
+    personaName: 'Parent Hub & Reassurance Loop',
+    avatarEmoji: '👨‍👩‍👧',
+    themeColor: '#B87A2A',
+    badgeBg: 'bg-amber-100 text-amber-900 border-amber-200',
+    badgeText: 'text-amber-700',
+    icon: HeartHandshake,
+    mission: 'Bridging home and school with 20-second morning handovers, real-time reassurance, and peaceful evenings.',
+    steps: [
+      {
+        stepNumber: 1,
+        stepLabel: 'Morning Handover',
+        title: '20-Second Morning Handover Before 8:45 AM',
+        subtitle: 'Adult-proxy context: zero paperwork and zero child self-reporting burden',
+        icon: Sun,
+        visualPreview: {
+          badge: '☀️ Quick Morning Check-In (Mobile Friendly)',
+          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          title: 'Morning Pre-Flight Note',
+          items: [
+            { label: 'Rest & Sleep', value: 'Restless sleep (woke up upset at 4:30 AM)' },
+            { label: 'Nutrition', value: 'Skipped toast; ate a cereal bar in car' },
+            { label: 'Sensory Flag', value: 'Hall assembly noise caution (ear defenders packed)', accent: true },
+          ],
+          highlightText: 'Takes under 20 seconds while walking to school. Child never fills out clinical forms.',
+        },
+        whyItMatters: 'Teachers walk into registration knowing exactly how your child’s morning began, preventing misinterpretation of dysregulated behavior.',
+        timeSaved: 'Replaces stressful morning emails and gate conversations.',
+      },
+      {
+        stepNumber: 2,
+        stepLabel: 'Read-Receipts',
+        title: 'Real-Time Classroom Read-Receipts',
+        subtitle: 'Instant reassurance that your child’s teacher has your note',
+        icon: CheckCircle2,
+        visualPreview: {
+          badge: '📲 Closed-Loop Reassurance',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          title: 'Classroom Acknowledgment Alert',
+          items: [
+            { label: 'Teacher Status', value: '✓ Acknowledged by Ms Johnson at 8:50 AM', accent: true },
+            { label: 'Action Taken', value: 'Ear defenders placed at desk; quiet seating arranged' },
+            { label: 'Peace of Mind', value: 'No need to worry while you are at work' },
+          ],
+          highlightText: 'Immediate confirmation removes the anxious dread of "did they get my note?"',
+        },
+        whyItMatters: 'Relieves parental anxiety during the work day and establishes trust through mutual transparency.',
+        timeSaved: 'Eliminates mid-morning phone calls to the school reception.',
+      },
+      {
+        stepNumber: 3,
+        stepLabel: 'Evening Decompression',
+        title: '3:15 PM Decompression Recipe & Tonight Tips',
+        subtitle: 'Preventing after-school restraint collapse with transition tips',
+        icon: BatteryCharging,
+        visualPreview: {
+          badge: '🌙 Peaceful Evening Recipe',
+          badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          title: 'Tonight’s Transition Recipe',
+          items: [
+            { label: 'Day Summary', value: 'High cognitive effort in Maths; regulated in Science' },
+            { label: 'Tonight’s Tip', value: 'Allow 20 mins low-sensory quiet time before questions', accent: true },
+            { label: 'Recommended Action', value: 'Offer preferred crunchy snack & dim bedroom lighting' },
+          ],
+          highlightText: 'Targeted tips based on how the school day actually unfolded.',
+        },
+        whyItMatters: 'Children who mask all day at school often collapse at home. Evidence-based tonight tips give families a peaceful evening.',
+        timeSaved: 'Prevents evening meltdowns and family distress.',
+      },
+      {
+        stepNumber: 4,
+        stepLabel: 'Superpowers',
+        title: 'ParentPlus Neurodivergent Strengths Pathway',
+        subtitle: 'Celebrating visual-spatial, coding, and systems-thinking superpowers',
+        icon: Award,
+        visualPreview: {
+          badge: '🌟 Strength-Based Education',
+          badgeColor: 'bg-coral/20 text-coral border-coral/40',
+          title: 'Child Strengths & Superpowers',
+          items: [
+            { label: 'Identified Superpower', value: 'Visual-Spatial Architecture & Pattern Recognition', accent: true },
+            { label: 'Classroom Win', value: 'Led water density science experiment with visual cards' },
+            { label: 'Home Activity Idea', value: 'Minecraft redstone engineering challenge' },
+          ],
+          highlightText: 'Focusing on what your child can do, not just their clinical deficits.',
+        },
+        whyItMatters: 'Builds pupil self-esteem and fosters a collaborative partnership between parents and educators.',
+        timeSaved: 'Transforms clinical IEP meetings into positive strength discussions.',
+      },
+    ],
+  },
+  ta: {
+    role: 'ta',
+    roleTitle: 'Teaching Assistant',
+    personaName: 'TA Support & Micro-Logging',
+    avatarEmoji: '🤝',
+    themeColor: '#059669',
+    badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+    badgeText: 'text-emerald-700',
+    icon: Users,
+    mission: 'Providing targeted 1:1 support blocks, sensory calm palettes, and rapid <45s observational micro-logging.',
+    steps: [
+      {
+        stepNumber: 1,
+        stepLabel: 'Transition Schedule',
+        title: 'Time-Stamped Morning Risk Schedule',
+        subtitle: 'Targeted support blocks during high-risk sensory transitions',
+        icon: Clock,
+        visualPreview: {
+          badge: '⏰ Targeted Support Schedule',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          title: 'Daily Support Schedule',
+          items: [
+            { label: '9:15 – 10:15 AM', value: 'Room 4 Maths: Phoenix (Visual Quest Task Cards)', accent: true },
+            { label: '10:15 – 10:30 AM', value: 'Playground Transition: Sensory check & Archie support' },
+            { label: '11:00 – 12:00 PM', value: 'Room 2 Literacy: Guided small-group phonetic loop' },
+          ],
+          highlightText: 'Clear time-stamped schedule ensures your 1:1 hours target the highest-risk moments.',
+        },
+        whyItMatters: 'TAs know exactly where to position themselves for optimal impact without waiting for verbal instructions.',
+        timeSaved: 'Prevents confusion during busy lesson transitions.',
+      },
+      {
+        stepNumber: 2,
+        stepLabel: 'Micro-Logging',
+        title: '<45-Second Observational Micro-Logs',
+        subtitle: 'Rapid notes on strategies that worked vs triggers to avoid',
+        icon: Zap,
+        visualPreview: {
+          badge: '📝 Quick Micro-Log (<45 Seconds)',
+          badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+          title: 'Live Observation Note',
+          items: [
+            { label: 'Trigger Observed', value: 'Unexpected fire drill bell vibration' },
+            { label: 'Strategy Deployed', value: 'Noise defenders + 3-minute hallway sensory reset', accent: true },
+            { label: 'Outcome', value: 'Regulated successfully; returned to desk in 4 mins' },
+          ],
+          highlightText: 'Submit directly from a tablet or phone in under 45 seconds.',
+        },
+        whyItMatters: 'Provides real-time behavioral data for the SENCO and annual review packs without requiring hours of after-school paperwork.',
+        timeSaved: 'Saves 30 minutes of end-of-day report writing.',
+      },
+      {
+        stepNumber: 3,
+        stepLabel: 'Sensory Palettes',
+        title: 'Instant Sensory & De-Escalation Palettes',
+        subtitle: 'Quick-access calm strategies tailored to each child',
+        icon: BatteryCharging,
+        visualPreview: {
+          badge: '🧘 Calming Tool Palette',
+          badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+          title: 'Verified Sensory Accommodations',
+          items: [
+            { label: 'Visual Timer', value: 'Use 5-min blue sand timer for task pacing' },
+            { label: 'Deep Pressure', value: 'Deploy 2kg weighted lap pad during seated reading', accent: true },
+            { label: 'Break Pass', value: 'Allow 2-min hallway water cooler walk without interrogation' },
+          ],
+          highlightText: 'Actionable calming strategies validated by the child’s SENCO and occupational therapist.',
+        },
+        whyItMatters: 'Gives the TA immediate confidence and clarity during moments of pupil distress.',
+        timeSaved: 'De-escalates classroom incidents in minutes.',
+      },
+    ],
+  },
+  child: {
+    role: 'child',
+    roleTitle: 'Pupil Voice',
+    personaName: 'Pupil Voice & Visual Quests',
+    avatarEmoji: '🧒',
+    themeColor: '#E06A55',
+    badgeBg: 'bg-rose-100 text-rose-900 border-rose-200',
+    badgeText: 'text-rose-700',
+    icon: User,
+    mission: 'A child-friendly space to share feelings with emojis, conquer visual quests, and celebrate daily wins.',
+    steps: [
+      {
+        stepNumber: 1,
+        stepLabel: 'Daily Mood Check-In',
+        title: 'Emoji Mood & Sensory Battery Check-In',
+        subtitle: '10-second check-in to let teachers know how you are feeling',
+        icon: Sun,
+        visualPreview: {
+          badge: '⭐ Daily Emoji Check-In',
+          badgeColor: 'bg-coral/20 text-coral border-coral/40',
+          title: 'How do you feel this morning?',
+          items: [
+            { label: 'Mood Choices', value: '😄 Great · 🙂 OK · 😐 Tired · 😟 Overwhelmed', accent: true },
+            { label: 'Energy Battery', value: '🔋 Sensory Battery: 75% Charged' },
+            { label: 'Superpower Goal', value: 'Master today’s Maths video game quest' },
+          ],
+          highlightText: 'No long sentences or scary clinical questions. Just fun emojis.',
+        },
+        whyItMatters: 'Pupils feel heard and validated without feeling singled out or interrogated in front of peers.',
+        timeSaved: 'Completed in under 10 seconds.',
+      },
+      {
+        stepNumber: 2,
+        stepLabel: 'Visual Quests',
+        title: 'Visual Quest Worksheets & Special Interests',
+        subtitle: 'Learning connected to things you love (coding, gaming, science)',
+        icon: BookOpen,
+        visualPreview: {
+          badge: '🎮 Visual Task Cards',
+          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+          title: 'Maths Quest: Video Game Slope Angles',
+          items: [
+            { label: 'Quest Step 1', value: 'Calculate the ramp jump angle (45 degrees)', accent: true },
+            { label: 'Quest Step 2', value: 'Estimate speed needed to clear the water hazard' },
+            { label: 'Reward Badge', value: 'Unlocks "Master Physics Builder" Gold Trophy' },
+          ],
+          highlightText: 'Breaks complex tasks into small, bite-sized visual steps.',
+        },
+        whyItMatters: 'Makes learning accessible and exciting by connecting directly to the child’s natural interests.',
+        timeSaved: 'Eliminates task avoidance and maths anxiety.',
+      },
+      {
+        stepNumber: 3,
+        stepLabel: 'Celebrating Wins',
+        title: 'My Daily Wins & Achievement Trophies',
+        subtitle: 'Celebrating every milestone with home and school',
+        icon: Award,
+        visualPreview: {
+          badge: '🏆 Hall of Trophies',
+          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          title: 'Recent Trophies Earned',
+          items: [
+            { label: 'Science Win', value: 'Demonstrated water density practical leadership', accent: true },
+            { label: 'Kindness Star', value: 'Helped Archie with his visual timetable' },
+            { label: 'Focus Master', value: 'Completed 20 minutes of independent coding' },
+          ],
+          highlightText: 'Wins are shared directly with parents to celebrate at home tonight.',
+        },
+        whyItMatters: 'Reinforces positive identity, builds resilience, and reminds every learner of their worth.',
+        timeSaved: 'Creates lasting pride and self-confidence.',
+      },
+    ],
+  },
+  admin: {
+    role: 'admin',
+    roleTitle: 'Platform Governance',
+    personaName: 'Admin Hub & Tenancy',
+    avatarEmoji: '🏛️',
+    themeColor: '#3B82F6',
+    badgeBg: 'bg-blue-100 text-blue-900 border-blue-200',
+    badgeText: 'text-blue-700',
+    icon: Building2,
+    mission: 'Multi-school tenant provisioning, role-based access control, and UK GDPR statutory audit logs.',
+    steps: [
+      {
+        stepNumber: 1,
+        stepLabel: 'School Onboarding',
+        title: 'Multi-School Tenant Provisioning in 60 Seconds',
+        subtitle: 'Zero-hardcoded school setup with isolated database schemas',
+        icon: Building2,
+        visualPreview: {
+          badge: '🏢 Multi-Academy Trust Onboarding',
+          badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+          title: 'Registered School Tenants',
+          items: [
+            { label: 'St. Jude’s Inclusive Academy', value: 'URN: 104523 · 34 SEND Pupils Active' },
+            { label: 'Poverest Primary School', value: 'URN: 120894 · Lead SENCO: Priyanka Thakur', accent: true },
+            { label: 'Data Isolation', value: 'Strict tenant scoping via Users.school_id' },
+          ],
+          highlightText: 'Newly provisioned schools start with clean zero-states and isolated caseloads.',
+        },
+        whyItMatters: 'Enables MAT (Multi-Academy Trust) central teams to provision and govern dozens of schools with complete multi-tenant safety.',
+        timeSaved: 'Onboards a new school in 60 seconds.',
+      },
+      {
+        stepNumber: 2,
+        stepLabel: 'Role Provisioning',
+        title: 'Staff Hierarchy & Role-Based Access Control',
+        subtitle: 'Provisioning Headteachers, SENCOs, Teachers, and TAs securely',
+        icon: Users,
+        visualPreview: {
+          badge: '🔒 Role-Based Access Control',
+          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+          title: 'Staff Account Management',
+          items: [
+            { label: 'SENCO Role', value: 'Full statutory register, funding, and export rights' },
+            { label: 'Teacher Role', value: 'Classroom Hub, pre-flight handovers, lesson adaptations', accent: true },
+            { label: 'TA Role', value: 'Micro-logs, sensory palettes, and transition schedules' },
+          ],
+          highlightText: 'Users only see data relevant to their role and allocated classroom cohort.',
+        },
+        whyItMatters: 'Protects sensitive pupil safeguarding and medical records under UK GDPR and DfE statutory guidelines.',
+        timeSaved: 'Instant account provisioning with automated security tokens.',
+      },
+      {
+        stepNumber: 3,
+        stepLabel: 'GDPR Audit Trail',
+        title: 'Statutory Safeguarding & GDPR Audit Trail',
+        subtitle: 'Cryptographic time-stamped activity logging for full compliance',
+        icon: ShieldCheck,
+        visualPreview: {
+          badge: '🛡️ UK GDPR & DfE Compliance Log',
+          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+          title: 'System Activity Audit Stream',
+          items: [
+            { label: '10:45 AM', value: 'Priyanka Thakur (SENCO) opened Poverest Provision Matrix', accent: true },
+            { label: '09:15 AM', value: 'Ms Johnson acknowledged pre-flight handover note for Phoenix' },
+            { label: '08:48 AM', value: 'Dana Carter submitted 20-second morning handover' },
+          ],
+          highlightText: 'Every access and export is time-stamped and tamper-evident.',
+        },
+        whyItMatters: 'Guarantees complete legal compliance during statutory Local Authority reviews and Information Commissioner Office (ICO) audits.',
+        timeSaved: 'Instant 1-click audit reports for Trust governance meetings.',
+      },
+    ],
+  },
+  parentplus: {
+    role: 'parentplus',
+    roleTitle: 'ParentPlus Superpowers',
+    personaName: 'ParentPlus Strengths & Future Pathways',
+    avatarEmoji: '🌟',
+    themeColor: '#D97706',
+    badgeBg: 'bg-amber-100 text-amber-900 border-amber-200',
+    badgeText: 'text-amber-700',
+    icon: Award,
+    mission: 'Unlocking neurodivergent strengths, visual-spatial architecture, and future development pathways.',
+    steps: [
+      {
+        stepNumber: 1,
+        stepLabel: 'Strength Profiling',
+        title: 'Cognitive Superpowers & Strengths Profiling',
+        subtitle: 'Shifting from clinical deficit models to visual and systems-thinking gifts',
+        icon: Award,
+        visualPreview: {
+          badge: '🌟 Cognitive Superpower Radar',
+          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          title: 'Validated Superpower Profile',
+          items: [
+            { label: 'Spatial Architecture', value: 'Exceptional 3D rotational reasoning (Top 5%)', accent: true },
+            { label: 'Hyperfocus Deep Work', value: 'Can sustain 45+ mins when building redstone logic' },
+            { label: 'Pattern Recognition', value: 'Spots anomalies in complex data matrices instantly' },
+          ],
+          highlightText: 'Empowers parents with positive identity language for IEP and annual reviews.',
+        },
+        whyItMatters: 'Builds pupil confidence and self-advocacy by proving their neurodivergence includes genuine cognitive advantages.',
+        timeSaved: 'Transforms defensive clinical reviews into inspiring strength conversations.',
+      },
+      {
+        stepNumber: 2,
+        stepLabel: 'Home Activities',
+        title: 'Strength-Led Home Learning Activities',
+        subtitle: 'Engaging challenges tailored to your child’s special interest hooks',
+        icon: BookOpen,
+        visualPreview: {
+          badge: '💡 Home Learning Quests',
+          badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+          title: 'Recommended Home Quests',
+          items: [
+            { label: 'Minecraft Engineering', value: 'Design a water-filtration elevator circuit', accent: true },
+            { label: 'Visual Coding', value: 'Scratch block physics simulation of ramp friction' },
+            { label: 'Lego Spatial Geometry', value: 'Construct modular bridge prototypes to test load' },
+          ],
+          highlightText: 'Activities turn hyperfocus into foundational STEM and computer science skills.',
+        },
+        whyItMatters: 'Removes homework conflict and task avoidance by working with your child’s dopamine pathways instead of fighting them.',
+        timeSaved: 'Zero tears over evening homework.',
+      },
+      {
+        stepNumber: 3,
+        stepLabel: 'Future Careers',
+        title: 'Future Pathways & Career Alignment',
+        subtitle: 'Connecting childhood hyperfocus to high-value future professions',
+        icon: Layers,
+        visualPreview: {
+          badge: '🚀 Future Horizons Matrix',
+          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+          title: 'Career Trajectory Pathways',
+          items: [
+            { label: 'Software Architecture', value: 'High fit for systems thinking and debugging logic', accent: true },
+            { label: 'Game Engine Design', value: 'Ideal for 3D spatial simulation and procedural physics' },
+            { label: 'Cybersecurity Analyst', value: 'Excells at intuitive pattern recognition and threat hunting' },
+          ],
+          highlightText: 'Helps families envision a thriving, independent adulthood for their child.',
+        },
+        whyItMatters: 'Replaces parental fear about the future with tangible, exciting career horizons grounded in their child’s natural cognitive gifts.',
+        timeSaved: 'Provides long-term clarity and reassurance.',
+      },
+    ],
+  },
+};
 
 export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   isOpen,
   onClose,
+  userRole = 'teacher',
+  schoolName,
+  userName,
   onSelectRole,
-  initialRole = 'teacher',
 }) => {
-  const [currentIdx, setCurrentIdx] = useState<number>(() => {
-    const found = PERSONA_SLIDES.findIndex((s) => s.role === initialRole);
-    return found !== -1 ? found : 0;
-  });
-  const [activeStep, setActiveStep] = useState<number>(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
-  const [stepProgress, setStepProgress] = useState<number>(0);
+  // Active role being viewed in the tour
+  const [selectedRole, setSelectedRole] = useState<RoleView>(userRole);
+  // Current active step within this role's tour
+  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
 
-  // References for auto-scrolling
-  const stepsContainerRef = useRef<HTMLDivElement>(null);
-  const stepCardsRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  // Reset active step when changing persona
-  useEffect(() => {
-    setActiveStep(0);
-    setStepProgress(0);
-  }, [currentIdx]);
-
+  // Sync selectedRole when modal opens or userRole changes
   useEffect(() => {
     if (isOpen) {
-      const found = PERSONA_SLIDES.findIndex((s) => s.role === initialRole);
-      if (found !== -1) setCurrentIdx(found);
-      setActiveStep(0);
-      setStepProgress(0);
+      setSelectedRole(userRole || 'teacher');
+      setActiveStepIndex(0);
     }
-  }, [isOpen, initialRole]);
-
-  // Auto-scrolling the active step into view
-  useEffect(() => {
-    if (!isOpen) return;
-    const targetCard = stepCardsRef.current[activeStep];
-    if (targetCard && stepsContainerRef.current) {
-      targetCard.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
-    }
-  }, [activeStep, isOpen]);
-
-  // Animated progression timer (advances step every 4.5 seconds with progress bar)
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isOpen && isAutoPlaying) {
-      interval = setInterval(() => {
-        setStepProgress((prev) => {
-          if (prev >= 100) {
-            setActiveStep((currStep) => {
-              const nextStep = currStep + 1;
-              if (nextStep >= PERSONA_SLIDES[currentIdx].loopSteps.length) {
-                // If loop finished for this persona, advance persona slide
-                setCurrentIdx((prevIdx) => (prevIdx + 1) % PERSONA_SLIDES.length);
-                return 0;
-              }
-              return nextStep;
-            });
-            return 0;
-          }
-          return prev + 2.5; // ~4 seconds full bar
-        });
-      }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [isOpen, isAutoPlaying, currentIdx]);
+  }, [isOpen, userRole]);
 
   if (!isOpen) return null;
 
-  const currentSlide = PERSONA_SLIDES[currentIdx];
-  const activeStepData = currentSlide.loopSteps[activeStep] || currentSlide.loopSteps[0];
+  const currentTour = ROLE_TOURS[selectedRole] || ROLE_TOURS.teacher;
+  const totalSteps = currentTour.steps.length;
+  const currentStep = currentTour.steps[activeStepIndex] || currentTour.steps[0];
+  const isFirstStep = activeStepIndex === 0;
+  const isLastStep = activeStepIndex === totalSteps - 1;
 
   const handleNext = () => {
-    setCurrentIdx((prev) => (prev + 1) % PERSONA_SLIDES.length);
+    if (isLastStep) {
+      onClose();
+    } else {
+      setActiveStepIndex((prev) => Math.min(prev + 1, totalSteps - 1));
+    }
   };
 
   const handlePrev = () => {
-    setCurrentIdx((prev) => (prev - 1 + PERSONA_SLIDES.length) % PERSONA_SLIDES.length);
+    setActiveStepIndex((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleLaunch = () => {
-    onSelectRole(currentSlide.role);
-    onClose();
-  };
-
-  // Render simulated mini UI for each step
-  const renderSimulatedUI = () => {
-    const { simType } = activeStepData;
-
-    switch (simType) {
-      case 'teacher_handover':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Pre-Flight Morning Handover</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
-                🔔 Needs Teacher Ack
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="p-2 bg-gray-50 rounded-xl">
-                <span className="text-gray-500 block text-[10px]">Sleep:</span>
-                <span className="font-bold text-navy">Restless (woke at 4am)</span>
-              </div>
-              <div className="p-2 bg-gray-50 rounded-xl">
-                <span className="text-gray-500 block text-[10px]">Breakfast:</span>
-                <span className="font-bold text-rose-700">⚠️ Skipped</span>
-              </div>
-            </div>
-            <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-              💬 <em>"Worried about loud assembly noise. Noise defenders in bag."</em>
-            </div>
-          </div>
-        );
-
-      case 'teacher_ack':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-emerald-300 shadow-sm space-y-3 relative overflow-hidden">
-            <div className="absolute inset-0 bg-emerald-50/30 pointer-events-none" />
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Handover Status</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                <Check className="w-3 h-3 text-emerald-600" />
-                <span>Read Receipt Delivered</span>
-              </span>
-            </div>
-            <div className="p-3 bg-emerald-100/60 rounded-xl border border-emerald-200 flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-700 flex-shrink-0 animate-bounce" />
-              <div className="text-xs font-semibold text-emerald-900">
-                Acknowledged by Ms Johnson at 8:50am · Dana notified instantly
-              </div>
-            </div>
-            <div className="text-[11px] text-gray-500 italic text-center">
-              "Noise defenders confirmed ready at Room 4 door."
-            </div>
-          </div>
-        );
-
-      case 'teacher_worksheet':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Visual Slopes · Game Level Climbing</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
-                🧗 Gradient = 3
-              </span>
-            </div>
-            <div className="h-24 bg-slate-900 rounded-xl p-2 relative flex items-center justify-center overflow-hidden">
-              <svg className="w-full h-full" viewBox="0 0 200 80">
-                <line x1="20" y1="70" x2="180" y2="70" stroke="#475569" strokeWidth="1" />
-                <line x1="20" y1="70" x2="160" y2="20" stroke="#9ECFC4" strokeWidth="3" />
-                <polygon points="20,70 160,70 160,20" fill="rgba(158,207,196,0.15)" />
-                <text x="80" y="78" fill="#94A3B8" fontSize="8">Run: 2</text>
-                <text x="165" y="45" fill="#94A3B8" fontSize="8">Rise: 6</text>
-                <circle cx="90" cy="45" r="4" fill="#E8B84B" className="animate-ping" />
-                <circle cx="90" cy="45" r="4" fill="#E8B84B" />
-              </svg>
-              <span className="absolute bottom-1 right-2 text-[9px] text-mint font-mono font-bold">
-                $y = 3x$ (Linear Algebra Validated)
-              </span>
-            </div>
-          </div>
-        );
-
-      case 'parent_form':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy flex items-center gap-1.5">
-                <Smartphone className="w-4 h-4 text-amber-600" />
-                <span>Dana's Phone · 20s Morning Handover</span>
-              </span>
-              <span className="text-[10px] text-emerald-700 font-bold">✓ Ready</span>
-            </div>
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                <span className="text-gray-700">Sleep:</span>
-                <span className="font-bold text-rose-700">Restless (woke at 4am)</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                <span className="text-gray-700">Breakfast Eaten:</span>
-                <span className="font-bold text-rose-700">No (Skipped)</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                <span className="text-gray-700">Medication Given:</span>
-                <span className="font-bold text-emerald-700">Yes (8:30am)</span>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'parent_notification':
-        return (
-          <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-lg space-y-3 border border-slate-700 relative overflow-hidden">
-            <div className="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-start gap-2.5 animate-in slide-in-from-top duration-300">
-              <Bell className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0 animate-bounce" />
-              <div>
-                <div className="text-[11px] font-bold text-white flex items-center gap-2">
-                  <span>St. Jude's Academy · Room 4</span>
-                  <span className="text-[9px] text-white/50">Just now</span>
-                </div>
-                <div className="text-xs font-medium text-emerald-300 mt-0.5">
-                  ✓ Handover read by Ms Johnson at 8:50am
-                </div>
-                <p className="text-[10px] text-white/70 mt-1 leading-snug">
-                  "Thank you Dana. Noise defenders are ready at the door for 9:05am assembly."
-                </p>
-              </div>
-            </div>
-            <div className="text-center text-[11px] text-white/50">
-              📱 Dana Carter's lockscreen instant read-receipt
-            </div>
-          </div>
-        );
-
-      case 'parent_bridge':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy flex items-center gap-1.5">
-                <BatteryCharging className="w-4 h-4 text-amber-600" />
-                <span>3:15 PM Sensory Battery</span>
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
-                ⚠️ Moderate Masking (48%)
-              </span>
-            </div>
-            <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full w-[48%] rounded-full transition-all duration-500" />
-            </div>
-            <div className="p-2 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-950">
-              <strong>Arrival Recipe:</strong> Low stimulation snack · 20 mins quiet iPad · zero school questions until 4:00pm.
-            </div>
-          </div>
-        );
-
-      case 'ta_arrival':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-rose-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-rose-800">⚡ 8:55 AM High-Risk Schedule</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 animate-pulse">
-                Critical Moment
-              </span>
-            </div>
-            <div className="p-3 bg-rose-50/80 rounded-xl border border-rose-200 space-y-1">
-              <div className="text-xs font-bold text-navy">Position at Classroom Door</div>
-              <p className="text-[11px] text-gray-700">
-                Hand Phoenix headphones <em>before</em> he reaches hallway crowd noise. Do not wait until overstimulated.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'ta_assembly':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-teal-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-teal-900">⚡ 9:05 AM Assembly Protocol</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
-                Buddy Active
-              </span>
-            </div>
-            <div className="p-3 bg-teal-50/70 rounded-xl border border-teal-200 space-y-1">
-              <div className="text-xs font-bold text-navy">Buddy Pairing: Jake O'Brien</div>
-              <p className="text-[11px] text-gray-700">
-                Seated near quiet corridor exit. TA positioned 2 rows behind for unobtrusive support.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'ta_meds':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-amber-900">⚡ 10:00 AM Attention Dip</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
-                Medication Window
-              </span>
-            </div>
-            <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 space-y-1">
-              <div className="text-xs font-bold text-navy">Preemptive Crackers & Water</div>
-              <p className="text-[11px] text-gray-700">
-                Phoenix skipped breakfast. Offer light snack now to avoid anxiety spike. Do not interpret fidgeting as defiance.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'senco_matrix':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Whole-School SEND Caseload</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-900 border border-indigo-200">
-                34 Learners
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2 rounded-xl bg-purple-50 border border-purple-100">
-                <div className="font-bold text-purple-900 text-sm">12</div>
-                <div className="text-[9px] text-gray-500">EHCP Plans</div>
-              </div>
-              <div className="p-2 rounded-xl bg-teal-50 border border-teal-100">
-                <div className="font-bold text-teal-800 text-sm">185h</div>
-                <div className="text-[9px] text-gray-500">TA Hours / Wk</div>
-              </div>
-              <div className="p-2 rounded-xl bg-amber-50 border border-amber-100">
-                <div className="font-bold text-amber-800 text-sm">£148.6k</div>
-                <div className="text-[9px] text-gray-500">Block Funding</div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'senco_review':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Section 44 Statutory Review Pack</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Ready for Export
-              </span>
-            </div>
-            <div className="space-y-1 text-[11px]">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                <span>Section B: Autism Spectrum & Sensory Needs</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                <span>Section E: Independence in STEM Outcomes</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                <span>Section F: 22.5h 1:1 TA Support Provision</span>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'senco_rag':
-        return (
-          <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-white/10 text-xs">
-              <span className="font-serif font-bold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-mint" />
-                <span>NOYA Longitudinal Query</span>
-              </span>
-              <span className="text-[9px] font-mono text-mint">RAG Active</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] text-white/90">
-              "Visual Task Cards and game level slope differentiation yielded 92% strategy effectiveness during maths practicals this term."
-            </div>
-            <div className="text-[9px] text-white/50 flex items-center gap-1">
-              <span>Verified Citations:</span>
-              <span className="text-mint underline cursor-pointer">Observation #2481</span>
-              <span>·</span>
-              <span className="text-mint underline cursor-pointer">Timeline #1940</span>
-            </div>
-          </div>
-        );
-
-      case 'child_emoji':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">How are you feeling right now?</span>
-              <span className="text-[10px] text-gray-400">1 Tap</span>
-            </div>
-            <div className="flex items-center justify-around py-1 text-2xl">
-              <span className="cursor-pointer hover:scale-125 transition-transform">😄</span>
-              <span className="cursor-pointer scale-125 bg-amber-100 p-1 rounded-xl shadow-xs">🙂</span>
-              <span className="cursor-pointer hover:scale-125 transition-transform">😐</span>
-              <span className="cursor-pointer hover:scale-125 transition-transform">😟</span>
-              <span className="cursor-pointer hover:scale-125 transition-transform">😰</span>
-            </div>
-            <div className="text-center text-[10px] font-bold text-navy">
-              Tapped 🙂 (Ready to Learn) · Saved to Room 4
-            </div>
-          </div>
-        );
-
-      case 'child_slope':
-        return (
-          <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-white/10 text-xs font-bold">
-              <span>🧗 Climb the Mountain: Rise ÷ Run</span>
-              <span className="text-[10px] text-mint font-mono">Gradient: 3</span>
-            </div>
-            <div className="p-2 bg-white/5 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <span className="text-white/60 text-[10px] block">Vertical Rise</span>
-                <span className="font-bold text-amber">6 Blocks</span>
-              </div>
-              <div className="text-white/40">÷</div>
-              <div>
-                <span className="text-white/60 text-[10px] block">Horizontal Run</span>
-                <span className="font-bold text-mint">2 Blocks</span>
-              </div>
-              <div className="text-white/40">=</div>
-              <div className="p-1.5 rounded-lg bg-teal/30 text-mint font-bold">
-                Steepness: 3
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'child_star':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-amber-300 shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy">Today's Star Superpowers</span>
-              <span className="text-xs">⭐ ⭐ ⭐</span>
-            </div>
-            <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-2.5">
-              <span className="text-2xl">🏆</span>
-              <div>
-                <div className="text-xs font-bold text-amber-950">Drew Gradient Triangle Independently</div>
-                <div className="text-[10px] text-amber-800">Ms Johnson praised spatial reasoning in Science & Maths</div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'admin_onboard':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-indigo-200 shadow-sm space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-indigo-600" />
-                <span>Onboarding School Tenant · URN: 104523</span>
-              </span>
-              <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-                ✓ Isolated Boundary
-              </span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
-              <div className="flex justify-between text-gray-700">
-                <span>School Name:</span>
-                <span className="font-bold text-gray-900">Highland Park Academy</span>
-              </div>
-              <div className="flex justify-between text-gray-700">
-                <span>Local Authority:</span>
-                <span className="font-bold text-gray-900">Southwark LA</span>
-              </div>
-              <div className="flex justify-between text-gray-700">
-                <span>Tenant Isolation:</span>
-                <span className="font-mono text-[10px] text-emerald-700 font-bold">100% Sealed</span>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'admin_appoint':
-        return (
-          <div className="p-4 rounded-2xl bg-slate-900 text-white shadow-lg space-y-2.5 border border-indigo-800">
-            <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
-              <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-teal" />
-                <span>Appointing Lead SENCO (School Lead)</span>
-              </span>
-              <span className="text-[10px] text-teal font-bold">Delegated Authority</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 space-y-1 text-xs">
-              <div className="font-bold text-white">Dr Marcus Thorne, Director of Inclusion</div>
-              <p className="text-[10px] text-slate-300">
-                Authority granted: School SEND admissions, parent onboarding invitations, Section 44 pack approvals.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'admin_audit':
-        return (
-          <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
-            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
-              <span className="text-xs font-bold text-navy flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-indigo-600" />
-                <span>Immutable Governance & Access Audit Log</span>
-              </span>
-              <span className="text-[10px] text-emerald-700 font-bold">✓ Verified</span>
-            </div>
-            <div className="p-2 rounded-xl bg-slate-50 font-mono text-[10px] text-slate-700 space-y-1">
-              <div>[09:00:14] ONBOARD_SCHOOL: Highland Park Academy (URN: 104523) by Dr. Alistair Vance</div>
-              <div>[09:30:22] APPOINT_SENCO: Dr Marcus Thorne at Highland Park Academy</div>
-              <div>[11:00:05] ACCESS_CHECK: Tenant isolation verified. 0 cross-school leaks.</div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
+  const handleSwitchRole = (newRole: RoleView) => {
+    setSelectedRole(newRole);
+    setActiveStepIndex(0);
+    if (onSelectRole) {
+      onSelectRole(newRole);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[94vh]">
-        {/* Top Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Modal Top Header */}
         <div className="px-5 py-4 bg-navy text-white flex items-center justify-between border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber via-coral to-mint p-0.5 flex items-center justify-center shadow-xs">
-              <div className="w-full h-full bg-navy rounded-[10px] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-mint animate-pulse" />
-              </div>
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-xs border border-white/20"
+              style={{ backgroundColor: `${currentTour.themeColor}30` }}
+            >
+              {currentTour.avatarEmoji}
             </div>
             <div>
-              <div className="text-sm font-bold flex items-center gap-2 font-serif">
-                <span>See My Mind · Interactive Persona Animation & Tour</span>
-                <span className="text-[10px] bg-teal/30 text-mint px-2 py-0.5 rounded-full font-mono">
-                  Live Animated Simulator
-                </span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold font-serif text-white flex items-center gap-1.5">
+                  <span>{currentTour.roleTitle} Tour</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal/30 text-mint font-semibold">
+                    Step {activeStepIndex + 1} of {totalSteps}
+                  </span>
+                </h2>
               </div>
-              <p className="text-[11px] text-white/60">
-                Continuous SEND operational loops connecting Home, Classroom, TA, and Inclusion Lead
+              <p className="text-[11px] text-white/70 line-clamp-1">
+                {userName ? `${userName} · ` : ''}{schoolName ? `${schoolName} · ` : ''}{currentTour.mission}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
-                isAutoPlaying
-                  ? 'bg-amber-400 text-navy font-bold shadow-xs'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-              title={isAutoPlaying ? 'Pause auto-play animation' : 'Start auto-play animation'}
-            >
-              {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{isAutoPlaying ? 'Pause' : 'Auto-Play'}</span>
-            </button>
-
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-              title="Close tour"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            title="Close tour"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Persona Selector Tabs */}
-        <div className="bg-slate-50 px-3 py-2 border-b border-gray-200 flex items-center gap-1.5 overflow-x-auto flex-shrink-0 no-scrollbar">
-          {PERSONA_SLIDES.map((slide, idx) => {
-            const isSelected = idx === currentIdx;
+        {/* Step Navigation Ribbon / Pills */}
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-850 border-b border-gray-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+          {currentTour.steps.map((step, idx) => {
+            const isActive = idx === activeStepIndex;
+            const isCompleted = idx < activeStepIndex;
             return (
               <button
-                key={slide.role}
-                onClick={() => setCurrentIdx(idx)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all flex-shrink-0 ${
-                  isSelected
-                    ? 'bg-white text-navy shadow-xs border border-gray-200 ring-2 ring-teal/30'
-                    : 'text-gray-600 hover:text-navy hover:bg-white/60'
+                key={step.stepNumber}
+                onClick={() => setActiveStepIndex(idx)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-teal text-white shadow-xs font-bold'
+                    : isCompleted
+                    ? 'bg-teal/10 text-teal-700 dark:text-teal-300 hover:bg-teal/20'
+                    : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <span className="text-sm">{slide.avatarEmoji}</span>
-                <span>{slide.name.split(' ')[0]}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${slide.badgeBg} ${slide.badgeText} border ${slide.badgeBorder}`}>
-                  {slide.roleTitle.split('·')[0].trim()}
+                <span
+                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    isActive
+                      ? 'bg-white text-teal'
+                      : isCompleted
+                      ? 'bg-teal text-white'
+                      : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
+                  }`}
+                >
+                  {isCompleted ? '✓' : step.stepNumber}
                 </span>
+                <span>{step.stepLabel}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Slide Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-white">
-          {/* Persona Hero Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/70 border border-slate-200">
-            <div className="flex items-center gap-3.5">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm flex-shrink-0 border border-white"
-                style={{ backgroundColor: `${currentSlide.color}15` }}
-              >
-                {currentSlide.avatarEmoji}
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-bold text-navy font-serif">{currentSlide.name}</h3>
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${currentSlide.badgeBg} ${currentSlide.badgeText} ${currentSlide.badgeBorder}`}>
-                    {currentSlide.roleTitle}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 mt-0.5">{currentSlide.subtitle}</p>
-              </div>
+        {/* Modal Main Content Area */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-white dark:bg-slate-900">
+          {/* Step Title Header */}
+          <div>
+            <div className="flex items-center gap-2 text-teal font-bold text-xs uppercase tracking-wider mb-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Step {currentStep.stepNumber}: {currentStep.stepLabel}</span>
             </div>
-
-            <button
-              onClick={handleLaunch}
-              className="w-full sm:w-auto px-4 py-2.5 bg-teal hover:bg-teal-medium text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 flex-shrink-0"
-            >
-              <span>{currentSlide.launchButtonText}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <h3 className="text-xl font-bold font-serif text-gray-900 dark:text-white">
+              {currentStep.title}
+            </h3>
+            <p className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
+              {currentStep.subtitle}
+            </p>
           </div>
 
-          {/* ⭐ ANIMATED LIVE-ACTION SIMULATOR WITH FLOATING TEXT OVERLAY ⭐ */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-navy to-slate-900 text-white relative shadow-lg overflow-hidden border border-slate-700 space-y-4">
-            {/* Playback Progress Bar */}
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-teal-400 via-amber to-mint rounded-full transition-all duration-100 ease-linear"
-                style={{ width: `${stepProgress}%` }}
-              />
+          {/* ⭐ High-Fidelity UI Visual Preview Card ⭐ */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-navy to-slate-900 text-white border border-slate-700/80 shadow-lg space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-700/60">
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${currentStep.visualPreview.badgeColor}`}>
+                {currentStep.visualPreview.badge}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">Live Interactive Mock</span>
             </div>
 
-            {/* Stage Selector Pills */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-mint flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber" />
-                  <span>Live Action Loop Simulation</span>
-                </span>
-                <span className="text-[9px] bg-white/10 px-2 py-0.5 rounded-full text-white/70">
-                  Step {activeStep + 1} of {currentSlide.loopSteps.length}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                {currentSlide.loopSteps.map((step, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setActiveStep(idx);
-                      setStepProgress(0);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                      idx === activeStep
-                        ? 'bg-teal text-white shadow-xs'
-                        : 'bg-white/10 text-white/60 hover:text-white'
-                    }`}
-                  >
-                    <span>{step.time}</span>
-                  </button>
-                ))}
-              </div>
+            <div className="text-xs font-bold text-slate-200 font-serif">
+              {currentStep.visualPreview.title}
             </div>
 
-            {/* Simulation Canvas with Text Overlay */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center pt-1 relative">
-              {/* Left Column: Simulated Interactive UI Mockup */}
-              <div className="lg:col-span-7 relative">
-                <div className="relative transform transition-all duration-300">
-                  {renderSimulatedUI()}
+            {/* Simulated Data Items */}
+            <div className="space-y-2 bg-slate-800/70 p-3 rounded-xl border border-slate-700/60">
+              {currentStep.visualPreview.items.map((item, i) => (
+                <div
+                  key={i}
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs p-2 rounded-lg ${
+                    item.accent
+                      ? 'bg-teal/20 text-white border border-teal/40 font-semibold'
+                      : 'bg-slate-900/60 text-slate-300'
+                  }`}
+                >
+                  <span className="text-slate-400 font-medium sm:w-2/5 truncate">{item.label}</span>
+                  <span className="sm:w-3/5 text-right font-medium">{item.value}</span>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Right Column: Floating Text Overlay with Callout */}
-              <div className="lg:col-span-5 relative">
-                <div className="p-4 rounded-2xl bg-navy-light/90 border border-teal/40 backdrop-blur-md shadow-xl space-y-2 relative animate-in fade-in slide-in-from-right-3 duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-400 text-navy font-mono">
-                      {activeStepData.overlayBadge}
-                    </span>
-                    <span className="text-[10px] text-white/60 font-mono">{activeStepData.time}</span>
-                  </div>
-
-                  <div className="text-xs font-bold text-white font-serif">
-                    {activeStepData.action}
-                  </div>
-
-                  <p className="text-xs text-white/90 leading-relaxed font-sans">
-                    {activeStepData.overlayText}
-                  </p>
-
-                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-white/60">
-                    <span className="flex items-center gap-1 text-mint">
-                      <CheckCircle2 className="w-3 h-3 text-mint" />
-                      <span>Zero Friction</span>
-                    </span>
-                    <span>Adult-Proxy Loop</span>
-                  </div>
-                </div>
-              </div>
+            <div className="text-[11px] text-mint/90 flex items-center gap-1.5 pt-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-mint flex-shrink-0" />
+              <span>{currentStep.visualPreview.highlightText}</span>
             </div>
           </div>
 
-          {/* Operational Loop: 3-Step Auto-Scrolling Sequence */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-navy uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-teal" />
-                <span>Daily Operational Sequence (Auto-Scrolling Timeline)</span>
-              </h4>
-              <span className="text-[10px] text-gray-400 font-medium">Click any card to inspect moment</span>
+          {/* Operational Impact & Time Saved Callouts */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/60 space-y-1">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-teal flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5" />
+                <span>Operational Impact</span>
+              </div>
+              <p className="text-xs text-gray-700 dark:text-slate-300 leading-relaxed">
+                {currentStep.whyItMatters}
+              </p>
             </div>
 
-            {/* Horizontal Auto-Scrolling Container */}
-            <div
-              ref={stepsContainerRef}
-              className="flex items-stretch gap-3 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
-            >
-              {currentSlide.loopSteps.map((step, sIdx) => {
-                const isActive = sIdx === activeStep;
-                return (
-                  <div
-                    key={sIdx}
-                    ref={(el) => (stepCardsRef.current[sIdx] = el)}
-                    onClick={() => {
-                      setActiveStep(sIdx);
-                      setStepProgress(0);
-                    }}
-                    className={`min-w-[260px] sm:min-w-[280px] p-3.5 rounded-2xl border transition-all space-y-1.5 shadow-2xs relative cursor-pointer flex-shrink-0 ${
-                      isActive
-                        ? 'bg-teal/5 border-teal ring-2 ring-teal/20 scale-[1.01]'
-                        : 'bg-white border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                        isActive ? 'bg-teal text-white' : 'bg-navy text-white'
-                      }`}>
-                        {step.time}
-                      </span>
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${
-                        isActive ? 'bg-teal text-white' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {sIdx + 1}
-                      </span>
-                    </div>
-                    <div className="text-xs font-bold text-navy">{step.action}</div>
-                    <p className="text-[11px] text-gray-600 leading-snug">{step.detail}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Platform Superpowers for this Persona */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-navy uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber" />
-              <span>Key Superpowers in {currentSlide.name.split(' ')[0]}’s Workspace</span>
-            </h4>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {currentSlide.superpowers.map((pow, pIdx) => {
-                const PowIcon = pow.icon;
-                return (
-                  <div
-                    key={pIdx}
-                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-xl bg-white shadow-2xs flex items-center justify-center text-teal border border-gray-100">
-                        <PowIcon className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="text-xs font-bold text-navy">{pow.title}</div>
-                    </div>
-                    <p className="text-[11px] text-gray-600 leading-relaxed mt-1">{pow.description}</p>
-                  </div>
-                );
-              })}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 space-y-1">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Time Saved & Stress Reduced</span>
+              </div>
+              <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
+                {currentStep.timeSaved}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Modal Footer with Controls */}
-        <div className="px-5 py-3.5 bg-slate-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
-          <div className="flex items-center gap-3">
+        {/* Modal Footer Controls */}
+        <div className="px-5 py-4 bg-slate-50 dark:bg-slate-850 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+          {/* Subtle Role Switcher Dropdown (in case a SENCO or Admin wants to preview another role's tour) */}
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[11px]">Role Tour:</span>
+            <select
+              value={selectedRole}
+              onChange={(e) => handleSwitchRole(e.target.value as RoleView)}
+              className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-xs font-semibold text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal cursor-pointer"
+            >
+              <option value="teacher">👩‍🏫 Teacher Tour</option>
+              <option value="senco">🗂️ SENCO Tour</option>
+              <option value="parent">👨‍👩‍👧 Parent Tour</option>
+              <option value="parentplus">🌟 ParentPlus Tour</option>
+              <option value="ta">🤝 TA Tour</option>
+              <option value="child">🧒 Pupil Voice Tour</option>
+              <option value="admin">🏛️ Governance Admin Tour</option>
+            </select>
+          </div>
+
+          {/* Navigation Buttons: Previous / Next / Finish */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={handlePrev}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 cursor-pointer transition-colors"
+              disabled={isFirstStep}
+              className="px-3.5 py-2 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>Previous</span>
+              <span>Back</span>
             </button>
-
-            {/* Dots */}
-            <div className="flex items-center gap-1.5">
-              {PERSONA_SLIDES.map((_, dotIdx) => (
-                <button
-                  key={dotIdx}
-                  onClick={() => setCurrentIdx(dotIdx)}
-                  className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                    dotIdx === currentIdx ? 'w-5 bg-teal' : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                  aria-label={`Go to slide ${dotIdx + 1}`}
-                />
-              ))}
-            </div>
 
             <button
               onClick={handleNext}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 cursor-pointer transition-colors"
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                isLastStep
+                  ? 'bg-gradient-to-r from-teal to-emerald-600 hover:from-emerald-600 hover:to-teal text-white shadow-teal/20'
+                  : 'bg-teal hover:bg-teal-dark text-white shadow-teal/20'
+              }`}
             >
-              <span>Next</span>
+              <span>{isLastStep ? '🚀 Explore Live Dashboard' : 'Next Step'}</span>
               <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-navy cursor-pointer"
-            >
-              Close
-            </button>
-
-            <button
-              onClick={handleLaunch}
-              className="flex-1 sm:flex-none px-5 py-2.5 bg-navy hover:bg-navy-light text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <span>{currentSlide.launchButtonText}</span>
-              <ArrowRight className="w-4 h-4 text-mint" />
             </button>
           </div>
         </div>
