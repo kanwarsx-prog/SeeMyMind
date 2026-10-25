@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Printer,
@@ -8,6 +8,7 @@ import {
   Layers,
   ShieldCheck,
   Award,
+  Download,
 } from 'lucide-react';
 import { ClassroomProvisionSummary, GraduatedResponseItem } from '../types';
 
@@ -25,22 +26,75 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
   const [activeView, setActiveView] = useState<'matrix' | 'apdr'>('matrix');
   const [selectedPupilIndex, setSelectedPupilIndex] = useState<number>(0);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !summary) return null;
 
   const handlePrint = () => {
     window.print();
   };
 
+  const handleExportCsv = () => {
+    const headers = [
+      'Pupil Name',
+      'Support Tier',
+      'Primary Need',
+      'Identified Barrier (Assess)',
+      'Classroom Differentiations (Do)',
+      'Weekly TA Hours',
+      'Assigned TA',
+      'Empirical Review & Next Steps',
+      'Status',
+    ];
+    const rows = summary.graduated_responses.map((p) => [
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.support_tier.replace(/"/g, '""')}"`,
+      `"${p.primary_need.replace(/"/g, '""')}"`,
+      `"${p.assess_notes.replace(/"/g, '""')}"`,
+      `"${p.do_provisions.join('; ').replace(/"/g, '""')}"`,
+      `"${p.weekly_ta_hours}h/wk"`,
+      `"${p.assigned_ta.replace(/"/g, '""')}"`,
+      `"${(p.review_efficacy + ' | Next: ' + p.recommended_next_steps).replace(/"/g, '""')}"`,
+      `"${p.review_outcome.replace(/"/g, '""')}"`,
+    ]);
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `Classroom_Provision_Map_${summary.room_name.replace(/\s+/g, '_')}_${summary.review_period.replace(/\s+/g, '_')}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const selectedPupil: GraduatedResponseItem =
     summary.graduated_responses[selectedPupilIndex] || summary.graduated_responses[0];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-navy/70 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:static print:inset-auto">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-navy/80 backdrop-blur-sm print:p-0 print:bg-white print:static print:inset-auto animate-in fade-in duration-200"
+    >
       {/* Container Card */}
-      <div className="relative w-full max-w-5xl bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 my-8 overflow-hidden print:shadow-none print:border-none print:m-0 print:max-w-none print:bg-white print:text-black">
+      <div className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden print:shadow-none print:border-none print:m-0 print:max-w-none print:max-h-none print:bg-white print:text-black">
         
-        {/* Sticky Action Toolbar (Screen Only) */}
-        <div className="sticky top-0 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-6 py-4 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 print:hidden">
+        {/* Pinned Action Toolbar (Screen Only) */}
+        <div className="flex-shrink-0 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 print:hidden">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-teal-600 animate-pulse" />
             <h2 className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -78,25 +132,36 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
             </div>
 
             <button
+              onClick={handleExportCsv}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 border border-slate-200 dark:border-slate-700"
+              title="Export provision map table to CSV spreadsheet"
+            >
+              <Download className="w-3.5 h-3.5 text-teal-600" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
               onClick={handlePrint}
-              className="px-4 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow active:scale-95"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow active:scale-95"
+              title="Print or export as PDF"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / Save as PDF</span>
+              <span>Print / PDF</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all cursor-pointer"
-              title="Close modal"
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all cursor-pointer flex items-center justify-center active:scale-95 border border-slate-200 dark:border-slate-700"
+              title="Close window (Esc)"
+              aria-label="Close modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Printable Multi-Page Document Body */}
-        <div className="p-6 sm:p-10 space-y-8 print:p-0 print:space-y-6">
+        {/* Scrollable Printable Multi-Page Document Body */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-10 space-y-8 print:p-0 print:space-y-6 print:overflow-visible">
           
           {/* Institutional Crested Header Block */}
           <div className="border-b-2 border-teal-600 pb-6 print:pb-4 space-y-4">
@@ -412,7 +477,7 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
 
               <div className="p-3.5 border border-slate-300 dark:border-slate-700 rounded-xl h-24 flex flex-col justify-between print:border-slate-400">
                 <span className="text-[9px] uppercase font-bold text-slate-400">
-                  Lead SENCO (Ms Amara Okafor, NASENCO)
+                  Lead SENCO ({summary.school_name ? `Lead SENCO, ${summary.school_name}` : 'Lead SENCO, NASENCO'})
                 </span>
                 <div className="border-b border-dashed border-slate-400 my-auto" />
                 <span className="text-[10px] text-slate-500">Date: ____________</span>
