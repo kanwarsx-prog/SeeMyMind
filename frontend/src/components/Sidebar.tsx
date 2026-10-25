@@ -283,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'ta-schedule',
-          label: 'High-Risk Schedule',
+          label: 'Key Transition Times',
           icon: Clock,
           action: () => {
             onSelectNav?.('ta-schedule');
@@ -292,7 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'ta-micrologs',
-          label: 'Rapid Micro-Logs',
+          label: 'Quick Classroom Notes',
           icon: FileText,
           action: () => {
             onSelectNav?.('ta-micrologs');
@@ -309,7 +309,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       av: 'DC',
       name: currentUser?.full_name || 'Dana Carter',
       roleTitle: 'Parent Plus (Post-16)',
-      sub: 'Longitudinal Pathways',
+      sub: 'Future Goals & Support',
       bg: '#E8B84B',
       icon: Award,
       navItems: [

@@ -115,7 +115,7 @@ export const IncidentModal: React.FC<IncidentModalProps> = ({
               >
                 <option value="Low">Low (Mild disengagement)</option>
                 <option value="Moderate">Moderate (Distress/Disruption)</option>
-                <option value="High">High (Severe dysregulation)</option>
+                <option value="High">High (Severely overwhelmed / unsafe)</option>
                 <option value="Safeguarding Incident">Safeguarding Incident (DSL Alert)</option>
               </select>
             </div>
@@ -131,7 +131,7 @@ export const IncidentModal: React.FC<IncidentModalProps> = ({
           {/* Antecedent */}
           <div>
             <label className="block font-bold text-navy mb-1">
-              A · Antecedent <span className="font-normal text-gray-400">(What triggered this immediately before?)</span>
+              A · What Happened Before (Trigger) <span className="font-normal text-gray-400">(What triggered this immediately before?)</span>
             </label>
             <textarea
               rows={2}
@@ -146,7 +146,7 @@ export const IncidentModal: React.FC<IncidentModalProps> = ({
           {/* Behaviour */}
           <div>
             <label className="block font-bold text-navy mb-1">
-              B · Observable Behaviour <span className="font-normal text-gray-400">(Factual, non-judgmental description)</span>
+              B · What Happened (Reaction) <span className="font-normal text-gray-400">(Factual, non-judgmental description)</span>
             </label>
             <textarea
               rows={2}
@@ -161,7 +161,7 @@ export const IncidentModal: React.FC<IncidentModalProps> = ({
           {/* Consequence */}
           <div>
             <label className="block font-bold text-navy mb-1">
-              C · Consequence / Resolution <span className="font-normal text-gray-400">(How was the pupil de-escalated?)</span>
+              C · Support Given & Outcome <span className="font-normal text-gray-400">(How was the pupil supported to calm down?)</span>
             </label>
             <textarea
               rows={2}
@@ -176,7 +176,7 @@ export const IncidentModal: React.FC<IncidentModalProps> = ({
           {/* Strategy & Recovery Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-navy mb-1">De-escalation Strategy</label>
+              <label className="block font-bold text-navy mb-1">Calming Strategy Used</label>
               <input
                 type="text"
                 value={strategy}

@@ -539,7 +539,7 @@ class NoyaRAGService:
                         "sen_support_count": 2,
                         "weekly_ta_hours": 32.5,
                         "primary_strategies": [
-                            "10:00 AM snack bridge (medication titration dip counter)",
+                            "10:00 AM snack (counters mid-morning medication dip)",
                             "Visual step ladders for numeracy",
                             "Noise-cancelling ear defenders during transitions",
                             "Low-arousal sensory regulation station",
@@ -548,19 +548,19 @@ class NoyaRAGService:
                 }
                 if any(k in q_lower for k in ["sensory", "accommodat", "environment", "room 4", "class", "quiet", "break"]):
                     answer = (
-                        "Room 4 classroom-wide sensory accommodations include proactive 10:00 AM carbohydrate snack bridges (countering stimulant medication dips), "
-                        "visual step ladders for numeracy, noise-cancelling ear defenders during noisy halls, and a designated low-arousal regulation corner. "
+                        "Room 4 classroom accommodations include proactive 10:00 AM snack breaks (countering medication dips), "
+                        "visual learning ladders for numeracy, noise-cancelling ear defenders during loud halls, and a calm regulation corner. "
                         "All 4 pupils have individual environmental adjustments active."
                     )
                 elif any(k in q_lower for k in ["ta hours", "teaching assistant", "staff allocation", "support hours"]):
                     answer = (
-                        "Room 4 has 32.5 weekly allocated TA hours across the 4 SEND cohort pupils, primarily focused on morning executive functioning transitions, "
-                        "maths scaffolding, and lunchtime sensory regulation."
+                        "Room 4 has 32.5 weekly allocated TA hours across the 4 SEND cohort pupils, primarily focused on morning arrival routines, "
+                        "visual learning support in maths, and lunchtime calm spaces."
                     )
                 elif any(k in q_lower for k in ["win", "rate", "success", "strateg"]):
                     answer = (
-                        "Classroom-wide strategy win rate in Room 4 is currently 91% (10 out of 11 recorded de-escalations resolved within 4 minutes). "
-                        "Top performing strategy is low-demand visual shift followed by noise-reducing headphones."
+                        "Classroom calming success rate in Room 4 is currently 91% (10 out of 11 recorded calming strategies helped pupils settle within 4 minutes). "
+                        "Top performing tool is hands-on visual tasks followed by quiet ear defenders."
                     )
                 else:
                     answer = (
@@ -588,7 +588,7 @@ class NoyaRAGService:
                 elif any(k in q_lower for k in ["annual", "review", "due", "schedule", "term"]):
                     answer = (
                         "Statutory Annual Reviews: 1 statutory review due this term (Phoenix Carter - Term 2 annual review cycle). "
-                        "All statutory evidence dossiers are pre-compiled and CAMHS titration digests are ready."
+                        "All statutory evidence dossiers and doctor review notes are prepared."
                     )
                 elif any(k in q_lower for k in ["ta hours", "teaching assistant", "high-needs", "ta allocation", "weekly ta"]):
                     answer = (
@@ -622,7 +622,7 @@ class NoyaRAGService:
                 t_out = dispatch_tool_call(db, current_user, "get_proven_de_escalations", {"child_id": str(child.id)})
                 action_card = t_out.get("action_card")
                 tool_called = "get_proven_de_escalations"
-                answer = f"Validated calming strategies for {child_name} include visual-spatial low-demand task shifts (diagramming slope/game slope) and proactive 2-minute movement breaks."
+                answer = f"Proven calming strategies for {child_name} include hands-on visual tasks (like Game Slope) and proactive 2-minute movement breaks."
             elif child and any(k in q_lower for k in ["ehcp", "section f", "trigger", "provision", "target"]):
                 t_out = dispatch_tool_call(db, current_user, "get_ehcp_statutory_profile", {"child_id": str(child.id)})
                 action_card = t_out.get("action_card")
@@ -630,8 +630,8 @@ class NoyaRAGService:
                 answer = f"{child_name} is supported under Section F statutory provisions including visual desk strip aids, 1:1 TA check-ins at morning transition, and proactive movement breaks."
             else:
                 answer = (
-                    f"Based on {child_name}'s profile ({primary_need}), support is aligned with CoP 6.44 graduated response. "
-                    f"Ask me about morning handover status, emergency contacts, or proven de-escalation strategies."
+                    f"Based on {child_name}'s profile ({primary_need}), support is tailored to their learning and sensory needs. "
+                    f"Ask me about morning check-in status, emergency contacts, or proven calming strategies."
                 )
 
         # Generate contextual suggested follow-ups

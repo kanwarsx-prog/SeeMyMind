@@ -114,7 +114,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
       color: 'from-purple-600 to-indigo-600',
       textColor: 'text-purple-600',
       badge: '👩‍🏫 Teacher View',
-      desc: 'Pre-flight handovers, adapted lessons & worksheet progress',
+      desc: 'Morning handovers, adapted lessons & visual task cards',
     },
     {
       role: 'senco',
@@ -154,7 +154,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
       color: 'from-emerald-600 to-teal',
       textColor: 'text-emerald-600',
       badge: '🤝 TA View',
-      desc: 'Time-stamped morning risk schedule & quick <45s micro-logs',
+      desc: 'Key transition schedule & quick classroom notes (<30s)',
     },
   ];
 

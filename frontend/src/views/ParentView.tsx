@@ -246,10 +246,10 @@ export const ParentView: React.FC<ParentViewProps> = ({
             </p>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-200/50 dark:border-teal-800/40">
-                🛡️ Zero Child Logging Burden
+                🛡️ Zero Pressure on {child.preferred_name || child.first_name || 'Your Child'}
               </span>
               <span className="text-[11px] text-textDim dark:text-slate-400">
-                All sensory insights derived entirely from adult proxy observations.
+                Built from daily teacher and parent notes — no forms or app demands on your child.
               </span>
             </div>
           </div>
@@ -366,7 +366,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
             <DecompressionBridgeCard bridge={bridge} childName={childName} />
           ) : (
             <div className="card p-8 text-center text-gray-500">
-              <p className="text-xs">Decompression predictions will appear as classroom logs arrive.</p>
+              <p className="text-xs">Home-time tips will appear as classroom notes arrive.</p>
             </div>
           )}
         </div>
@@ -618,7 +618,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs uppercase font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-400/20 px-2.5 py-1 rounded-full border border-amber-200/50 dark:border-transparent">
-                        Clinical Correlation Engine
+                        Daily Routine & Medication
                       </span>
                       <span className="text-xs text-textDim dark:text-white/60">30 School Days Analyzed</span>
                     </div>
@@ -632,14 +632,14 @@ export const ParentView: React.FC<ParentViewProps> = ({
                       onClick={handleOpenCamhsModal}
                       disabled={loadingDossier}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-xs font-bold text-white rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:shadow disabled:opacity-60"
-                      title="NICE NG87 / CG128 Multi-Agency Clinical Evidence Dossier"
+                      title="Compile comprehensive evidence report for doctor or clinical review"
                     >
                       {loadingDossier ? (
                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <FileText className="w-3.5 h-3.5 text-blue-200" />
                       )}
-                      <span>{loadingDossier ? 'Compiling Dossier...' : 'Generate CAMHS Dossier'}</span>
+                      <span>{loadingDossier ? 'Preparing Report...' : 'Doctor / Clinic Report'}</span>
                     </button>
 
                     <button
@@ -647,7 +647,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
                       className="px-3.5 py-2 bg-cardBg dark:bg-white/10 hover:bg-cardSubtle dark:hover:bg-white/20 active:scale-95 text-xs text-textMain dark:text-white rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border border-borderMain dark:border-white/10 shadow-2xs"
                     >
                       {copiedSummary ? <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-600 dark:text-amber-300" />}
-                      <span>{copiedSummary ? 'Copied' : 'Quick Copy'}</span>
+                      <span>{copiedSummary ? 'Copied' : 'Share with Doctor'}</span>
                     </button>
                   </div>
                 </div>
@@ -656,19 +656,19 @@ export const ParentView: React.FC<ParentViewProps> = ({
                   <div className="bg-cardBg dark:bg-white/10 backdrop-blur-xs p-3 rounded-xl border border-borderMain dark:border-white/10 shadow-2xs">
                     <div className="text-textDim dark:text-white/60 text-[10px] uppercase font-semibold">Morning Window</div>
                     <div className="text-sm font-bold text-teal dark:text-teal-300 mt-0.5">{correlation.morning_window}</div>
-                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">Administered with food</div>
+                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">Taken with breakfast</div>
                   </div>
 
                   <div className="bg-cardBg dark:bg-white/10 backdrop-blur-xs p-3 rounded-xl border border-borderMain dark:border-white/10 shadow-2xs">
-                    <div className="text-textDim dark:text-white/60 text-[10px] uppercase font-semibold">Mid-Morning Vulnerability Dip</div>
+                    <div className="text-textDim dark:text-white/60 text-[10px] uppercase font-semibold">Mid-Morning Energy Dip</div>
                     <div className="text-sm font-bold text-amber-dark dark:text-amber-300 mt-0.5">{correlation.dip_window}</div>
-                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">10:00am snack bridge critical</div>
+                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">10:00am snack helps keep energy steady</div>
                   </div>
 
                   <div className="bg-cardBg dark:bg-white/10 backdrop-blur-xs p-3 rounded-xl border border-borderMain dark:border-white/10 shadow-2xs">
-                    <div className="text-textDim dark:text-white/60 text-[10px] uppercase font-semibold">Multi-Agency Data Integrity</div>
-                    <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">100% Concordance</div>
-                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">Home Handover + School Log</div>
+                    <div className="text-textDim dark:text-white/60 text-[10px] uppercase font-semibold">Home & School In Sync</div>
+                    <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">100% Matched</div>
+                    <div className="text-[10px] text-textDim dark:text-white/50 mt-0.5">Home Handover + School Notes</div>
                   </div>
                 </div>
               </div>
@@ -678,9 +678,9 @@ export const ParentView: React.FC<ParentViewProps> = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-dark dark:text-amber-400" />
-                    <span>Empirical Routine Insights</span>
+                    <span>What Helps & What Drains Energy</span>
                   </h3>
-                  <span className="text-[10px] text-textDim dark:text-slate-400">Cross-referenced against behavioral and sensory data</span>
+                  <span className="text-[10px] text-textDim dark:text-slate-400">Cross-referenced from classroom and morning check-in notes</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -718,7 +718,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-teal dark:text-teal-300" />
                     <h3 className="text-xs font-bold text-navy dark:text-white uppercase tracking-wider">
-                      Exportable Clinical Summary for Medical Reviews
+                      Doctor & Clinic Summary (Ready to Share)
                     </h3>
                   </div>
                   <button
@@ -764,10 +764,10 @@ export const ParentView: React.FC<ParentViewProps> = ({
               </div>
               <div>
                 <h3 className="text-sm font-bold text-navy dark:text-white">
-                  Counteracting Deficit Fatigue: Celebrating {childName}'s Brilliance
+                  Focusing on Strengths: Celebrating {childName}'s Brilliance
                 </h3>
                 <p className="text-xs text-textSub dark:text-slate-300 mt-1 leading-relaxed">
-                  SEND parenting can feel like a relentless litany of incident reports, sensory dysregulations, and deficits. This space is dedicated purely to {childName}'s genuine breakthroughs, strengths, and moments of joy observed by adults.
+                  School updates can often feel like an endless stream of incident reports and challenges. This space is dedicated purely to {childName}'s genuine breakthroughs, strengths, and moments of joy observed today.
                 </p>
               </div>
             </div>

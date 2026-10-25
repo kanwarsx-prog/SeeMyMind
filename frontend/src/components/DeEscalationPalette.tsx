@@ -37,43 +37,43 @@ export const DeEscalationPalette: React.FC<DeEscalationPaletteProps> = ({
   const strategies: DeEscalationStrategyItem[] = [
     {
       id: 'strat-movement',
-      title: 'Purposeful Movement / Register Errand',
-      category: 'Vestibular Reset',
+      title: 'Purposeful Movement / Quick Errand',
+      category: 'Movement Break',
       icon: '🏃',
       durationMinutes: 2,
       efficacy: 94,
-      description: 'Discreet vestibular reset avoiding peer attention or classroom disruption.',
-      actionProtocol: 'Hand Phoenix the Room 4 library return folder. Pair with trusted buddy Jake O\'Brien to walk to the main library and back.',
+      description: 'Discreet movement break to help reset without drawing classroom attention.',
+      actionProtocol: 'Hand Phoenix the Room 4 library return folder. Pair with trusted classmate Jake to walk to the main library and back.',
       buddyAssistance: 'Jake O\'Brien',
     },
     {
       id: 'strat-headphones',
-      title: 'Acoustic Shelter + 5-Min Visual Timer',
-      category: 'Auditory Isolation',
+      title: 'Ear Defenders + 5-Min Sand Timer',
+      category: 'Quiet Break',
       icon: '🎧',
       durationMinutes: 5,
       efficacy: 92,
-      description: 'Rapid reduction of sensory auditory overload before assembly or noisy practicals.',
-      actionProtocol: 'Offer noise defenders from desk pouch. Flip blue visual 5-min sand timer. Cease all verbal questioning until timer empties.',
+      description: 'Cuts down noise overload before loud hall activities or busy practicals.',
+      actionProtocol: 'Offer noise defenders from desk pouch. Flip blue visual 5-min sand timer. Allow quiet space until timer empties.',
     },
     {
       id: 'strat-putty',
-      title: 'Under-Desk Tactile Compression Putty',
-      category: 'Proprioceptive Calming',
+      title: 'Calming Desk Putty',
+      category: 'Tactile Calming',
       icon: '🧱',
       durationMinutes: 3,
       efficacy: 88,
-      description: 'Deep sensory pressure input to discharge physiological anxiety in-seat.',
-      actionProtocol: 'Hand green high-resistance therapy putty from top drawer. Encourage bilateral rhythmic squeezing below desk level.',
+      description: 'Calming desk putty to ease anxious energy without leaving the desk.',
+      actionProtocol: 'Hand green therapy putty from top drawer. Encourage rhythmic squeezing below desk level.',
     },
     {
       id: 'strat-task-shift',
-      title: 'Visual-Spatial Low-Demand Task Shift',
-      category: 'Cognitive Load Reduction',
+      title: 'Hands-On Visual Task Shift',
+      category: 'Visual Learning Shift',
       icon: '🎮',
       durationMinutes: 5,
       efficacy: 89,
-      description: 'Bypasses abstract working memory freeze by pivoting to visual game mechanics.',
+      description: 'Helps avoid overwhelm by switching from dry formulas to a hands-on visual puzzle.',
       actionProtocol: 'Switch from abstract algebra worksheet to the interactive Game Slope coordinate card. Allow him to manipulate the visual slider.',
     },
   ];
@@ -145,14 +145,14 @@ export const DeEscalationPalette: React.FC<DeEscalationPaletteProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-1.5">
-              <span>⚡ Real-Time De-Escalation Palette</span>
+              <span>✨ In-the-Moment Calming Tools</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 dark:bg-teal-950/60 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-                Room 4 Rapid Action
+                Room 4 Quick Support
               </span>
             </h3>
           </div>
           <p className="text-[11px] text-textDim dark:text-slate-400 mt-0.5">
-            Ranked strategies with proven 88%+ efficacy for {pupilName} Carter during dysregulation.
+            Proven strategies that help {pupilName} settle and refocus when feeling overwhelmed.
           </p>
         </div>
 
@@ -178,7 +178,7 @@ export const DeEscalationPalette: React.FC<DeEscalationPaletteProps> = ({
             }`}
           >
             <span>🟡</span>
-            <span>Escalating</span>
+            <span>Getting Wobbly</span>
           </button>
           <button
             onClick={() => setDysregulationLevel('overload')}
@@ -189,7 +189,7 @@ export const DeEscalationPalette: React.FC<DeEscalationPaletteProps> = ({
             }`}
           >
             <span>🔴</span>
-            <span>Overload Risk</span>
+            <span>Overwhelmed</span>
           </button>
         </div>
       </div>

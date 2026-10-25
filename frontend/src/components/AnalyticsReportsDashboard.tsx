@@ -252,10 +252,10 @@ export const AnalyticsReportsDashboard: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
               <Clock className="w-4 h-4 text-teal" />
-              <span>Time-of-Day Dysregulation & Incident Heatmap (Whole School)</span>
+              <span>Time-of-Day Stress & Incident Heatmap (Whole School)</span>
             </h3>
             <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-              Correlating schedule moments against behavioral strain to proactively deploy TA support.
+              Correlating schedule moments against daily stress points to deploy TA support where it helps most.
             </p>
           </div>
           <div className="flex items-center gap-3 text-[11px]">
@@ -339,7 +339,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
         <div className="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-900/40 flex items-start gap-3">
           <Sparkles className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
           <div className="text-xs text-teal-950 dark:text-teal-200 leading-relaxed">
-            <strong className="font-bold">Operational Insight:</strong> Over <strong>42% of school-wide dysregulations</strong> cluster within two distinct transition windows: <strong>Morning Recess (10:30–11:00 AM)</strong> due to acoustic corridor crowding and fasting medication dip windows, and <strong>Thursday Lunch Hall (12:30 PM)</strong>. Moving 1:1 TA presence near the doorway 5 minutes prior to bell times eliminates 80% of escalations.
+            <strong className="font-bold">Operational Insight:</strong> Over <strong>42% of school-wide incidents and distress</strong> cluster within two distinct transition windows: <strong>Morning Recess (10:30–11:00 AM)</strong> due to noisy crowded corridors and mid-morning energy dips, and <strong>Thursday Lunch Hall (12:30 PM)</strong>. Having TA support near the doorway 5 minutes prior to the bell prevents most escalations.
           </div>
         </div>
       </div>
@@ -351,10 +351,10 @@ export const AnalyticsReportsDashboard: React.FC = () => {
           <div className="border-b border-borderMain pb-2">
             <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>Root Antecedent Triggers Breakdown</span>
+              <span>Classroom Triggers Breakdown</span>
             </h3>
             <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-              Identified triggers across 57 documented ABC incident logs this academic year.
+              Identified triggers across 57 documented classroom incident notes this academic year.
             </p>
           </div>
 
@@ -414,14 +414,14 @@ export const AnalyticsReportsDashboard: React.FC = () => {
             <div>
               <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <span>De-Escalation Strategy Win Rates</span>
+                <span>Calming Strategies Success Rate</span>
               </h3>
               <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-                Empirical recovery efficacy ranked by proven classroom resolution rate.
+                Strategies ranked by how well they helped pupils settle and refocus in class.
               </p>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-              {strategyReport?.overall_win_rate}% Overall Win Rate
+              {strategyReport?.overall_win_rate}% Overall Helpful
             </span>
           </div>
 

@@ -102,28 +102,28 @@ export const EveningCheckInModal: React.FC<EveningCheckInModalProps> = ({
                 onChange={(e) => setDecompression(e.target.value)}
                 className="w-full text-xs px-3 py-2.5 rounded-xl border border-borderMain bg-cardBg text-textMain focus:outline-none focus:border-amber-dark font-medium"
               >
-                <option>Smooth & Calm (Immediate engagement)</option>
-                <option>Mild Sensory Wobble (10-15m quiet time)</option>
-                <option>Heavy Meltdown (30m+ restraint collapse)</option>
-                <option>Shutdown / Non-verbal Cocoon</option>
+                <option>Smooth & Calm (Settled in easily)</option>
+                <option>Needed Quiet Time (10-15m quiet space)</option>
+                <option>Needed Support (Overwhelmed / Needed 30m+ quiet space)</option>
+                <option>Quiet & Withdrawn (Resting in own room)</option>
               </select>
             </div>
 
             {/* Evening mood */}
             <div>
               <label className="block text-xs font-bold text-navy dark:text-white mb-1.5">
-                Evening mood & regulation
+                Evening mood & feelings
               </label>
               <select
                 value={eveningMood}
                 onChange={(e) => setEveningMood(e.target.value)}
                 className="w-full text-xs px-3 py-2.5 rounded-xl border border-borderMain bg-cardBg text-textMain focus:outline-none focus:border-amber-dark font-medium"
               >
-                <option>Tired but Regulated</option>
+                <option>Tired but Settled</option>
                 <option>Calm & Content</option>
                 <option>Sensitive / Emotional</option>
                 <option>Restless / High Energy</option>
-                <option>Deeply Fatigued</option>
+                <option>Deeply Tired</option>
               </select>
             </div>
 

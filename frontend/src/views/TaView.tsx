@@ -330,7 +330,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
           <div id="ta-quick-log" className="card p-5 space-y-3.5 scroll-mt-6">
             <div className="flex items-center justify-between border-b border-borderMain pb-2">
               <div>
-                <h3 className="text-sm font-bold text-navy dark:text-white">Fast Micro-Log (&lt; 45s)</h3>
+                <h3 className="text-sm font-bold text-navy dark:text-white">Quick Classroom Note (&lt; 30s)</h3>
                 <p className="text-[10px] text-textDim dark:text-slate-400">Syncs immediately to Ms Johnson & SENCO timeline</p>
               </div>
               <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-mint-pale dark:bg-teal-950/50 border border-teal/20 dark:border-teal-800/40 px-2 py-0.5 rounded-md">
@@ -341,7 +341,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
             {loggedSuccess && (
               <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl flex items-center gap-2 text-emerald-800 dark:text-emerald-300 text-xs animate-in zoom-in-95">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Micro-log saved to timeline and synced with Ms Johnson!</span>
+                <span>Note saved to timeline and shared with Ms Johnson!</span>
               </div>
             )}
 
@@ -568,8 +568,8 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-600" />
                 <div>
-                  <h3 className="text-sm font-bold text-navy dark:text-white">Frontline Strategy Efficacy (Room 4)</h3>
-                  <p className="text-[10px] text-textDim dark:text-slate-400">Proven de-escalation win rates from classroom micro-logs</p>
+                  <h3 className="text-sm font-bold text-navy dark:text-white">Proven Calming Strategies (Room 4)</h3>
+                  <p className="text-[10px] text-textDim dark:text-slate-400">Strategies that helped pupils settle and refocus in class</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2 py-0.5 rounded-md font-mono">
@@ -617,7 +617,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                     <span>⚠️ Direct Verbal Demands / Questioning</span>
                     <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-200/80 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 font-bold">33%</span>
                   </div>
-                  <p className="text-[10px] text-rose-700 dark:text-rose-400">Escalates fight-or-flight when dysregulated — use visual cards instead</p>
+                  <p className="text-[10px] text-rose-700 dark:text-rose-400">Can cause distress when overwhelmed — use visual cards instead</p>
                 </div>
                 <span className="text-[10px] font-bold text-rose-800 dark:text-rose-300">Avoid</span>
               </div>

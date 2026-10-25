@@ -438,7 +438,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                 onClick={() => handleChipClick(`What proven de-escalation strategies work best for ${pupilName}?`)}
                 className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
               >
-                🧘 De-escalation
+                🧘 Calming Strategies
               </button>
               <button
                 onClick={() => handleChipClick(`What are the statutory EHCP Section F agreed hours and provisions for ${pupilName}?`)}

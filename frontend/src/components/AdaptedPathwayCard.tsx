@@ -434,7 +434,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       const pupilYear = child.year_group || 'Year 5';
       setSelectedYearGroup(pupilYear);
       setRationale(
-        `${pupilName} is a visual-spatial learner with high pattern recognition capacity. Abstract notation triggers cognitive shutdown. Loading individualized scaffolding pathway...`
+        `${pupilName} is a visual learner with strong pattern recognition. Abstract formulas without visuals can feel overwhelming. Loading step-by-step visual lesson support...`
       );
       loadUnits(pupilYear, selectedSubject, true);
     }
@@ -821,7 +821,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
           {/* Spotlight Rationale */}
           <div className="p-3.5 bg-gradient-to-r from-teal/10 via-teal/5 to-transparent dark:from-teal-950/40 dark:via-cardBg dark:to-transparent border-l-3 border-teal rounded-xl text-xs space-y-1">
             <div className="text-[10px] font-bold uppercase tracking-wider text-teal dark:text-teal-300">
-              Cognitive Profile & Scaffolding Rationale ({pupilName})
+              Learning Strengths & Lesson Support ({pupilName})
             </div>
             <p className="text-textSub dark:text-slate-300 leading-relaxed text-[11.5px]">
               {rationale}

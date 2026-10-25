@@ -122,9 +122,9 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
             </div>
 
             <div className="flex justify-between text-[11px] text-textDim dark:text-white/50 pt-1 font-medium">
-              <span>0% Empty (Meltdown Zone)</span>
-              <span>50% Amber Reserve</span>
-              <span>100% Regulated</span>
+              <span>0% Drained (Needs Quiet)</span>
+              <span>50% Steady Reserve</span>
+              <span>100% Calm & Content</span>
             </div>
           </div>
 
@@ -135,7 +135,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
               <span>{bridge.masking_level}</span>
             </div>
             <p className="text-xs text-textSub dark:text-white/80 leading-relaxed">
-              Synthesized purely from adult logs (Teacher, TA, Morning check-in). Zero recording pressure placed on {childName}.
+              Based on daily teacher and parent notes. Zero screen pressure on {childName}.
             </p>
           </div>
         </div>
@@ -149,9 +149,9 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>Understanding Today&apos;s Masking at School</span>
+              <span>Holding It Together at School</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
-                Restraint Collapse Decoder
+                After-School Recovery Guide
               </span>
             </h3>
             <p className="text-xs text-textSub dark:text-slate-300 mt-1.5 leading-relaxed">
@@ -160,7 +160,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-amber-200/50 dark:border-amber-900/30">
               <div className="bg-rose-50/70 dark:bg-rose-950/30 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40">
                 <div className="text-[11px] font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1.5 mb-1">
-                  <span>⚡ Draining Sensory Demands</span>
+                  <span>⚡ What Drained Energy Today</span>
                 </div>
                 <ul className="space-y-1 text-[11px] text-rose-700 dark:text-rose-200 list-disc list-inside">
                   {bridge.draining_factors.map((item, idx) => (
@@ -171,7 +171,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
 
               <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
                 <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 mb-1">
-                  <span>🌱 Protective School Anchors</span>
+                  <span>🌱 What Helped Today</span>
                 </div>
                 <ul className="space-y-1 text-[11px] text-emerald-700 dark:text-emerald-200 list-disc list-inside">
                   {bridge.recharging_factors.map((item, idx) => (
@@ -189,9 +189,9 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
         <div className="flex items-center justify-between border-b border-borderMain pb-2">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-teal" />
-            <h3 className="text-sm font-bold text-navy dark:text-white">Adult Observation Ring (Today's Evidence)</h3>
+            <h3 className="text-sm font-bold text-navy dark:text-white">What School & Home Noticed Today</h3>
           </div>
-          <span className="text-[10px] font-semibold text-textDim dark:text-slate-400">Adult proxy synthesis · No child app demand</span>
+          <span className="text-[10px] font-semibold text-textDim dark:text-slate-400">Daily teacher & parent notes · No apps for child</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

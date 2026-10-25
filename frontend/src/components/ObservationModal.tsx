@@ -110,7 +110,7 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
                 <option>High</option>
                 <option>Engaged with Support</option>
                 <option>Passive</option>
-                <option>Dysregulated</option>
+                <option>Overwhelmed / Disengaged</option>
               </select>
             </div>
           </div>
@@ -118,7 +118,7 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
           <div className="p-3.5 bg-mint/10 border border-mint/30 rounded-xl space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-bold text-teal">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Strategy & Regulation Tracker</span>
+              <span>Calming & Support Tracker</span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <input

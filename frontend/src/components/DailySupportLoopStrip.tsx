@@ -282,7 +282,7 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
                 Pick-up advice: <strong className="text-textHead">{bridge.decompression_recipe?.[0]?.title || '10-15m quiet buffer'}</strong> before asking about school.
               </span>
             ) : (
-              'Auto-prepared from afternoon logs ready for pick-up at the gates.'
+              'Auto-prepared from afternoon notes ready for pick-up at the gates.'
             )}
           </p>
 

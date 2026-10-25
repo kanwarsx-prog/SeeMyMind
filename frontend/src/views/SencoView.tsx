@@ -1131,7 +1131,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
               <div className="text-2xl font-bold font-serif text-navy dark:text-white">
                 {staffList.filter((s) => s.role === 'ta').length}
               </div>
-              <p className="text-[10px] text-teal dark:text-teal-300 font-medium mt-0.5">SEND Transition & Micro-Logs</p>
+              <p className="text-[10px] text-teal dark:text-teal-300 font-medium mt-0.5">SEND Transition & Daily Notes</p>
             </div>
 
             <div className="bg-cardBg p-4 rounded-2xl border border-borderMain shadow-2xs">
@@ -1218,13 +1218,13 @@ export const SencoView: React.FC<SencoViewProps> = ({
                       badge: 'Classroom Teacher',
                       badgeBg: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40',
                       avatarBg: 'bg-purple-600 text-white',
-                      duties: 'Pre-Flight Handovers, differentiated pathways & lesson worksheets',
+                      duties: 'Morning handovers, adapted lessons & visual worksheets',
                     },
                     ta: {
                       badge: '1:1 Teaching Assistant',
                       badgeBg: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40',
                       avatarBg: 'bg-emerald-600 text-white',
-                      duties: 'High-risk timetable execution, <45s micro-logs & sensory decompression',
+                      duties: 'Key transition support, quick classroom notes & calming steps',
                     },
                     specialist: {
                       badge: 'Specialist / Therapist',
@@ -1429,7 +1429,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
                       className="w-full text-xs px-3 py-2 rounded-xl border border-borderMain bg-cardBg text-textMain focus:outline-hidden focus:border-teal cursor-pointer"
                     >
                       <option value="teacher">Classroom Teacher (Class Lead, Handover recipient)</option>
-                      <option value="ta">Teaching Assistant / 1:1 Support (Micro-logs, High-risk transitions)</option>
+                      <option value="ta">Teaching Assistant / 1:1 Support (Classroom notes, Transition support)</option>
                       <option value="specialist">Specialist / Therapist / SaLT (Clinical observations)</option>
                     </select>
                   </div>

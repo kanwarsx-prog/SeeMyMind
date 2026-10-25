@@ -54,16 +54,16 @@ export const AbcTooltip: React.FC<AbcTooltipProps> = ({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
               <div className="p-2 rounded-lg bg-white border border-blue-100">
-                <span className="font-bold text-amber-700 block">A · Antecedent</span>
-                <span className="text-gray-500">What environmental trigger or demand occurred immediately before?</span>
+                <span className="font-bold text-amber-700 block">A · Trigger</span>
+                <span className="text-gray-500">What happened right before? (Noise, sudden change, demand).</span>
               </div>
               <div className="p-2 rounded-lg bg-white border border-blue-100">
-                <span className="font-bold text-rose-700 block">B · Behaviour</span>
-                <span className="text-gray-500">Factual, observable response (flight, overload, withdrawal).</span>
+                <span className="font-bold text-rose-700 block">B · Reaction</span>
+                <span className="text-gray-500">Observable response (covering ears, crying, leaving room).</span>
               </div>
               <div className="p-2 rounded-lg bg-white border border-blue-100">
-                <span className="font-bold text-emerald-700 block">C · Consequence</span>
-                <span className="text-gray-500">Adult response, de-escalation tools, and recovery outcome.</span>
+                <span className="font-bold text-emerald-700 block">C · Support Given</span>
+                <span className="text-gray-500">How staff helped (ear defenders, quiet space, outcome).</span>
               </div>
             </div>
           </div>
@@ -132,8 +132,8 @@ export const AbcTooltip: React.FC<AbcTooltipProps> = ({
                 A
               </span>
               <div>
-                <strong className="text-amber-950 font-semibold">Antecedent: </strong>
-                <span className="text-gray-600">The immediate trigger (sensory spike, routine shift, demand).</span>
+                <strong className="text-amber-950 font-semibold">Trigger: </strong>
+                <span className="text-gray-600">What happened right before (noise, sudden shift, demand).</span>
               </div>
             </div>
 
@@ -142,8 +142,8 @@ export const AbcTooltip: React.FC<AbcTooltipProps> = ({
                 B
               </span>
               <div>
-                <strong className="text-rose-950 font-semibold">Behaviour: </strong>
-                <span className="text-gray-600">Observable, factual response (flight, overload, withdrawal).</span>
+                <strong className="text-rose-950 font-semibold">Reaction: </strong>
+                <span className="text-gray-600">Factual description of what the pupil did or expressed.</span>
               </div>
             </div>
 
@@ -152,8 +152,8 @@ export const AbcTooltip: React.FC<AbcTooltipProps> = ({
                 C
               </span>
               <div>
-                <strong className="text-emerald-950 font-semibold">Consequence: </strong>
-                <span className="text-gray-600">Adult response, de-escalation tools, and recovery time.</span>
+                <strong className="text-emerald-950 font-semibold">Support Given: </strong>
+                <span className="text-gray-600">How staff helped the pupil settle, and the outcome.</span>
               </div>
             </div>
           </div>
