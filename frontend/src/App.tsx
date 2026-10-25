@@ -785,15 +785,30 @@ const AppContent: React.FC = () => {
         child={child}
       />
 
-      <NoyaCopilotDrawer
-        isOpen={isCopilotOpen}
-        onClose={() => setIsCopilotOpen(false)}
-        child={child}
-        activeView={activeView}
-        currentUser={currentUser}
-        initialQuery={copilotInitialQuery}
-        onClearInitialQuery={() => setCopilotInitialQuery(undefined)}
-      />
+      {(() => {
+        const isOverviewScreen =
+          (activeView === 'teacher' && teacherSubView === 'matrix') ||
+          (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'));
+
+        const copilotScreenContext = isOverviewScreen
+          ? (activeView === 'teacher' ? 'classroom_matrix' : 'senco_overview')
+          : activeView === 'parent'
+          ? 'parent_hub'
+          : 'pupil_focus';
+
+        return (
+          <NoyaCopilotDrawer
+            isOpen={isCopilotOpen}
+            onClose={() => setIsCopilotOpen(false)}
+            child={isOverviewScreen ? null : child}
+            activeView={copilotScreenContext}
+            screenContext={copilotScreenContext}
+            currentUser={currentUser}
+            initialQuery={copilotInitialQuery}
+            onClearInitialQuery={() => setCopilotInitialQuery(undefined)}
+          />
+        );
+      })()}
     </div>
   );
 };

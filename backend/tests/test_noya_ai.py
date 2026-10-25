@@ -298,4 +298,77 @@ def test_noya_copilot_chat_tenant_isolation(client):
     assert "access denied" in data["answer_markdown"].lower() or "permission" in data["answer_markdown"].lower()
 
 
+def test_noya_copilot_chat_parent_role(client):
+    """Verify parent queries receive warm, jargon-free support and parent-tailored follow-ups."""
+    child = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Leo",
+            "last_name": "Carter",
+            "date_of_birth": "2017-09-10",
+            "primary_need": "Speech, Language and Communication",
+        },
+    ).json()["id"]
+
+    resp = client.post(
+        "/api/v1/noya/copilot/chat",
+        json={
+            "child_id": child,
+            "active_view": "parent_hub",
+            "message": "How can I help Leo settle arriving home tonight?",
+            "history": [],
+        },
+        headers={"x-user-role": "parent"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "calm" in data["answer_markdown"].lower() or "home" in data["answer_markdown"].lower() or "settle" in data["answer_markdown"].lower()
+    # Confirm suggested followups are parent-tailored (no Section F or emergency contact)
+    for followup in data["suggested_followups"]:
+        assert "section f" not in followup.lower()
+        assert "emergency contact" not in followup.lower()
+    assert any("morning check-in" in f.lower() or "settle" in f.lower() or "strengths" in f.lower() for f in data["suggested_followups"])
+
+
+def test_noya_copilot_chat_classroom_overview(client):
+    """Verify classroom overview queries return Room 4 cohort insights without requiring a child ID."""
+    resp = client.post(
+        "/api/v1/noya/copilot/chat",
+        json={
+            "child_id": None,
+            "active_view": "classroom_matrix",
+            "message": "Summarize Room 4 sensory accommodations",
+            "history": [],
+        },
+        headers={"x-user-role": "teacher"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "room 4" in data["answer_markdown"].lower() or "sensory" in data["answer_markdown"].lower()
+    assert data["action_card"] is not None
+    assert data["action_card"]["type"] == "cohort_accommodations"
+    assert any("room 4" in f.lower() or "class" in f.lower() for f in data["suggested_followups"])
+
+
+def test_noya_copilot_chat_senco_overview(client):
+    """Verify SENCO overview queries return whole-school inclusion governance insights."""
+    resp = client.post(
+        "/api/v1/noya/copilot/chat",
+        json={
+            "child_id": None,
+            "active_view": "senco_overview",
+            "message": "What is our whole-school EHCP vs SEN Support distribution?",
+            "history": [],
+        },
+        headers={"x-user-role": "senco"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "st. jude's" in data["answer_markdown"].lower() or "ehcp" in data["answer_markdown"].lower() or "sen support" in data["answer_markdown"].lower()
+    assert data["action_card"] is not None
+    assert data["action_card"]["type"] == "whole_school_stats"
+    assert any("ehcp" in f.lower() or "annual review" in f.lower() or "ta support" in f.lower() for f in data["suggested_followups"])
+
+
+
 

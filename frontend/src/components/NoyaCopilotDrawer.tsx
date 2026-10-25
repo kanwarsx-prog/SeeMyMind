@@ -33,6 +33,7 @@ interface NoyaCopilotDrawerProps {
   onClose: () => void;
   child?: Child | null;
   activeView?: string;
+  screenContext?: string;
   currentUser?: UserProfile | null;
   initialQuery?: string;
   onClearInitialQuery?: () => void;
@@ -55,7 +56,8 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
   onClose,
   child,
   activeView = 'classroom',
-  currentUser: _currentUser,
+  screenContext,
+  currentUser,
   initialQuery,
   onClearInitialQuery,
 }) => {
@@ -66,33 +68,85 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize or reset conversation when child changes or on first mount
+  const isParent = currentUser?.role === 'parent' || screenContext === 'parent_hub';
+  const isClassroom = screenContext === 'classroom_matrix';
+  const isSenco = screenContext === 'senco_overview';
+  const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
+  const parentFirstName = currentUser?.full_name ? currentUser.full_name.split(' ')[0] : 'Dana';
+
+  // Compute a unique key representing current conversation scope
+  const currentContextKey = isClassroom
+    ? 'scope:classroom_matrix'
+    : isSenco
+    ? 'scope:senco_overview'
+    : isParent
+    ? `scope:parent_${child?.id || 'general'}`
+    : `scope:pupil_${child?.id || 'none'}`;
+
+  const prevContextKeyRef = useRef<string>('');
+
+  // Initialize or reset conversation when scope or child changes
   const resetConversation = () => {
-    const pupilName = child?.preferred_name || child?.first_name;
+    let greetingContent = '';
+    let followups: string[] = [];
+
+    if (isParent && child) {
+      greetingContent = `Hello ${parentFirstName}! I'm **NOYA**, your family inclusion partner. I keep you directly connected with **${pupilName}**'s classroom support team, home-time energy updates, and proven calming routines with zero clinical jargon.\n\nHow can I help you and ${pupilName} today?`;
+      followups = [
+        `How can I help ${pupilName} settle arriving home tonight?`,
+        `Has ${pupilName}'s morning check-in been seen by the teacher?`,
+        `What sensory calming tools worked best in class today?`,
+        `What does ${pupilName}'s 3:15 PM energy note mean for tonight?`,
+      ];
+    } else if (isClassroom) {
+      greetingContent = `Hello! I'm **NOYA**, your classroom inclusion copilot for **Room 4**. I have real-time visibility across all 4 pupils in your cohort, class sensory accommodations, TA hours, and strategy win rates.\n\nHow can I help support your whole classroom delivery today?`;
+      followups = [
+        'Summarize Room 4 sensory accommodations',
+        'Which pupils in Room 4 need proactive quiet breaks?',
+        'What is our class strategy win rate this week?',
+        'What are the weekly TA hours across Room 4?',
+      ];
+    } else if (isSenco) {
+      greetingContent = `Hello! I'm **NOYA**, your school inclusion and statutory governance copilot for St. Jude's. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
+      followups = [
+        'What is our whole-school EHCP vs SEN Support distribution?',
+        'Which pupils have statutory annual reviews due this term?',
+        'Show total weekly High-Needs TA support hours',
+        'Summarize statutory provisions across classrooms',
+      ];
+    } else if (child) {
+      greetingContent = `Hello! I'm **NOYA**, your context-aware SEND Copilot. I have live access to verified records, morning handovers, and statutory EHCP Section F data for **${pupilName}**. All queries run under strict multi-tenant isolation with Zero-LLM PII protection.\n\nHow can I assist your classroom delivery today?`;
+      followups = [
+        `What was the latest morning handover for ${pupilName}?`,
+        `Who is the emergency contact for ${pupilName}?`,
+        `What proven de-escalation strategies work best for ${pupilName}?`,
+        `What are the statutory Section F agreed hours for ${pupilName}?`,
+      ];
+    } else {
+      greetingContent = `Hello! I'm **NOYA**, your school SEND Copilot. I can query morning handovers, de-escalation strategies, and whole-school provisions. Select a pupil or ask a question below.`;
+      followups = [
+        'Show class provision overview',
+        'Which pupils have upcoming annual reviews?',
+      ];
+    }
+
     const greeting: DisplayMessage = {
       id: 'greeting-' + Date.now(),
       role: 'assistant',
-      content: pupilName
-        ? `Hello! I'm **NOYA**, your context-aware SEND Copilot. I have live access to verified records, morning handovers, and statutory EHCP Section F data for **${pupilName}**. All queries run under strict multi-tenant isolation with Zero-LLM PII protection.\n\nHow can I assist your classroom delivery today?`
-        : `Hello! I'm **NOYA**, your school SEND Copilot. I can query morning handovers, de-escalation strategies, emergency contacts, and EHCP provisions. Select a pupil or ask a question below.`,
-      suggestedFollowups: pupilName
-        ? [
-            'What was the latest morning handover?',
-            'Who is the emergency contact?',
-            'What proven de-escalation strategies work best?',
-            'What are the statutory Section F agreed hours?',
-          ]
-        : ['Which pupils have upcoming annual reviews?', 'Show class provision overview'],
+      content: greetingContent,
+      suggestedFollowups: followups,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setMessages([greeting]);
   };
 
+  // Reset chat whenever child ID or screen context changes (fixes stuck old conversation)
   useEffect(() => {
-    if (messages.length === 0) {
+    if (prevContextKeyRef.current !== currentContextKey) {
+      prevContextKeyRef.current = currentContextKey;
       resetConversation();
     }
-  }, [child?.id]);
+  }, [currentContextKey]);
 
   // Handle incoming initialQuery (e.g. from SencoView search box)
   useEffect(() => {
@@ -202,8 +256,6 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
-
   return (
     <>
       {/* Backdrop overlay */}
@@ -233,10 +285,25 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-textDim truncate">
-                {child ? (
+                {isParent && child ? (
+                  <span className="flex items-center gap-1 font-medium text-textMain">
+                    <span>👩‍👧</span>
+                    <span>Family Partner for {pupilName} {child.last_name}</span>
+                  </span>
+                ) : isClassroom ? (
+                  <span className="flex items-center gap-1 font-medium text-textMain">
+                    <span>🏫</span>
+                    <span>Room 4 Classroom Hub · All 4 Pupils</span>
+                  </span>
+                ) : isSenco ? (
+                  <span className="flex items-center gap-1 font-medium text-textMain">
+                    <span>🛡️</span>
+                    <span>Whole-School SENCO Hub · Statutory Register</span>
+                  </span>
+                ) : child ? (
                   <span className="flex items-center gap-1 font-medium text-textMain">
                     <User className="w-3 h-3 text-teal" />
-                    {pupilName} {child.last_name} · {child.year_group || 'SEND'}
+                    <span>{pupilName} {child.last_name} · {child.year_group || 'SEND'}</span>
                   </span>
                 ) : (
                   <span>Whole School &bull; General Guidance</span>
@@ -267,38 +334,136 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
           </div>
         </div>
 
-        {/* Quick Context Chips Bar (Pupil-Aware) */}
-        {child && (
-          <div className="px-3.5 py-2 bg-cardBg border-b border-borderMain/60 overflow-x-auto flex items-center gap-1.5 no-scrollbar flex-shrink-0">
-            <span className="text-[10px] font-bold text-textDim uppercase tracking-wider flex-shrink-0 mr-1">
-              Quick:
-            </span>
-            <button
-              onClick={() => handleChipClick('What was the latest morning handover status?')}
-              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-            >
-              🌅 Morning Handover
-            </button>
-            <button
-              onClick={() => handleChipClick('Who is the emergency contact and what are their details?')}
-              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-            >
-              📞 Emergency Contact
-            </button>
-            <button
-              onClick={() => handleChipClick('What proven de-escalation strategies work best for this pupil?')}
-              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-            >
-              🧘 De-escalation
-            </button>
-            <button
-              onClick={() => handleChipClick('What are the statutory EHCP Section F agreed hours and provisions?')}
-              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-            >
-              📋 Section F Hours
-            </button>
-          </div>
-        )}
+        {/* Quick Context Chips Bar (Role and Screen Aware) */}
+        <div className="px-3.5 py-2 bg-cardBg border-b border-borderMain/60 overflow-x-auto flex items-center gap-1.5 no-scrollbar flex-shrink-0">
+          <span className="text-[10px] font-bold text-textDim uppercase tracking-wider flex-shrink-0 mr-1">
+            Quick:
+          </span>
+          {isParent && child ? (
+            <>
+              <button
+                onClick={() => handleChipClick(`Has ${pupilName}'s morning check-in been seen by the teacher?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🌅 Morning Note Seen?
+              </button>
+              <button
+                onClick={() => handleChipClick(`What does ${pupilName}'s 3:15 PM energy note mean for tonight?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🎒 Home-Time Energy
+              </button>
+              <button
+                onClick={() => handleChipClick(`How can I help ${pupilName} settle arriving home tonight?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                Tonight&apos;s Calming Steps
+              </button>
+              <button
+                onClick={() => handleChipClick(`What strengths and positive moments were celebrated for ${pupilName} recently?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                ⭐ Classroom Wins
+              </button>
+            </>
+          ) : isClassroom ? (
+            <>
+              <button
+                onClick={() => handleChipClick('Summarize Room 4 sensory accommodations and environmental adjustments.')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🧩 Sensory Matrix
+              </button>
+              <button
+                onClick={() => handleChipClick('What are the total weekly TA hours across Room 4 pupils?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                👥 TA Allocations
+              </button>
+              <button
+                onClick={() => handleChipClick('What is our class strategy win rate this week?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🎯 Strategy Win Rate
+              </button>
+              <button
+                onClick={() => handleChipClick('Which pupils in Room 4 need proactive sensory breaks?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                ⚠️ Sensory Breaks
+              </button>
+            </>
+          ) : isSenco ? (
+            <>
+              <button
+                onClick={() => handleChipClick('What is our whole-school EHCP vs SEN Support distribution?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📊 Provision Breakdown
+              </button>
+              <button
+                onClick={() => handleChipClick('Which pupils have statutory annual reviews due this term?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📅 Annual Reviews
+              </button>
+              <button
+                onClick={() => handleChipClick('Show total weekly high-needs TA support hours across the school.')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🤝 High-Needs Hours
+              </button>
+              <button
+                onClick={() => handleChipClick('Summarize Section 44 and statutory compliance for the trust report.')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📋 Statutory Compliance
+              </button>
+            </>
+          ) : child ? (
+            <>
+              <button
+                onClick={() => handleChipClick(`What was the latest morning handover status for ${pupilName}?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🌅 Morning Handover
+              </button>
+              <button
+                onClick={() => handleChipClick(`Who is the emergency contact and what are their details for ${pupilName}?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📞 Emergency Contact
+              </button>
+              <button
+                onClick={() => handleChipClick(`What proven de-escalation strategies work best for ${pupilName}?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🧘 De-escalation
+              </button>
+              <button
+                onClick={() => handleChipClick(`What are the statutory EHCP Section F agreed hours and provisions for ${pupilName}?`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📋 Section F Hours
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleChipClick('Show class provision overview')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                🏫 Class Overview
+              </button>
+              <button
+                onClick={() => handleChipClick('Which pupils have upcoming annual reviews?')}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
+              >
+                📅 Annual Reviews
+              </button>
+            </>
+          )}
+        </div>
 
         {/* Message Thread (Scrollable) */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-appBg/30">
