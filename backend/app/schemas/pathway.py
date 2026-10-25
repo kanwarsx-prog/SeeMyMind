@@ -49,6 +49,16 @@ class CurriculumUnit(BaseModel):
     id: str
     subject: str
     year_group: str
+    key_stage: str | None = None
     title: str
     strand: str
     default_objective: str
+    source: str | None = "National Curriculum (Oak)"
+    external_slug: str | None = None
+
+
+class CurriculumMetadataResponse(BaseModel):
+    year_groups: list[str]
+    subjects: list[str]
+    total_units: int
+

@@ -169,9 +169,18 @@ export interface CurriculumUnit {
   id: string;
   subject: string;
   year_group: string;
+  key_stage?: string;
   title: string;
   strand: string;
   default_objective: string;
+  source?: string;
+  external_slug?: string;
+}
+
+export interface CurriculumMetadataResponse {
+  year_groups: string[];
+  subjects: string[];
+  total_units: number;
 }
 
 export interface PathwayGenerateRequest {

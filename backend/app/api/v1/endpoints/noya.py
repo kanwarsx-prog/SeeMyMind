@@ -13,10 +13,12 @@ from app.schemas.ai import (
     MorningBriefingResponse,
 )
 from app.schemas.pathway import (
+    CurriculumMetadataResponse,
     CurriculumUnit,
     LessonPathwayResponse,
     PathwayGenerateRequest,
 )
+from app.services.oak_service import OakCurriculumService
 from app.services.pathway_service import PathwayService
 
 router = APIRouter()
@@ -60,9 +62,28 @@ def ask_noya(request: AskNoyaRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/pathway/curriculum-units", response_model=list[CurriculumUnit])
-def get_curriculum_units():
-    """Retrieve pre-curated National Curriculum units for quick lesson selection."""
-    return PathwayService.get_curriculum_units()
+def get_curriculum_units(
+    year_group: str | None = Query(None, description="Filter by year group, e.g. 'Year 5'"),
+    subject: str | None = Query(None, description="Filter by subject, e.g. 'Mathematics'"),
+    search: str | None = Query(None, description="Search term for title, strand, or objective"),
+    db: Session = Depends(get_db),
+):
+    """Retrieve National Curriculum units filtered by year group, subject, or keyword."""
+    return PathwayService.get_curriculum_units(
+        db=db, year_group=year_group, subject=subject, search=search
+    )
+
+
+@router.get("/pathway/curriculum-metadata", response_model=CurriculumMetadataResponse)
+def get_curriculum_metadata(db: Session = Depends(get_db)):
+    """Retrieve available year groups and subjects from the curriculum database cache."""
+    return PathwayService.get_curriculum_metadata(db=db)
+
+
+@router.post("/pathway/curriculum-sync-oak")
+def sync_oak_curriculum(db: Session = Depends(get_db)):
+    """Synchronize curriculum units from Oak National Academy API or return cache status."""
+    return OakCurriculumService.sync_oak_units(db=db)
 
 
 @router.post("/pathway/generate", response_model=LessonPathwayResponse)

@@ -12,7 +12,9 @@ from app.ai.client import get_openai_client
 from app.core.config import settings
 from app.models.ai_noya import AIRun
 from app.models.pupil import Child
+from app.models.curriculum import CurriculumUnitModel
 from app.schemas.pathway import (
+    CurriculumMetadataResponse,
     CurriculumUnit,
     LessonPathwayResponse,
     PathwayGenerateRequest,
@@ -22,63 +24,528 @@ from app.schemas.pathway import (
 
 logger = logging.getLogger(__name__)
 
-CURRICULUM_UNITS: list[CurriculumUnit] = [
+EXPANDED_CURRICULUM_UNITS: list[CurriculumUnit] = [
+    # --- YEAR 3 (Key Stage 2) ---
+    CurriculumUnit(
+        id="ks2-y3-maths-place-value",
+        subject="Mathematics",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Place Value & 3-Digit Addition",
+        strand="Number & Operations",
+        default_objective="Represent numbers up to 1,000 using base-10 blocks and place value counters.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-maths-fractions",
+        subject="Mathematics",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Fractions of Shapes & Quantities",
+        strand="Fractions",
+        default_objective="Recognise and use unit and non-unit fractions with small denominators using bar models.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-eng-stoneage",
+        subject="English",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Stone Age Boy — Setting & Dialogue",
+        strand="Writing & Narrative",
+        default_objective="Use descriptive adverbs and expanded noun phrases to evoke prehistoric settings.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-sci-magnets",
+        subject="Science",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Forces & Magnets: Attraction & Poles",
+        strand="Physics",
+        default_objective="Compare how things move on different surfaces and identify magnetic materials.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-sci-rocks",
+        subject="Science",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Rocks, Soil Formation & Fossils",
+        strand="Earth Science",
+        default_objective="Classify sedimentary, igneous and metamorphic rocks and describe fossil formation.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-geo-rivers",
+        subject="Geography",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Rivers, Erosion & The Water Cycle",
+        strand="Physical Geography",
+        default_objective="Map river journeys from source to sea and trace evaporation and condensation.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-hist-stoneage",
+        subject="History",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Hunter-Gatherers to Iron Age Hillforts",
+        strand="British History",
+        default_objective="Investigate archaeological evidence of Neolithic farming at Skara Brae.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y3-comp-scratch",
+        subject="Computing",
+        year_group="Year 3",
+        key_stage="KS2",
+        title="Sequencing & Animation in Scratch",
+        strand="Algorithms & Programming",
+        default_objective="Create sprite animations using sequence blocks and event trigger loops.",
+        source="National Curriculum (Oak)",
+    ),
+
+    # --- YEAR 4 (Key Stage 2) ---
+    CurriculumUnit(
+        id="ks2-y4-maths-multiplication",
+        subject="Mathematics",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="Multiplication Tables & Factor Pairs",
+        strand="Multiplication & Division",
+        default_objective="Recall 12x12 times tables and use distributive law with array grids.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-maths-area",
+        subject="Mathematics",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="Perimeter & Area of Compound Shapes",
+        strand="Measurement & Geometry",
+        default_objective="Find the area of rectilinear shapes by counting grid squares and calculating dimensions.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-eng-ironman",
+        subject="English",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="The Iron Man — Figurative Personification",
+        strand="Reading Comprehension",
+        default_objective="Identify and analyse powerful verbs, similes, and mechanical metaphors in poetry.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-sci-matter",
+        subject="Science",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="States of Matter: Heating & Cooling",
+        strand="Chemistry",
+        default_objective="Observe particle arrangements in solids, liquids, and gases during temperature change.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-sci-sound",
+        subject="Science",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="Sound Vibrations, Pitch & Amplitude",
+        strand="Physics",
+        default_objective="Demonstrate how sound vibrations travel through mediums to the eardrum.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-geo-volcanoes",
+        subject="Geography",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="Volcanoes, Earthquakes & Plate Margins",
+        strand="Physical Geography",
+        default_objective="Locate the Pacific Ring of Fire and describe tectonic plate convergence.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-hist-romans",
+        subject="History",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="The Roman Invasion & Boudicca's Revolt",
+        strand="British History",
+        default_objective="Examine archaeological evidence of Roman roads, villas, and Celtic resistance.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y4-comp-safety",
+        subject="Computing",
+        year_group="Year 4",
+        key_stage="KS2",
+        title="Web Networks & Digital Literacy Safety",
+        strand="Computer Systems",
+        default_objective="Understand how search results are ranked and evaluate online source reliability.",
+        source="National Curriculum (Oak)",
+    ),
+
+    # --- YEAR 5 (Key Stage 2) ---
     CurriculumUnit(
         id="maths-graphs",
         subject="Mathematics",
         year_group="Year 5",
+        key_stage="KS2",
         title="Straight Line Graphs & Gradients",
         strand="Geometry & Algebra",
         default_objective="Calculate gradient m = rise / run on a coordinate plane and observe y = mx + c.",
+        source="National Curriculum (Oak)",
     ),
     CurriculumUnit(
         id="maths-fractions",
         subject="Mathematics",
         year_group="Year 5",
+        key_stage="KS2",
         title="Equivalent Fractions & Visual Bar Models",
         strand="Number & Fractions",
         default_objective="Find equivalent fractions and convert mixed numbers using concrete visual strip representations.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y5-maths-decimals",
+        subject="Mathematics",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Decimals, Thousandths & Percentages",
+        strand="Fractions & Decimals",
+        default_objective="Read, write, order and compare numbers with up to three decimal places.",
+        source="National Curriculum (Oak)",
     ),
     CurriculumUnit(
         id="english-highwayman",
         subject="English",
         year_group="Year 5",
-        title="The Highwayman — Narrative Inference",
+        key_stage="KS2",
+        title="The Highwayman — Narrative Inference & Metaphor",
         strand="Reading & Comprehension",
         default_objective="Infer character motives, mood, and atmosphere from figurative language and descriptive imagery.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y5-eng-persuasion",
+        subject="English",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Persuasive Speeches & Rhetorical Devices",
+        strand="Writing & Oracy",
+        default_objective="Draft persuasive speeches using rhetorical questions, modal verbs, and evidence.",
+        source="National Curriculum (Oak)",
     ),
     CurriculumUnit(
         id="science-circuits",
         subject="Science",
         year_group="Year 5",
+        key_stage="KS2",
         title="Electrical Circuits, Voltage & Switches",
         strand="Physics & Scientific Enquiry",
         default_objective="Investigate how component variation and switches affect electrical current in a series circuit.",
+        source="National Curriculum (Oak)",
     ),
     CurriculumUnit(
-        id="computing-loops",
-        subject="Computing",
+        id="ks2-y5-sci-space",
+        subject="Science",
         year_group="Year 5",
-        title="Algorithmic Loops & Game Design",
-        strand="Computer Science",
-        default_objective="Design game character movement loops and debug condition-triggered actions.",
+        key_stage="KS2",
+        title="Earth & Space: Planetary Orbit & Day/Night",
+        strand="Physics & Astronomy",
+        default_objective="Model the spherical Earth's rotation to explain day and night and planetary movement.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y5-geo-rainforest",
+        subject="Geography",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Tropical Rainforest Biomes & Layer Stratification",
+        strand="Physical Geography",
+        default_objective="Examine the 4 vegetation layers of the Amazon basin and ecological adaptations.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y5-geo-climate",
+        subject="Geography",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Global Climate Zones & Biome Mapping",
+        strand="Human & Physical Geography",
+        default_objective="Identify climate zones using latitude, longitude, the Equator, and Tropics.",
+        source="National Curriculum (Oak)",
     ),
     CurriculumUnit(
         id="history-saxons",
         subject="History",
         year_group="Year 5",
+        key_stage="KS2",
         title="Anglo-Saxon Settlements & Artifact Analysis",
         strand="Historical Enquiry",
         default_objective="Deduce daily life and cultural practices from archaeological evidence and physical artifacts.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y5-hist-vikings",
+        subject="History",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Viking Raids, Danelaw & King Alfred",
+        strand="British History",
+        default_objective="Analyse primary sources detailing Lindisfarne and the unification of England.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="computing-loops",
+        subject="Computing",
+        year_group="Year 5",
+        key_stage="KS2",
+        title="Algorithmic Loops & Game Design",
+        strand="Computer Science",
+        default_objective="Design game character movement loops and debug condition-triggered actions.",
+        source="National Curriculum (Oak)",
+    ),
+
+    # --- YEAR 6 (Key Stage 2) ---
+    CurriculumUnit(
+        id="ks2-y6-maths-ratio",
+        subject="Mathematics",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Ratio, Proportion & Scale Factors",
+        strand="Proportional Reasoning",
+        default_objective="Solve problems involving relative sizes of two quantities using bar models.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-maths-algebra",
+        subject="Mathematics",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Linear Algebraic Equations & Missing Values",
+        strand="Algebra",
+        default_objective="Use simple formulae, express missing number problems algebraically, and find pairs of numbers.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-eng-macbeth",
+        subject="English",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Macbeth — Shakespearean Monologues & Motivation",
+        strand="Literary Heritage",
+        default_objective="Analyse tragic drama conventions, dramatic irony, and moral conflict.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-sci-light",
+        subject="Science",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Light Ray Propagation, Reflection & The Eye",
+        strand="Physics",
+        default_objective="Explain that light travels in straight lines and demonstrate reflection angles.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-sci-evolution",
+        subject="Science",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Evolution, Inheritance & Darwinian Adaptation",
+        strand="Biology",
+        default_objective="Recognise that living things produce offspring of the same kind that vary.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-geo-trade",
+        subject="Geography",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Global Supply Chains, Trade & Fairtrade",
+        strand="Human Geography",
+        default_objective="Trace international resource distribution and economic interdependence.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-hist-ww2",
+        subject="History",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="The Battle of Britain & Evacuee Experiences",
+        strand="Modern History",
+        default_objective="Evaluate wartime diaries, propaganda posters, and government evacuation archives.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks2-y6-comp-python",
+        subject="Computing",
+        year_group="Year 6",
+        key_stage="KS2",
+        title="Python Syntax, Variables & Conditional Logic",
+        strand="Programming",
+        default_objective="Translate visual blocks into text-based Python code with conditional if-else statements.",
+        source="National Curriculum (Oak)",
+    ),
+
+    # --- YEAR 7 (Key Stage 3) ---
+    CurriculumUnit(
+        id="ks3-y7-maths-equations",
+        subject="Mathematics",
+        year_group="Year 7",
+        key_stage="KS3",
+        title="Algebraic Linear Equations & Balancing",
+        strand="Algebra",
+        default_objective="Solve linear equations with unknowns on both sides using balancing methods.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks3-y7-sci-cells",
+        subject="Science",
+        year_group="Year 7",
+        key_stage="KS3",
+        title="Plant & Animal Cell Organelles & Microscopy",
+        strand="Biology",
+        default_objective="Compare cell wall, nucleus, chloroplasts, and prepare microscope slide specimens.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks3-y7-geo-glaciation",
+        subject="Geography",
+        year_group="Year 7",
+        key_stage="KS3",
+        title="Glacial Geomorphology & Valley U-Shapes",
+        strand="Physical Geography",
+        default_objective="Explain how glacial ice plucks, abrades, and shapes corries and ribbon lakes.",
+        source="National Curriculum (Oak)",
+    ),
+    CurriculumUnit(
+        id="ks3-y7-hist-1066",
+        subject="History",
+        year_group="Year 7",
+        key_stage="KS3",
+        title="The Norman Conquest (1066) & Castles",
+        strand="Medieval History",
+        default_objective="Examine the Bayeux Tapestry and motte-and-bailey castle defensive architecture.",
+        source="National Curriculum (Oak)",
     ),
 ]
+
+CURRICULUM_UNITS = EXPANDED_CURRICULUM_UNITS
 
 
 class PathwayService:
     @staticmethod
-    def get_curriculum_units() -> list[CurriculumUnit]:
-        """Returns the pre-curated National Curriculum Year 5 unit library."""
-        return CURRICULUM_UNITS
+    def ensure_seeded(db: Session) -> None:
+        """Seeds the national curriculum table if fewer than the baseline units exist."""
+        try:
+            existing_count = db.query(CurriculumUnitModel).count()
+            if existing_count < len(EXPANDED_CURRICULUM_UNITS):
+                existing_ids = {u.id for u in db.query(CurriculumUnitModel.id).all()}
+                new_models = [
+                    CurriculumUnitModel(
+                        id=u.id,
+                        key_stage=u.key_stage or ("KS2" if "Year 3" in u.year_group or "Year 4" in u.year_group or "Year 5" in u.year_group or "Year 6" in u.year_group else "KS3"),
+                        year_group=u.year_group,
+                        subject=u.subject,
+                        strand=u.strand,
+                        title=u.title,
+                        default_objective=u.default_objective,
+                        source=u.source or "National Curriculum (Oak)",
+                        external_slug=u.external_slug or u.id,
+                        is_active=True,
+                    )
+                    for u in EXPANDED_CURRICULUM_UNITS
+                    if u.id not in existing_ids
+                ]
+                if new_models:
+                    db.add_all(new_models)
+                    db.commit()
+        except Exception as e:
+            logger.warning("Could not auto-seed curriculum units table: %s", e)
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+    @staticmethod
+    def get_curriculum_units(
+        db: Session | None = None,
+        year_group: str | None = None,
+        subject: str | None = None,
+        search: str | None = None,
+    ) -> list[CurriculumUnit]:
+        """Returns UK National Curriculum units filtered by year group, subject, or search term."""
+        if db is not None:
+            PathwayService.ensure_seeded(db)
+            try:
+                q = db.query(CurriculumUnitModel).filter(CurriculumUnitModel.is_active.is_(True))
+                if year_group and year_group != "All Years":
+                    q = q.filter(CurriculumUnitModel.year_group == year_group)
+                if subject and subject != "All Subjects":
+                    q = q.filter(CurriculumUnitModel.subject == subject)
+                if search and search.strip():
+                    term = f"%{search.strip().lower()}%"
+                    q = q.filter(
+                        (CurriculumUnitModel.title.ilike(term))
+                        | (CurriculumUnitModel.strand.ilike(term))
+                        | (CurriculumUnitModel.default_objective.ilike(term))
+                    )
+                db_units = q.order_by(CurriculumUnitModel.subject, CurriculumUnitModel.year_group, CurriculumUnitModel.title).all()
+                if db_units:
+                    return [
+                        CurriculumUnit(
+                            id=u.id,
+                            subject=u.subject,
+                            year_group=u.year_group,
+                            key_stage=u.key_stage,
+                            title=u.title,
+                            strand=u.strand or "",
+                            default_objective=u.default_objective,
+                            source=u.source,
+                            external_slug=u.external_slug,
+                        )
+                        for u in db_units
+                    ]
+            except Exception as e:
+                logger.warning("Database curriculum retrieval error, falling back to in-memory dataset: %s", e)
+
+        # In-memory fallback
+        results = EXPANDED_CURRICULUM_UNITS
+        if year_group and year_group != "All Years":
+            results = [u for u in results if u.year_group.lower() == year_group.lower()]
+        if subject and subject != "All Subjects":
+            results = [u for u in results if u.subject.lower() == subject.lower()]
+        if search and search.strip():
+            st = search.strip().lower()
+            results = [
+                u for u in results
+                if st in u.title.lower() or st in u.strand.lower() or st in u.default_objective.lower()
+            ]
+        return results
+
+    @staticmethod
+    def get_curriculum_metadata(db: Session | None = None) -> CurriculumMetadataResponse:
+        """Returns distinct year groups, subjects, and total unit count."""
+        units = PathwayService.get_curriculum_units(db=db)
+        year_groups = sorted(list({u.year_group for u in units}))
+
+        def year_sort_key(yg: str):
+            digits = re.findall(r"\d+", yg)
+            return int(digits[0]) if digits else 99
+
+        year_groups.sort(key=year_sort_key)
+        subjects = sorted(list({u.subject for u in units}))
+        return CurriculumMetadataResponse(
+            year_groups=year_groups,
+            subjects=subjects,
+            total_units=len(units),
+        )
 
     @staticmethod
     def generate_pathway(

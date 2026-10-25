@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
 
+    # Oak National Academy Curriculum API Configuration
+    OAK_API_KEY: str = ""
+    OAK_API_BASE_URL: str = "https://open-api.thenational.academy/api/v1"
+
     # Transactional Email (Resend & SMTP)
     RESEND_API_KEY: str = ""
     FROM_EMAIL: str = "See My Mind <onboarding@resend.dev>"

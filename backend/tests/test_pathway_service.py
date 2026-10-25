@@ -1,13 +1,47 @@
 def test_get_curriculum_units(client):
-    """Test retrieving pre-curated National Curriculum units."""
+    """Test retrieving pre-curated National Curriculum units with filters."""
     response = client.get("/api/v1/noya/pathway/curriculum-units")
     assert response.status_code == 200
     units = response.json()
-    assert len(units) >= 5
+    assert len(units) >= 15
     titles = [u["title"] for u in units]
-    assert any("Straight Line Graphs" in t for t in titles)
     assert any("Equivalent Fractions" in t for t in titles)
-    assert any("Highwayman" in t for t in titles)
+
+    # Test year_group filter
+    y5_resp = client.get("/api/v1/noya/pathway/curriculum-units?year_group=Year+5")
+    assert y5_resp.status_code == 200
+    y5_units = y5_resp.json()
+    assert len(y5_units) >= 5
+    assert all(u["year_group"] == "Year 5" for u in y5_units)
+
+    # Test subject filter
+    math_resp = client.get("/api/v1/noya/pathway/curriculum-units?year_group=Year+5&subject=Mathematics")
+    assert math_resp.status_code == 200
+    math_units = math_resp.json()
+    assert len(math_units) >= 2
+    assert all(u["subject"] == "Mathematics" for u in math_units)
+
+
+def test_get_curriculum_metadata(client):
+    """Test curriculum metadata endpoint returning year groups and subjects."""
+    resp = client.get("/api/v1/noya/pathway/curriculum-metadata")
+    assert resp.status_code == 200
+    meta = resp.json()
+    assert "year_groups" in meta
+    assert "subjects" in meta
+    assert "Year 5" in meta["year_groups"]
+    assert "Mathematics" in meta["subjects"]
+    assert meta["total_units"] >= 20
+
+
+def test_sync_oak_curriculum(client):
+    """Test Oak National Academy API sync / cache fallback."""
+    resp = client.post("/api/v1/noya/pathway/curriculum-sync-oak")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "status" in data
+    assert data["units_count"] >= 20
+
 
 
 def test_generate_pathway_maths(client):

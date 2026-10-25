@@ -38,6 +38,7 @@ import {
   CamhsClinicalDossierResponse,
   ClassroomProvisionSummary,
   CurriculumUnit,
+  CurriculumMetadataResponse,
   PathwayGenerateRequest,
   LessonPathwayResponse,
   AIRunAuditItem,
@@ -405,11 +406,33 @@ export const api = {
     return res.json();
   },
 
-  async getCurriculumUnits(): Promise<CurriculumUnit[]> {
-    const res = await fetch(`${API_BASE}/noya/pathway/curriculum-units`, {
+  async getCurriculumUnits(yearGroup?: string, subject?: string, search?: string): Promise<CurriculumUnit[]> {
+    const params = new URLSearchParams();
+    if (yearGroup && yearGroup !== 'All Years') params.set('year_group', yearGroup);
+    if (subject && subject !== 'All Subjects') params.set('subject', subject);
+    if (search && search.trim()) params.set('search', search.trim());
+    const queryStr = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/noya/pathway/curriculum-units${queryStr}`, {
       headers: getHeaders(),
     });
     if (!res.ok) throw new Error('Failed to fetch curriculum units');
+    return res.json();
+  },
+
+  async getCurriculumMetadata(): Promise<CurriculumMetadataResponse> {
+    const res = await fetch(`${API_BASE}/noya/pathway/curriculum-metadata`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch curriculum metadata');
+    return res.json();
+  },
+
+  async syncOakCurriculum(): Promise<{ status: string; message: string; units_count: number; provider: string }> {
+    const res = await fetch(`${API_BASE}/noya/pathway/curriculum-sync-oak`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to sync Oak curriculum');
     return res.json();
   },
 

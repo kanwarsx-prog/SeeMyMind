@@ -9,6 +9,7 @@ from app.models.ai_noya import (
 from app.models.audit import AuditLog
 from app.models.auth import ChildAccount, Invitation, User
 from app.models.base import TimestampedUUIDModel
+from app.models.curriculum import CurriculumUnitModel
 from app.models.organisation import AcademicYear, School, StaffMember, StaffPupilAllocation, StaffSchoolAssignment
 from app.models.pupil import Child, ChildGuardianLink, ChildSchoolEnrolment, Guardian
 from app.models.support import (
@@ -47,6 +48,7 @@ __all__ = [
     "ChildSupportProfile",
     "ChildSupportStrategy",
     "ChildTrigger",
+    "CurriculumUnitModel",
     "FollowUpAction",
     "Guardian",
     "Invitation",

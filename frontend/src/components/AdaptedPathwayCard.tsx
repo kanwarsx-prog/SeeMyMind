@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   BatteryCharging,
   Layers,
+  RotateCcw,
 } from 'lucide-react';
 import {
   Child,
@@ -22,53 +23,140 @@ import { api } from '../api';
 import { VisualDeskStripModal } from './VisualDeskStripModal';
 
 const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
+  // Year 3
+  {
+    id: 'ks2-y3-maths-place-value',
+    subject: 'Mathematics',
+    year_group: 'Year 3',
+    key_stage: 'KS2',
+    title: 'Place Value & 3-Digit Addition',
+    strand: 'Number & Operations',
+    default_objective: 'Represent numbers up to 1,000 using base-10 blocks and place value counters.',
+    source: 'National Curriculum (Oak)',
+  },
+  {
+    id: 'ks2-y3-sci-magnets',
+    subject: 'Science',
+    year_group: 'Year 3',
+    key_stage: 'KS2',
+    title: 'Forces & Magnets: Attraction & Poles',
+    strand: 'Physics',
+    default_objective: 'Compare how things move on different surfaces and identify magnetic materials.',
+    source: 'National Curriculum (Oak)',
+  },
+  // Year 4
+  {
+    id: 'ks2-y4-maths-multiplication',
+    subject: 'Mathematics',
+    year_group: 'Year 4',
+    key_stage: 'KS2',
+    title: 'Multiplication Tables & Factor Pairs',
+    strand: 'Multiplication & Division',
+    default_objective: 'Recall 12x12 times tables and use distributive law with array grids.',
+    source: 'National Curriculum (Oak)',
+  },
+  {
+    id: 'ks2-y4-eng-ironman',
+    subject: 'English',
+    year_group: 'Year 4',
+    key_stage: 'KS2',
+    title: 'The Iron Man — Figurative Personification',
+    strand: 'Reading Comprehension',
+    default_objective: 'Identify and analyse powerful verbs, similes, and mechanical metaphors in poetry.',
+    source: 'National Curriculum (Oak)',
+  },
+  // Year 5
   {
     id: 'maths-graphs',
-    subject: 'Maths',
+    subject: 'Mathematics',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'Straight Line Graphs & Gradients',
     strand: 'Geometry & Algebra',
     default_objective: 'Understand gradient as rate of change (steepness) and connect visual slope to y = mx + c.',
+    source: 'National Curriculum (Oak)',
   },
   {
     id: 'maths-fractions',
-    subject: 'Maths',
+    subject: 'Mathematics',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'Equivalent Fractions & Visual Bar Models',
     strand: 'Number & Fractions',
     default_objective: 'Recognise and show equivalent fractions using visual bar models and tactile counters.',
+    source: 'National Curriculum (Oak)',
   },
   {
     id: 'english-highwayman',
     subject: 'English',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'The Highwayman — Narrative Inference',
     strand: 'Reading Comprehension',
     default_objective: 'Infer character motives and atmospheric tension from figurative language and sensory imagery.',
+    source: 'National Curriculum (Oak)',
   },
   {
     id: 'science-circuits',
     subject: 'Science',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'Electrical Circuits & Switches',
     strand: 'Physics',
     default_objective: 'Investigate how varying switch states and cell count affects bulb brightness in series circuits.',
+    source: 'National Curriculum (Oak)',
   },
   {
     id: 'computing-loops',
     subject: 'Computing',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'Algorithmic Loops & Game Design',
     strand: 'Computer Science',
     default_objective: 'Design game character movement loops and debug condition-triggered actions.',
+    source: 'National Curriculum (Oak)',
   },
   {
     id: 'history-saxons',
     subject: 'History',
     year_group: 'Year 5',
+    key_stage: 'KS2',
     title: 'Anglo-Saxon Settlements & Artifact Analysis',
     strand: 'Historical Enquiry',
     default_objective: 'Deduce daily life and cultural practices from archaeological evidence and physical artifacts.',
+    source: 'National Curriculum (Oak)',
+  },
+  // Year 6
+  {
+    id: 'ks2-y6-maths-ratio',
+    subject: 'Mathematics',
+    year_group: 'Year 6',
+    key_stage: 'KS2',
+    title: 'Ratio, Proportion & Scale Factors',
+    strand: 'Proportional Reasoning',
+    default_objective: 'Solve problems involving relative sizes of two quantities using bar models.',
+    source: 'National Curriculum (Oak)',
+  },
+  {
+    id: 'ks2-y6-sci-light',
+    subject: 'Science',
+    year_group: 'Year 6',
+    key_stage: 'KS2',
+    title: 'Light, Reflection & Ray Optics',
+    strand: 'Physics',
+    default_objective: 'Demonstrate that light travels in straight lines and explains shadow shapes and periscopes.',
+    source: 'National Curriculum (Oak)',
+  },
+  // Year 7
+  {
+    id: 'ks3-y7-maths-equations',
+    subject: 'Mathematics',
+    year_group: 'Year 7',
+    key_stage: 'KS3',
+    title: 'Algebraic Linear Equations & Balancing',
+    strand: 'Algebra',
+    default_objective: 'Solve linear equations with unknowns on both sides using balancing methods.',
+    source: 'National Curriculum (Oak)',
   },
 ];
 
@@ -88,6 +176,25 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   const [curriculumUnits, setCurriculumUnits] = useState<CurriculumUnit[]>(DEFAULT_CURRICULUM_UNITS);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('maths-graphs');
+  const [selectedYearGroup, setSelectedYearGroup] = useState<string>(child?.year_group || 'Year 5');
+  const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
+  const [availableYearGroups, setAvailableYearGroups] = useState<string[]>([
+    'Year 3',
+    'Year 4',
+    'Year 5',
+    'Year 6',
+    'Year 7',
+  ]);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([
+    'Mathematics',
+    'English',
+    'Science',
+    'Geography',
+    'History',
+    'Computing',
+  ]);
+  const [isSyncingOak, setIsSyncingOak] = useState<boolean>(false);
+  const [oakSyncStatus, setOakSyncStatus] = useState<string | null>(null);
   const [customTopic, setCustomTopic] = useState<string>('');
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [loadingPathway, setLoadingPathway] = useState<boolean>(false);
@@ -166,27 +273,6 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [milestoneLogged, setMilestoneLogged] = useState(false);
   const [showDeskStripModal, setShowDeskStripModal] = useState(false);
 
-  // Load curriculum units on mount
-  useEffect(() => {
-    api.getCurriculumUnits()
-      .then((units) => {
-        if (units && units.length > 0) {
-          setCurriculumUnits(units);
-        }
-      })
-      .catch((err) => console.warn('Could not fetch curriculum units, using defaults:', err));
-  }, []);
-
-  // Re-generate pathway deterministically when pupil changes (zero token overhead)
-  useEffect(() => {
-    if (child?.id) {
-      setRationale(
-        `${pupilName} is a visual-spatial learner with high pattern recognition capacity. Abstract notation triggers cognitive shutdown. Loading individualized scaffolding pathway...`
-      );
-      handleGenerate(undefined, undefined, undefined, false);
-    }
-  }, [child?.id]);
-
   const handleGenerate = async (
     topicToUse?: string,
     subjectToUse?: string,
@@ -237,6 +323,85 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
       console.error('Pathway generation failed:', err);
     } finally {
       setLoadingPathway(false);
+    }
+  };
+
+  const loadUnits = async (year: string, subject: string, autoGenerate: boolean = false) => {
+    try {
+      const units = await api.getCurriculumUnits(year, subject);
+      if (units && units.length > 0) {
+        setCurriculumUnits(units);
+        const match = units.find((u) => u.id === selectedUnitId);
+        const nextUnit = match || units[0];
+        if (!match) {
+          setSelectedUnitId(nextUnit.id);
+        }
+        if (autoGenerate) {
+          handleGenerate(nextUnit.title, nextUnit.subject, nextUnit.default_objective, false);
+        }
+      } else {
+        setCurriculumUnits([]);
+      }
+    } catch (err) {
+      console.warn('Could not fetch curriculum units:', err);
+    }
+  };
+
+  // Load curriculum metadata and initial units on mount
+  useEffect(() => {
+    api.getCurriculumMetadata()
+      .then((meta) => {
+        if (meta.year_groups && meta.year_groups.length > 0) {
+          setAvailableYearGroups(meta.year_groups);
+        }
+        if (meta.subjects && meta.subjects.length > 0) {
+          setAvailableSubjects(meta.subjects);
+        }
+      })
+      .catch((err) => console.warn('Could not fetch curriculum metadata:', err));
+
+    const initialYear = child?.year_group || 'Year 5';
+    setSelectedYearGroup(initialYear);
+    loadUnits(initialYear, 'All Subjects', false);
+  }, []);
+
+  // Re-generate pathway deterministically when pupil changes (zero token overhead)
+  useEffect(() => {
+    if (child?.id) {
+      const pupilYear = child.year_group || 'Year 5';
+      setSelectedYearGroup(pupilYear);
+      setRationale(
+        `${pupilName} is a visual-spatial learner with high pattern recognition capacity. Abstract notation triggers cognitive shutdown. Loading individualized scaffolding pathway...`
+      );
+      loadUnits(pupilYear, selectedSubject, true);
+    }
+  }, [child?.id, child?.year_group]);
+
+  const handleYearGroupChange = (newYear: string) => {
+    setSelectedYearGroup(newYear);
+    loadUnits(newYear, selectedSubject, true);
+  };
+
+  const handleSubjectChange = (newSubject: string) => {
+    setSelectedSubject(newSubject);
+    loadUnits(selectedYearGroup, newSubject, true);
+  };
+
+  const handleSyncOak = async () => {
+    setIsSyncingOak(true);
+    setOakSyncStatus(null);
+    try {
+      const res = await api.syncOakCurriculum();
+      setOakSyncStatus(res.message || `Loaded ${res.units_count} units from Oak National Academy.`);
+      const meta = await api.getCurriculumMetadata();
+      if (meta.year_groups?.length) setAvailableYearGroups(meta.year_groups);
+      if (meta.subjects?.length) setAvailableSubjects(meta.subjects);
+      await loadUnits(selectedYearGroup, selectedSubject, false);
+    } catch (err: any) {
+      setOakSyncStatus(`Oak sync note: using cached curriculum (${err.message || 'offline mode'})`);
+    } finally {
+      setIsSyncingOak(false);
+      setTimeout(() => setOakSyncStatus(null), 6000);
     }
   };
 
@@ -367,6 +532,74 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
               </div>
             </div>
 
+            {!isCustomMode && (
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-borderMain/50">
+                {/* Year Group Filter */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-textDim dark:text-slate-400">Year:</span>
+                  <select
+                    value={selectedYearGroup}
+                    onChange={(e) => handleYearGroupChange(e.target.value)}
+                    className="text-[11px] font-medium px-2 py-1 rounded-lg bg-cardBg text-navy dark:text-white border border-borderMain focus:outline-none focus:border-teal cursor-pointer"
+                  >
+                    <option value="All Years">All Years</option>
+                    {availableYearGroups.map((yg) => (
+                      <option key={yg} value={yg}>
+                        {yg} {child?.year_group === yg ? `(${pupilName}'s Year)` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subject Filter */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-textDim dark:text-slate-400">Subject:</span>
+                  <select
+                    value={selectedSubject}
+                    onChange={(e) => handleSubjectChange(e.target.value)}
+                    className="text-[11px] font-medium px-2 py-1 rounded-lg bg-cardBg text-navy dark:text-white border border-borderMain focus:outline-none focus:border-teal cursor-pointer"
+                  >
+                    <option value="All Subjects">All Subjects</option>
+                    {availableSubjects.map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Unit Count & Oak Academy Sync */}
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="text-[10px] text-textDim dark:text-slate-400 font-medium">
+                    {curriculumUnits.length} {curriculumUnits.length === 1 ? 'unit' : 'units'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSyncOak}
+                    disabled={isSyncingOak}
+                    className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-teal/10 hover:bg-teal/20 text-teal dark:text-teal-300 border border-teal/20 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    title="Ingest / refresh curriculum units from Oak National Academy API"
+                  >
+                    <RotateCcw className={`w-2.5 h-2.5 ${isSyncingOak ? 'animate-spin' : ''}`} />
+                    <span>{isSyncingOak ? 'Syncing...' : 'Oak National API'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {oakSyncStatus && (
+              <div className="text-[11px] px-3 py-1.5 rounded-xl bg-teal/10 text-teal-800 dark:text-teal-200 border border-teal/20 flex items-center justify-between">
+                <span>{oakSyncStatus}</span>
+                <button
+                  type="button"
+                  onClick={() => setOakSyncStatus(null)}
+                  className="text-textDim hover:text-navy dark:hover:text-white ml-2 text-xs font-bold cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             {!isCustomMode ? (
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
                 <select
@@ -377,16 +610,13 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   {curriculumUnits.length > 0 ? (
                     curriculumUnits.map((u) => (
                       <option key={u.id} value={u.id}>
-                        [{u.subject}] {u.title} ({u.strand})
+                        [{u.year_group} · {u.subject}] {u.title} ({u.strand})
                       </option>
                     ))
                   ) : (
-                    <>
-                      <option value="maths-graphs">[Maths] Straight Line Graphs & Gradients (Geometry & Algebra)</option>
-                      <option value="maths-fractions">[Maths] Equivalent Fractions & Visual Bar Models (Fractions)</option>
-                      <option value="english-highwayman">[English] The Highwayman — Narrative Inference (Comprehension)</option>
-                      <option value="science-circuits">[Science] Electrical Circuits & Switches (Physics)</option>
-                    </>
+                    <option value="" disabled>
+                      No curriculum units match current filters
+                    </option>
                   )}
                 </select>
 
