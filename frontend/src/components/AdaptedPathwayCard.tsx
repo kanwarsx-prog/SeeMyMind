@@ -23,6 +23,38 @@ import { api } from '../api';
 import { VisualDeskStripModal } from './VisualDeskStripModal';
 
 const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
+  // Year 1
+  {
+    id: 'ks1-y1-maths-bonds20',
+    subject: 'Mathematics',
+    year_group: 'Year 1',
+    key_stage: 'KS1',
+    title: 'Number Bonds & Fact Families to 20',
+    strand: 'Number & Addition',
+    default_objective: 'Recall and use addition and subtraction facts to 20 with tens frames and double-sided counters.',
+    source: 'National Curriculum (Oak)',
+  },
+  {
+    id: 'ks1-y1-sci-seasons',
+    subject: 'Science',
+    year_group: 'Year 1',
+    key_stage: 'KS1',
+    title: 'Seasonal Changes: Weather & Day Length',
+    strand: 'Earth & Space',
+    default_objective: 'Observe and describe seasonal changes across Autumn, Winter, Spring, Summer.',
+    source: 'National Curriculum (Oak)',
+  },
+  // Year 2
+  {
+    id: 'ks1-y2-maths-partitioning',
+    subject: 'Mathematics',
+    year_group: 'Year 2',
+    key_stage: 'KS1',
+    title: '2-Digit Place Value & Tens Partitioning',
+    strand: 'Place Value',
+    default_objective: 'Partition 2-digit numbers into tens and ones using base-10 apparatus and part-whole models.',
+    source: 'National Curriculum (Oak)',
+  },
   // Year 3
   {
     id: 'ks2-y3-maths-place-value',
@@ -179,11 +211,15 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [selectedYearGroup, setSelectedYearGroup] = useState<string>(child?.year_group || 'Year 5');
   const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
   const [availableYearGroups, setAvailableYearGroups] = useState<string[]>([
+    'Year 1',
+    'Year 2',
     'Year 3',
     'Year 4',
     'Year 5',
     'Year 6',
     'Year 7',
+    'Year 8',
+    'Year 9',
   ]);
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([
     'Mathematics',
