@@ -15,6 +15,9 @@ if "sqlite" in settings.DATABASE_URL:
 else:
     engine_args["pool_size"] = 10
     engine_args["max_overflow"] = 20
+    # Disable server-side prepared statements for Supabase/PgBouncer transaction pooling
+    # Prevents psycopg.errors.DuplicatePreparedStatement: prepared statement "_pg3_0" already exists
+    engine_args["connect_args"] = {"prepare_threshold": None}
 
 engine = create_engine(settings.DATABASE_URL, **engine_args)
 
