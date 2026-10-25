@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import time
 from datetime import UTC, datetime
 from uuid import UUID
@@ -197,13 +198,16 @@ class PathwayService:
             peer_adaptations=peer_adaptations,
         )
 
+        model_name = "standard-scaffold-ai-unavailable" if request.use_ai else "curriculum-standard"
+        deterministic_res.model_used = model_name
+
         # Log zero-token audit record for transparency
         try:
             ai_run = AIRun(
                 child_id=child.id,
                 requester_role="Teacher",
                 prompt_type="LessonPathwayScaffolding",
-                model_name="curriculum-standard",
+                model_name=model_name,
                 input_prompt=f"Subject: {request.subject}\nTopic: {request.topic}\nObjective: {objective}\nPupil Primary Need: {primary_need}",
                 output_text=json.dumps({
                     "cognitive_rationale": deterministic_res.cognitive_rationale,
@@ -213,7 +217,7 @@ class PathwayService:
                 input_tokens=0,
                 output_tokens=0,
                 latency_ms=1,
-                status="Success",
+                status="Fallback (AI unavailable)" if request.use_ai else "Success",
             )
             db.add(ai_run)
             db.commit()
@@ -308,7 +312,16 @@ class PathwayService:
         """Deterministic, battle-tested pedagogical synthesis when external AI is unavailable."""
         topic_lower = topic.lower()
 
-        if "graph" in topic_lower or "slope" in topic_lower or "coordinate" in topic_lower:
+        # Match maths graphs strictly as whole words (avoiding collisions with geography, biography, etc.)
+        is_maths_graph = bool(
+            re.search(r"\b(gradient|gradients|slope|slopes|coordinate|coordinates)\b", topic_lower)
+            or (
+                re.search(r"\bgraphs?\b", topic_lower)
+                and not re.search(r"\b(geography|biography|photography|autobiography|paragraph)\b", topic_lower)
+            )
+        )
+
+        if is_maths_graph:
             rationale = (
                 f"{child_name} is a strong visual-spatial thinker who excels when concepts have tangible geometry. "
                 f"Abstract formulas like y = mx + c trigger notation anxiety and cognitive shutdown. "
@@ -351,6 +364,50 @@ class PathwayService:
             ta_briefing = (
                 f"Scaffolding Rule for 1:1 TA: Do NOT introduce the algebraic formula y = mx + c until Step 3 is verified. "
                 f"Offer the scheduled proactive sensory reset token at Step 2 after coordinate plotting."
+            )
+        elif any(w in topic_lower for w in ["geography", "rainforest", "rain forest", "ecosystem", "habitat", "biome", "climate", "volcano", "river"]):
+            rationale = (
+                f"{child_name} excels when complex natural systems are grounded in tangible sensory environments. "
+                f"Abstract environmental jargon triggers working memory overload. "
+                f"Structuring {topic} into physical, dual-coded visual layers with concrete artifact sorting makes geographic concepts intuitive."
+            )
+            steps = [
+                PathwayStepSchema(
+                    number=1,
+                    title=f"1. Sensory landscape immersion — {topic}",
+                    description=f"Explore high-resolution visual cross-sections and real-world audio cues of {topic}.",
+                    status="done",
+                    badge="✓ Completed",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=2,
+                    title="2. Layer-by-layer organism & feature mapping",
+                    description=f"Map physical components and wildlife tokens onto the dual-coded {topic} vertical diagram.",
+                    status="active",
+                    badge="→ In progress now",
+                    sensory_pause_after=True,
+                ),
+                PathwayStepSchema(
+                    number=3,
+                    title="3. Interdependence & adaptation bridge",
+                    description="Connect survival traits and physical processes to environmental conditions with structured cue cards.",
+                    status="next",
+                    badge="Up next",
+                    sensory_pause_after=False,
+                ),
+                PathwayStepSchema(
+                    number=4,
+                    title="4. Synthesis & human impact analysis",
+                    description=f"Evaluate environmental balance and conservation using a 3-stage cause-and-effect scaffold.",
+                    status="locked",
+                    badge="Unlocks after step 3",
+                    sensory_pause_after=False,
+                ),
+            ]
+            ta_briefing = (
+                f"TA Protocol for {child_name}: Provide physical visual diagram on desk. "
+                f"Administer scheduled 2-minute sensory/movement pause after Step 2. Keep text density low."
             )
         elif "fraction" in topic_lower:
             rationale = (

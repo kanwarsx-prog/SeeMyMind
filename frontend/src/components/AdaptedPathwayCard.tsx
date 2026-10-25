@@ -310,6 +310,10 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   <Sparkles className="w-2.5 h-2.5" />
                   <span>AI Adapted (GPT-4o)</span>
                 </span>
+              ) : pathway?.model_used?.includes('ai-unavailable') ? (
+                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-md flex items-center gap-1" title="OpenAI API key missing or unreachable. Standard deterministic scaffold loaded.">
+                  <span>⚠️ AI Unavailable · Standard Scaffold</span>
+                </span>
               ) : (
                 <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded-md">
                   ✓ Standard Scaffold (0 Tokens)
@@ -395,7 +399,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
+                  <span>{loadingPathway ? '⚡ Synthesizing with GPT-4o (~5-8s)...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
                 </button>
               </div>
             ) : (
@@ -418,7 +422,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? 'Synthesizing...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
+                  <span>{loadingPathway ? '⚡ Synthesizing with GPT-4o (~5-8s)...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
                 </button>
               </div>
             )}
