@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse } from '../types';
-import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight } from 'lucide-react';
+import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse, DecompressionBridgeResponse } from '../types';
+import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight, X } from 'lucide-react';
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
 import { DailySupportLoopStrip } from '../components/DailySupportLoopStrip';
+import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
 import { AbcTooltip } from '../components/AbcTooltip';
+import { api } from '../api';
 
 interface TeacherViewProps {
   child?: Child | null;
@@ -59,7 +61,19 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [acknowledging, setAcknowledging] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(true);
+  const [bridge, setBridge] = useState<DecompressionBridgeResponse | null>(null);
+  const [showHomeTimeModal, setShowHomeTimeModal] = useState(false);
   const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
+
+  React.useEffect(() => {
+    if (child?.id) {
+      api.getDecompressionBridge(child.id)
+        .then(setBridge)
+        .catch((err) => console.error('Failed to load bridge in teacher view:', err));
+    } else {
+      setBridge(null);
+    }
+  }, [child?.id]);
 
   React.useEffect(() => {
     if (activeSubView && activeSubView !== activeTab) {
@@ -75,6 +89,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   const handleRefresh = async () => {
     setRefreshing(true);
     await onRefreshBriefing();
+    if (child?.id) {
+      api.getDecompressionBridge(child.id).then(setBridge).catch(console.error);
+    }
     setRefreshing(false);
   };
 
@@ -88,6 +105,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
       await onLogDeEscalation(data);
     } else if (onLogMilestone && data.worked) {
       await onLogMilestone(`De-Escalation Success: ${data.strategyName}`, data.notes);
+    }
+    if (child?.id) {
+      api.getDecompressionBridge(child.id).then(setBridge).catch(console.error);
     }
   };
 
@@ -183,12 +203,14 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
           <DailySupportLoopStrip
             child={child}
             latestHandover={effectiveHandover}
+            bridge={bridge}
             currentUserRole="teacher"
             onAcknowledgeHandover={() => (effectiveHandover?.id ? handleAcknowledge() : Promise.resolve())}
             onOpenMorningCheckIn={() => {
               const el = document.getElementById('preflight-handover');
               el?.scrollIntoView({ behavior: 'smooth' });
             }}
+            onOpenHomeTimeNote={() => setShowHomeTimeModal(true)}
           />
 
           {/* KPI Stats Strip */}
@@ -626,6 +648,42 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             onOpenWorksheet={onOpenWorksheet}
             onLogMilestone={onLogMilestone}
           />
+        </div>
+      </div>
+    )}
+
+    {/* Home-Time Note (3:15 PM) Teacher Preview Modal */}
+    {showHomeTimeModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+        <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-cardBg rounded-2xl border border-borderMain shadow-2xl p-4 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-borderMain pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎒</span>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-textHead">
+                  3:15 PM Home-Time Note Preview · {pupilName}
+                </h3>
+                <p className="text-[11px] text-textDim">
+                  Live synthesis of today&apos;s classroom logs ready for pick-up at the school gates.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowHomeTimeModal(false)}
+              className="p-1.5 rounded-xl hover:bg-cardSubtle text-textDim hover:text-textMain cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {bridge ? (
+            <DecompressionBridgeCard bridge={bridge} childName={pupilName} />
+          ) : (
+            <div className="p-8 text-center text-textDim text-xs">
+              Synthesizing today&apos;s adult logs from Room 4...
+            </div>
+          )}
         </div>
       </div>
     )}

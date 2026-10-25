@@ -8,6 +8,7 @@ import {
   BatteryWarning,
   Battery,
   Check,
+  Clock,
 } from 'lucide-react';
 import { Child, TransitionLogDetail, DecompressionBridgeResponse } from '../types';
 
@@ -63,7 +64,8 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
   };
 
   const getEnergyIcon = (pct?: number) => {
-    if (!pct || pct < 35) return <BatteryWarning className="w-3.5 h-3.5 text-rose-500" />;
+    if (pct === undefined || pct === null) return <Clock className="w-3.5 h-3.5 text-teal" />;
+    if (pct < 35) return <BatteryWarning className="w-3.5 h-3.5 text-rose-500" />;
     if (pct < 65) return <Battery className="w-3.5 h-3.5 text-amber-500" />;
     return <BatteryCharging className="w-3.5 h-3.5 text-emerald-500" />;
   };
@@ -270,14 +272,14 @@ export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
                   : 'bg-cardBg text-textDim border border-borderMain'
               }`}
             >
-              {bridge ? `${bridge.battery_percentage}% Energy` : 'Ready 3:15'}
+              {bridge ? `${bridge.battery_percentage}% Energy` : 'Ready 3:15 PM'}
             </span>
           </div>
 
           <p className="text-[11px] text-textDim leading-snug mb-2">
             {bridge ? (
               <span>
-                Pick-up advice: <strong className="text-textHead">10-15m quiet buffer</strong> before asking about school.
+                Pick-up advice: <strong className="text-textHead">{bridge.decompression_recipe?.[0]?.title || '10-15m quiet buffer'}</strong> before asking about school.
               </span>
             ) : (
               'Auto-prepared from afternoon logs ready for pick-up at the gates.'
