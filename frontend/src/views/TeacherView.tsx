@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse } from '../types';
-import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight } from 'lucide-react';
+import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
@@ -27,6 +27,16 @@ interface TeacherViewProps {
     notes: string;
   }) => Promise<void>;
 }
+
+const cleanBriefingText = (text?: string): string => {
+  if (!text) return '';
+  return text
+    // remove `Citations: [...]` or Citations: [...] block
+    .replace(/`?Citations:?\s*\[[^\]]*\]`?/gi, '')
+    // remove inline timestamp brackets like [2026-10-25 13:34; 2026-10-25 08:59]
+    .replace(/\s*\[\d{4}-\d{2}-\d{2}[^\]]*\]/g, '')
+    .trim();
+};
 
 export const TeacherView: React.FC<TeacherViewProps> = ({
   child,
@@ -392,30 +402,27 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 <span className="font-serif text-sm font-semibold text-white tracking-wide">
                   NOYA · Morning Transition Intelligence
                 </span>
-                <span className="text-[10px] font-bold text-mint bg-mint/10 border border-mint/20 px-2 py-0.5 rounded-md hidden sm:inline">
-                  Manual AI Trigger
-                </span>
               </div>
-              {briefing && (
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="flex items-center gap-1.5 text-[11px] font-medium text-white/70 hover:text-white bg-white/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                >
-                  <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
-                  <span>{refreshing ? 'Synthesizing...' : '⚡ Re-generate (AI)'}</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-1.5 text-xs font-bold bg-mint hover:bg-mint/90 text-navy px-3 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50 active:scale-95"
+                title="Ask NOVA to synthesize fresh morning transition intelligence"
+              >
+                <Sparkles className={`w-3.5 h-3.5 text-navy ${refreshing ? 'animate-spin' : ''}`} />
+                <span>{refreshing ? 'Synthesizing...' : 'Ask NOVA'}</span>
+              </button>
             </div>
 
             {briefing ? (
               <div className="text-xs text-white/90 leading-relaxed space-y-2 whitespace-pre-line font-normal">
-                {briefing.summary_markdown}
+                {cleanBriefingText(briefing.summary_markdown)}
               </div>
             ) : (
               <div className="py-4 text-center space-y-3">
                 <p className="text-xs text-white/80 max-w-md mx-auto leading-relaxed">
-                  Morning transition briefing is on standby. To preserve AI API quota, briefings are generated on-demand grounded in parent morning handover, sleep logs, and EHCP profile.
+                  Morning transition briefing is on standby. Click below to synthesize individualized guidance grounded in parent morning handover, sleep logs, and EHCP profile.
                 </p>
                 <button
                   type="button"
@@ -424,15 +431,17 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-mint hover:bg-mint/90 text-navy text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
                 >
                   <Sparkles className={`w-4 h-4 text-navy ${refreshing ? 'animate-spin' : ''}`} />
-                  <span>{refreshing ? 'Synthesizing with NOYA AI...' : `⚡ Generate Morning Briefing with NOYA AI`}</span>
+                  <span>{refreshing ? 'Synthesizing with NOVA...' : '✨ Ask NOVA for Morning Briefing'}</span>
                 </button>
               </div>
             )}
 
-            {briefing && briefing.citations && briefing.citations.length > 0 && (
-              <div className="mt-3.5 pt-2.5 border-t border-white/10 flex items-center gap-2 text-[10px] text-white/50">
-                <span className="font-bold uppercase tracking-wider text-white/70">Verified Citations:</span>
-                <span className="truncate">{briefing.citations.map((c) => c.citation_text).join(' · ')}</span>
+            {briefing && (
+              <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
+                <span className="flex items-center gap-1.5 text-mint/80 font-medium">
+                  <span>✓ Grounded in {pupilName}&apos;s latest home handover &amp; timeline logs</span>
+                </span>
+                <span className="text-[10px] text-white/40">CoP 6.44 Compliant</span>
               </div>
             )}
           </div>

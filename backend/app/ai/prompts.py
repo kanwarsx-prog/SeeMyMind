@@ -30,8 +30,7 @@ Format your output in clean Markdown:
 - **Sensory & Emotional Readiness**: What regulation signals should staff watch out for this morning?
 - **Recommended Action**: One specific, proactive strategy for the first lesson.
 
-Include a section at the bottom:
-`Citations: [List specific handovers/logs referenced]`
+Do NOT output raw timestamp brackets like [2026-10-25 13:34] or code citation blocks in the text. Keep the prose natural, empathetic, and directly readable by classroom teachers.
 """
 
 ASK_NOYA_RAG_PROMPT = """{system_guardrail}

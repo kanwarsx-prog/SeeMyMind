@@ -94,14 +94,17 @@ class NoyaRAGService:
         else:
             # Fallback mock for local development without OpenAI API key
             output_text = (
-                f"### Morning Briefing for {child_name}\n"
                 f"- **Arrival Status**: Latest update indicates ready for transition.\n"
                 f"- **Sensory & Emotional Readiness**: Needs calm welcome. Primary need: {primary_need}.\n"
-                f"- **Recommended Action**: Allow 5 minutes settling time with preferred visual schedule.\n\n"
-                f"*Citations: {citations[0].citation_text if citations else 'Baseline Support Profile'}*"
+                f"- **Recommended Action**: Allow 5 minutes settling time with preferred visual schedule."
             )
             latency_ms = 10
             input_tokens, output_tokens = 50, 80
+
+        # Clean any accidental inline timestamp brackets or raw citation blocks
+        import re
+        output_text = re.sub(r"`?Citations:?\s*\[[^\]]*\]`?", "", output_text, flags=re.IGNORECASE)
+        output_text = re.sub(r"\s*\[\d{4}-\d{2}-\d{2}[^\]]*\]", "", output_text).strip()
 
         # Save audit record in AIRun
         ai_run = AIRun(
