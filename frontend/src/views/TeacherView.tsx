@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView } from '../types';
+import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse } from '../types';
 import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight } from 'lucide-react';
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
@@ -18,7 +18,7 @@ interface TeacherViewProps {
   onAcknowledgeHandover?: (transitionId: string) => Promise<void>;
   onOpenObservationModal: () => void;
   onOpenIncidentModal?: () => void;
-  onOpenWorksheet: (worksheetKey: string) => void;
+  onOpenWorksheet: (worksheetKey: string, pathwayData?: LessonPathwayResponse | null) => void;
   onLogMilestone?: (milestoneTitle: string, note: string) => Promise<void>;
   onLogDeEscalation?: (data: {
     strategyName: string;

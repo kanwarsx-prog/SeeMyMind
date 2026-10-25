@@ -9,6 +9,7 @@ import {
   TransitionLogDetail,
   EmailPreview,
   UserProfile,
+  LessonPathwayResponse,
 } from './types';
 import { api, setApiRole } from './api';
 import { Sidebar } from './components/Sidebar';
@@ -54,6 +55,7 @@ const AppContent: React.FC = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isWorksheetModalOpen, setIsWorksheetModalOpen] = useState(false);
   const [activeWorksheet, setActiveWorksheet] = useState('graphs');
+  const [activePathwayData, setActivePathwayData] = useState<LessonPathwayResponse | null>(null);
   const [isTourModalOpen, setIsTourModalOpen] = useState(false);
   const [isAITransparencyOpen, setIsAITransparencyOpen] = useState(false);
 
@@ -400,8 +402,9 @@ const AppContent: React.FC = () => {
     setTimeline(refreshed);
   };
 
-  const handleOpenWorksheet = (key: string) => {
+  const handleOpenWorksheet = (key: string, pathwayData?: LessonPathwayResponse | null) => {
     setActiveWorksheet(key);
+    setActivePathwayData(pathwayData || null);
     setIsWorksheetModalOpen(true);
   };
 
@@ -735,6 +738,8 @@ const AppContent: React.FC = () => {
         isOpen={isWorksheetModalOpen}
         onClose={() => setIsWorksheetModalOpen(false)}
         initialWorksheet={activeWorksheet}
+        pathwayData={activePathwayData}
+        childName={child?.preferred_name || child?.first_name || 'Pupil'}
         onCompleteStep={handleLogMilestone}
       />
 

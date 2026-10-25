@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ArrowRight,
   Lock,
-  ExternalLink,
   Sparkles,
   ChevronDown,
   Printer,
@@ -75,7 +74,7 @@ const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
 
 interface AdaptedPathwayCardProps {
   child?: Child | null;
-  onOpenWorksheet: (worksheetKey: string) => void;
+  onOpenWorksheet: (worksheetKey: string, pathwayData?: LessonPathwayResponse | null) => void;
   onLogMilestone?: (milestoneTitle: string, note: string) => Promise<void>;
 }
 
@@ -305,14 +304,14 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
               <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 border border-teal/20 px-2 py-0.5 rounded-md">
                 CoP 6.44 Scaffolding
               </span>
-              {pathway?.model_used && (pathway.model_used.includes('gpt-4o') || pathway.model_used.includes('noya-gpt4o')) ? (
-                <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  <span>AI Adapted (GPT-4o)</span>
+              {pathway?.model_used && (pathway.model_used.includes('gpt') || pathway.model_used.includes('noya')) ? (
+                <span className="text-[10px] font-bold text-teal dark:text-mint bg-mint-p/80 dark:bg-teal-900/40 border border-teal/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-teal animate-pulse" />
+                  <span>⚡ NOYA Adapted</span>
                 </span>
               ) : pathway?.model_used?.includes('ai-unavailable') ? (
-                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-md flex items-center gap-1" title="OpenAI API key missing or unreachable. Standard deterministic scaffold loaded.">
-                  <span>⚠️ AI Unavailable · Standard Scaffold</span>
+                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-md flex items-center gap-1" title="Standard deterministic scaffold loaded.">
+                  <span>⚠️ Standard Scaffold</span>
                 </span>
               ) : (
                 <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded-md">
@@ -396,10 +395,10 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway}
                   className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
-                  title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
+                  title="Synthesise bespoke scaffolding ladder using NOYA"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? '⚡ Synthesizing with GPT-4o (~5-8s)...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
+                  <span>{loadingPathway ? '⚡ NOYA is synthesising (~5-8s)...' : '⚡ NOYA'}</span>
                 </button>
               </div>
             ) : (
@@ -419,10 +418,10 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   onClick={() => handleGenerate(undefined, undefined, undefined, true)}
                   disabled={loadingPathway || !customTopic.trim()}
                   className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
-                  title="Synthesize bespoke scaffolding ladder using OpenAI GPT-4o"
+                  title="Synthesise bespoke scaffolding ladder using NOYA"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? '⚡ Synthesizing with GPT-4o (~5-8s)...' : '⚡ Adapt with NOYA AI (GPT-4o)'}</span>
+                  <span>{loadingPathway ? '⚡ NOYA is synthesising (~5-8s)...' : '⚡ NOYA'}</span>
                 </button>
               </div>
             )}
@@ -543,22 +542,64 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
 
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-borderMain">
-            <button
-              onClick={() => {
-                const lower = currentTopic.toLowerCase();
-                if (lower.includes('fraction')) {
-                  onOpenWorksheet('fractions');
-                } else if (lower.includes('highwayman')) {
-                  onOpenWorksheet('highwayman');
-                } else {
-                  onOpenWorksheet('graphs');
-                }
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-teal hover:bg-teal-dark text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Interactive Worksheet</span>
-            </button>
+            {(() => {
+              const lower = currentTopic.toLowerCase();
+              const isSimAvailable =
+                selectedUnitId === 'maths-graphs' ||
+                selectedUnitId === 'maths-fractions' ||
+                selectedUnitId === 'english-highwayman' ||
+                lower.includes('graph') ||
+                lower.includes('slope') ||
+                lower.includes('fraction') ||
+                lower.includes('highwayman');
+              const simKey = lower.includes('fraction')
+                ? 'fractions'
+                : lower.includes('highwayman')
+                ? 'highwayman'
+                : 'graphs';
+
+              const activePathwayObj: LessonPathwayResponse = pathway
+                ? pathway
+                : {
+                    child_id: child?.id || '',
+                    child_name: pupilName,
+                    subject: currentSubject,
+                    topic: currentTopic,
+                    learning_objective: `Master ${currentTopic} via adapted visual scaffolding`,
+                    cognitive_rationale: rationale,
+                    steps: steps,
+                    ta_briefing: taBriefing,
+                    peer_adaptations: peerAdaptations,
+                    generated_at: new Date().toISOString(),
+                    model_used: 'standard-scaffold',
+                  };
+
+              return (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onOpenWorksheet('dynamic', activePathwayObj)}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-teal hover:bg-teal-dark text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
+                    title="Open full adapted pupil worksheet for this topic"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Open Adapted Worksheet</span>
+                  </button>
+
+                  {isSimAvailable && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenWorksheet(simKey, activePathwayObj)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-mint-p hover:bg-mint-l text-teal dark:bg-teal-900/40 dark:hover:bg-teal-900/60 dark:text-mint border border-teal/20 rounded-xl text-xs font-semibold shadow-2xs cursor-pointer active:scale-95 transition-all"
+                      title="Launch interactive visual simulation sandbox"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-teal dark:text-mint" />
+                      <span>🎮 Interactive Simulation</span>
+                    </button>
+                  )}
+                </>
+              );
+            })()}
 
             <button
               onClick={() => setShowDeskStripModal(true)}

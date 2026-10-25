@@ -184,7 +184,7 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
 
           <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
-              <span>Live Tokens (GPT-4o)</span>
+              <span>Live Tokens (NOYA Live)</span>
               <Zap className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">
@@ -197,7 +197,7 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
 
           <div className="p-3 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
-              <span>GPT-4o Runs</span>
+              <span>NOYA Live Runs</span>
               <Sparkles className="w-3.5 h-3.5 text-purple-500" />
             </div>
             <div className="text-xl font-bold text-purple-700 dark:text-purple-300 mt-1">
@@ -322,7 +322,7 @@ export const AITransparencyModal: React.FC<AITransparencyModalProps> = ({
                               : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}
                         >
-                          {run.model_name}
+                          {isGpt4o ? 'NOYA Engine' : isCurriculum ? 'NOYA Standard Scaffold' : run.model_name}
                         </span>
                         <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-md">
                           Role: {run.requester_role}
