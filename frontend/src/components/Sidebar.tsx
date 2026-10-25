@@ -522,6 +522,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <LogOut className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
             <span>Sign Out</span>
           </button>
+
+          {/* Cloud Sync Status Indicator */}
+          <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] text-sidebarMuted select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+            <span>Cloud Sync: Live · Supabase EU-West-1</span>
+          </div>
         </div>
       </aside>
     </>

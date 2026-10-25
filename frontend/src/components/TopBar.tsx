@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, UserCheck, Menu, Sparkles } from 'lucide-react';
+import { UserCheck, Menu, Sparkles } from 'lucide-react';
 import { Child } from '../types';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -33,18 +33,19 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenTour,
 }) => {
   const pillColors = {
-    red: 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900',
-    amber: 'bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-900',
-    gold: 'bg-amber-50 text-[#7A5A00] border border-amber-300 dark:bg-amber-950/50 dark:text-amber-200 dark:border-amber-800',
-    green: 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900',
-    teal: 'bg-teal-50 text-teal-800 border border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-900',
-    purple: 'bg-purple-50 text-purple-800 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-900',
-    indigo: 'bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-900',
+    red: 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900',
+    amber: 'bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-900',
+    gold: 'bg-amber-50 text-[#7A5A00] border-amber-300 dark:bg-amber-950/50 dark:text-amber-200 dark:border-amber-800',
+    green: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900',
+    teal: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-900',
+    purple: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-900',
+    indigo: 'bg-indigo-50 text-indigo-900 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-900',
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-topbar border-b border-borderMain px-3.5 sm:px-7 py-3 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-xs transition-colors duration-200">
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+    <header className="sticky top-0 z-20 bg-topbar border-b border-borderMain px-3.5 sm:px-7 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 shadow-xs transition-colors duration-200">
+      {/* Context Zone: Identity, Title, Subtitle, Dropdown, and Passive Badges */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3.5 min-w-0">
         {onToggleMobileMenu && (
           <button
             onClick={onToggleMobileMenu}
@@ -82,48 +83,53 @@ export const TopBar: React.FC<TopBarProps> = ({
             </select>
           </div>
         )}
+
+        {/* Informational Context Badges (distinct tag styling, non-clickable) */}
+        {pills.length > 0 && (
+          <div className="hidden md:flex items-center gap-1.5 flex-wrap">
+            {pills.map((p, idx) => (
+              <span
+                key={idx}
+                className={`text-[11px] font-medium px-2.5 py-0.5 rounded-md whitespace-nowrap select-none cursor-default border ${
+                  pillColors[p.color]
+                }`}
+              >
+                {p.label}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
-        {/* Render/Supabase cloud status badge */}
-        <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 text-[11px] font-medium mr-1">
-          <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-          <span>Live · Supabase EU-West-1</span>
-        </div>
-
+      {/* Action Toolbar: Strictly interactive controls */}
+      <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
         {/* Theme Mode Toggle (☀️ / 🌙) */}
         <ThemeToggle />
 
+        {/* Tour Guided Walkthrough */}
         {onOpenTour && (
           <button
             onClick={onOpenTour}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-teal/10 via-purple-500/10 to-teal/10 hover:from-teal/20 hover:to-purple-500/20 text-navy dark:text-white border border-teal/25 dark:border-teal/50 text-[11px] font-bold cursor-pointer transition-all shadow-2xs active:scale-95 mr-1"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cardSubtle hover:bg-slate-200/70 dark:hover:bg-slate-800 text-textMain border border-borderMain text-xs font-semibold cursor-pointer transition-all active:scale-95 shadow-2xs"
             title="Open Guided Tour"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
-            <span>✨ Tour</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse flex-shrink-0" />
+            <span>Tour</span>
           </button>
         )}
 
-        {pills.map((p, idx) => (
-          <span
-            key={idx}
-            className={`text-[11px] font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-2xs ${
-              pillColors[p.color]
-            }`}
-          >
-            {p.label}
-          </span>
-        ))}
-
+        {/* Primary Action Button */}
         {actionButton && (
-          <button
-            onClick={actionButton.onClick}
-            className="flex items-center gap-1.5 bg-teal hover:bg-teal-medium text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all ml-1 cursor-pointer active:scale-95"
-          >
-            {actionButton.icon}
-            <span>{actionButton.label}</span>
-          </button>
+          <>
+            <div className="h-5 w-px bg-borderMain mx-0.5" aria-hidden="true" />
+            <button
+              onClick={actionButton.onClick}
+              className="flex items-center gap-1.5 bg-teal hover:bg-teal-medium text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95"
+            >
+              {actionButton.icon}
+              <span>{actionButton.label}</span>
+            </button>
+          </>
         )}
       </div>
     </header>
