@@ -681,19 +681,19 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Top Header */}
-        <div className="px-5 py-4 bg-navy text-white flex items-center justify-between border-b border-white/10 flex-shrink-0">
+        <div className="px-5 py-3 bg-navy text-white flex items-center justify-between border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-xs border border-white/20"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-xs border border-white/20"
               style={{ backgroundColor: `${currentTour.themeColor}30` }}
             >
               {currentTour.avatarEmoji}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold font-serif text-white flex items-center gap-1.5">
+                <h2 className="text-sm sm:text-base font-bold font-serif text-white flex items-center gap-1.5">
                   <span>{currentTour.roleTitle} Tour</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal/30 text-mint font-semibold">
                     Step {activeStepIndex + 1} of {totalSteps}
@@ -716,7 +716,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
         </div>
 
         {/* Step Navigation Ribbon / Pills */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-850 border-b border-gray-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+        <div className="px-4 py-2 bg-slate-50 dark:bg-slate-850 border-b border-gray-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
           {currentTour.steps.map((step, idx) => {
             const isActive = idx === activeStepIndex;
             const isCompleted = idx < activeStepIndex;
@@ -724,7 +724,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
               <button
                 key={step.stepNumber}
                 onClick={() => setActiveStepIndex(idx)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? 'bg-teal text-white shadow-xs font-bold'
                     : isCompleted
@@ -733,7 +733,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
                 }`}
               >
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
                     isActive
                       ? 'bg-white text-teal'
                       : isCompleted
@@ -749,26 +749,26 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
           })}
         </div>
 
-        {/* Modal Main Content Area */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-white dark:bg-slate-900">
+        {/* Modal Main Content Area - Compact to eliminate vertical scroll */}
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-1 bg-white dark:bg-slate-900">
           {/* Step Title Header */}
           <div>
-            <div className="flex items-center gap-2 text-teal font-bold text-xs uppercase tracking-wider mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <div className="flex items-center gap-2 text-teal font-bold text-[10px] uppercase tracking-wider mb-0.5">
+              <Sparkles className="w-3 h-3 text-amber-500" />
               <span>Step {currentStep.stepNumber}: {currentStep.stepLabel}</span>
             </div>
-            <h3 className="text-xl font-bold font-serif text-gray-900 dark:text-white">
+            <h3 className="text-lg sm:text-xl font-bold font-serif text-gray-900 dark:text-white leading-tight">
               {currentStep.title}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
               {currentStep.subtitle}
             </p>
           </div>
 
-          {/* ⭐ High-Fidelity UI Visual Preview Card ⭐ */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-navy to-slate-900 text-white border border-slate-700/80 shadow-lg space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-700/60">
-              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${currentStep.visualPreview.badgeColor}`}>
+          {/* ⭐ High-Fidelity UI Visual Preview Card (2-Column Compact Layout) ⭐ */}
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-navy to-slate-900 text-white border border-slate-700/80 shadow-md space-y-2">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-700/60">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${currentStep.visualPreview.badgeColor}`}>
                 {currentStep.visualPreview.badge}
               </span>
               <span className="text-[10px] text-slate-400 font-mono">Live Interactive Mock</span>
@@ -778,58 +778,58 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
               {currentStep.visualPreview.title}
             </div>
 
-            {/* Simulated Data Items */}
-            <div className="space-y-2 bg-slate-800/70 p-3 rounded-xl border border-slate-700/60">
+            {/* Simulated Data Items in 2-Column Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 bg-slate-800/70 p-2 rounded-xl border border-slate-700/60">
               {currentStep.visualPreview.items.map((item, i) => (
                 <div
                   key={i}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs p-2 rounded-lg ${
+                  className={`flex items-center justify-between gap-1 text-[11px] px-2.5 py-1.5 rounded-lg ${
                     item.accent
                       ? 'bg-teal/20 text-white border border-teal/40 font-semibold'
                       : 'bg-slate-900/60 text-slate-300'
                   }`}
                 >
-                  <span className="text-slate-400 font-medium sm:w-2/5 truncate">{item.label}</span>
-                  <span className="sm:w-3/5 text-right font-medium">{item.value}</span>
+                  <span className="text-slate-400 font-medium truncate">{item.label}</span>
+                  <span className="text-right font-medium text-[11px] truncate">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="text-[11px] text-mint/90 flex items-center gap-1.5 pt-1">
+            <div className="text-[11px] text-mint/90 flex items-center gap-1.5 pt-0.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-mint flex-shrink-0" />
               <span>{currentStep.visualPreview.highlightText}</span>
             </div>
           </div>
 
-          {/* Operational Impact & Time Saved Callouts */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/60 space-y-1">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-teal flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5" />
-                <span>Operational Impact</span>
+          {/* Operational Impact & Time Saved Callouts in Streamlined Dual Ribbon */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/60 flex items-start gap-2">
+              <Target className="w-3.5 h-3.5 text-teal flex-shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-teal">Operational Impact</div>
+                <p className="text-[11px] text-gray-700 dark:text-slate-300 leading-snug">
+                  {currentStep.whyItMatters}
+                </p>
               </div>
-              <p className="text-xs text-gray-700 dark:text-slate-300 leading-relaxed">
-                {currentStep.whyItMatters}
-              </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 space-y-1">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Time Saved & Stress Reduced</span>
+            <div className="p-2.5 sm:p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 flex items-start gap-2">
+              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">Time Saved</div>
+                <p className="text-[11px] text-amber-900 dark:text-amber-200 leading-snug font-medium">
+                  {currentStep.timeSaved}
+                </p>
               </div>
-              <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
-                {currentStep.timeSaved}
-              </p>
             </div>
           </div>
         </div>
 
         {/* Modal Footer Controls */}
-        <div className="px-5 py-4 bg-slate-50 dark:bg-slate-850 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+        <div className="px-5 py-3 bg-slate-50 dark:bg-slate-850 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 flex-shrink-0">
           {/* Step Context */}
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 w-full sm:w-auto justify-between sm:justify-start">
-            <span className="font-semibold text-gray-800 dark:text-slate-200">{currentTour.roleTitle} Tour</span>
+            <span className="font-semibold text-gray-800 dark:text-slate-200">Tour</span>
             <span className="text-gray-400 dark:text-slate-600">·</span>
             <span>Step {activeStepIndex + 1} of {totalSteps}: {currentStep.stepLabel}</span>
           </div>
@@ -839,7 +839,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
             <button
               onClick={handlePrev}
               disabled={isFirstStep}
-              className="px-3.5 py-2 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -847,7 +847,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 
             <button
               onClick={handleNext}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 ${
                 isLastStep
                   ? 'bg-gradient-to-r from-teal to-emerald-600 hover:from-emerald-600 hover:to-teal text-white shadow-teal/20'
                   : 'bg-teal hover:bg-teal-dark text-white shadow-teal/20'

@@ -98,10 +98,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             onClick={onOpenTour}
             className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-teal/10 via-purple-500/10 to-teal/10 hover:from-teal/20 hover:to-purple-500/20 text-navy dark:text-white border border-teal/25 dark:border-teal/50 text-[11px] font-bold cursor-pointer transition-all shadow-2xs active:scale-95 mr-1"
-            title="Open Interactive Persona Tour"
+            title="Open Guided Tour"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
-            <span>✨ Persona Tour</span>
+            <span>✨ Tour</span>
           </button>
         )}
 

@@ -493,10 +493,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onCloseMobile?.();
               }}
               className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-teal/15 hover:bg-teal/25 text-teal-900 dark:text-teal-200 text-xs font-bold transition-all cursor-pointer border border-teal-300/80 dark:border-teal-700/50 shadow-2xs"
-              title="Interactive Persona Tour & Walkthrough"
+              title="Open Guided Tour"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber animate-pulse flex-shrink-0" />
-              <span>✨ Interactive Persona Tour</span>
+              <span>✨ Tour</span>
             </button>
           )}
 
