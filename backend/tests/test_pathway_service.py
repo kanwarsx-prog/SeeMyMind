@@ -185,3 +185,50 @@ def test_generate_pathway_not_found(client):
         },
     )
     assert resp.status_code == 404
+
+
+def test_get_pupil_curriculum_progress(client):
+    """Test fetching curriculum progress & coverage metrics for a pupil."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "preferred_name": "Phoenix",
+            "date_of_birth": "2015-04-12",
+            "year_group": "Year 5",
+            "room_name": "Room 4",
+            "primary_need": "Autism Spectrum Condition (ASC)",
+            "has_ehcp": True,
+        },
+    )
+    child_id = child_resp.json()["id"]
+
+    resp = client.get(f"/api/v1/noya/pathway/progress/{child_id}")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["child_name"] == "Phoenix"
+    assert data["year_group"] == "Year 5"
+    assert data["total_statutory_units"] >= 20
+    assert data["total_completed_units"] > 0
+    assert data["coverage_percentage"] > 0.0
+    assert len(data["subjects_breakdown"]) >= 5
+    assert len(data["units"]) >= 20
+    assert "strengths_summary" in data
+    assert len(data["next_recommended_units"]) > 0
+
+    # Test unit status update
+    first_unit_id = data["units"][0]["unit_id"]
+    update_resp = client.put(
+        f"/api/v1/noya/pathway/progress/{child_id}/unit/{first_unit_id}",
+        json={
+            "status": "mastered",
+            "mastery_note": "Verified with dry-wipe visual desk strip checklist.",
+        },
+    )
+    assert update_resp.status_code == 200
+    update_data = update_resp.json()
+    assert update_data["status"] == "success"
+    assert update_data["new_status"] == "mastered"
+

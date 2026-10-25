@@ -222,6 +222,42 @@ export interface LessonPathwayResponse {
   model_used: string;
 }
 
+export interface SubjectProgress {
+  subject: string;
+  total_units: number;
+  completed_units: number;
+  in_progress_units: number;
+  percentage: number;
+}
+
+export interface UnitProgressItem {
+  unit_id: string;
+  title: string;
+  subject: string;
+  strand: string;
+  year_group: string;
+  default_objective: string;
+  status: 'mastered' | 'in_progress' | 'not_started' | 'adapted_ready';
+  last_scaffolded_at?: string | null;
+  accommodations_used: string[];
+  mastery_note?: string | null;
+}
+
+export interface PupilCurriculumProgressResponse {
+  child_id: string;
+  child_name: string;
+  year_group: string;
+  primary_need: string;
+  total_statutory_units: number;
+  total_completed_units: number;
+  total_in_progress_units: number;
+  coverage_percentage: number;
+  subjects_breakdown: SubjectProgress[];
+  units: UnitProgressItem[];
+  strengths_summary: string;
+  next_recommended_units: string[];
+}
+
 export type RoleView = 'teacher' | 'senco' | 'parent' | 'child' | 'ta' | 'parentplus' | 'admin';
 export type TeacherSubView = 'focused' | 'matrix' | 'pathways';
 

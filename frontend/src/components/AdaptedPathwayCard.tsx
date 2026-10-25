@@ -11,6 +11,8 @@ import {
   BatteryCharging,
   Layers,
   RotateCcw,
+  BarChart3,
+  Search,
 } from 'lucide-react';
 import {
   Child,
@@ -22,6 +24,7 @@ import {
 import { api } from '../api';
 import { VisualDeskStripModal } from './VisualDeskStripModal';
 import { SensoryTokenModal } from './SensoryTokenModal';
+import { CurriculumProgressView } from './CurriculumProgressView';
 
 const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
   // Year 1
@@ -236,6 +239,28 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [isCustomMode, setIsCustomMode] = useState<boolean>(false);
   const [loadingPathway, setLoadingPathway] = useState<boolean>(false);
   const [pathway, setPathway] = useState<LessonPathwayResponse | null>(null);
+  const [activeCardTab, setActiveCardTab] = useState<'ladder' | 'curriculum_report'>('ladder');
+  const [topicSearchQuery, setTopicSearchQuery] = useState<string>('');
+
+  const handleScaffoldFromProgress = (unitTitle: string, subject: string, objective: string) => {
+    setActiveCardTab('ladder');
+    const match = curriculumUnits.find((u) => u.title.toLowerCase() === unitTitle.toLowerCase());
+    if (match) {
+      setSelectedUnitId(match.id);
+    }
+    setIsCustomMode(false);
+    handleGenerate(unitTitle, subject, objective, false);
+  };
+
+  const filteredUnits = topicSearchQuery.trim()
+    ? curriculumUnits.filter(
+        (u) =>
+          u.title.toLowerCase().includes(topicSearchQuery.toLowerCase()) ||
+          u.strand.toLowerCase().includes(topicSearchQuery.toLowerCase()) ||
+          u.subject.toLowerCase().includes(topicSearchQuery.toLowerCase()) ||
+          u.default_objective.toLowerCase().includes(topicSearchQuery.toLowerCase())
+      )
+    : curriculumUnits;
 
   const [steps, setSteps] = useState<PathwayStep[]>([
     {
@@ -570,14 +595,56 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
 
       {isOpen && (
         <div className="p-4 space-y-4">
-          
-          {/* Lesson Topic Selector & Quick Ingestion Strip */}
-          <div className="p-3 bg-cardSubtle rounded-2xl border border-borderMain space-y-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-teal" />
-                <span>Select Lesson Topic or Ingest Custom Objective:</span>
+          {/* Sub-tab Switcher: Scaffolding Ladder vs. Curriculum Progress Report */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-borderMain">
+            <div className="flex items-center gap-1.5 p-1 bg-cardSubtle rounded-xl border border-borderMain/80">
+              <button
+                type="button"
+                onClick={() => setActiveCardTab('ladder')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeCardTab === 'ladder'
+                    ? 'bg-teal text-white shadow-2xs'
+                    : 'text-textDim hover:text-navy dark:hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>📖 4-Step Scaffolding Ladder</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCardTab('curriculum_report')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeCardTab === 'curriculum_report'
+                    ? 'bg-teal text-white shadow-2xs'
+                    : 'text-textDim hover:text-navy dark:hover:text-white'
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>📊 Curriculum Progress & Coverage</span>
+              </button>
+            </div>
+
+            {activeCardTab === 'ladder' && (
+              <span className="text-[11px] text-textDim dark:text-slate-400 font-medium hidden sm:inline">
+                CoP 6.44 graduated response in action
               </span>
+            )}
+          </div>
+
+          {activeCardTab === 'curriculum_report' ? (
+            <CurriculumProgressView
+              child={child}
+              onSelectUnitToScaffold={handleScaffoldFromProgress}
+            />
+          ) : (
+            <>
+              {/* Lesson Topic Selector & Quick Ingestion Strip */}
+              <div className="p-3 bg-cardSubtle rounded-2xl border border-borderMain space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-teal" />
+                    <span>Select Lesson Topic or Ingest Custom Objective:</span>
+                  </span>
               <div className="flex items-center gap-1.5 text-xs">
                 <button
                   type="button"
@@ -673,35 +740,57 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
             )}
 
             {!isCustomMode ? (
-              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
-                <select
-                  value={selectedUnitId}
-                  onChange={(e) => handleUnitChange(e.target.value)}
-                  className="flex-1 min-w-0 w-full text-xs px-3 py-2.5 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium truncate"
-                >
-                  {curriculumUnits.length > 0 ? (
-                    curriculumUnits.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        [{u.year_group} · {u.subject}] {u.title} ({u.strand})
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No curriculum units match current filters
-                    </option>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-textDim absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={topicSearchQuery}
+                    onChange={(e) => setTopicSearchQuery(e.target.value)}
+                    placeholder="🔍 Instant filter topics (e.g. fractions, circuits, slope, poetry)..."
+                    className="w-full text-xs pl-8 pr-8 py-2 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
+                  />
+                  {topicSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setTopicSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textDim hover:text-navy dark:hover:text-white text-xs font-bold"
+                    >
+                      ✕
+                    </button>
                   )}
-                </select>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleGenerate(undefined, undefined, undefined, true)}
-                  disabled={loadingPathway}
-                  className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
-                  title="Synthesise bespoke scaffolding ladder using NOYA"
-                >
-                  <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
-                  <span>{loadingPathway ? '⚡ NOYA is synthesising (~5-8s)...' : '⚡ NOYA'}</span>
-                </button>
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+                  <select
+                    value={selectedUnitId}
+                    onChange={(e) => handleUnitChange(e.target.value)}
+                    className="flex-1 min-w-0 w-full text-xs px-3 py-2.5 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium truncate"
+                  >
+                    {filteredUnits.length > 0 ? (
+                      filteredUnits.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          [{u.year_group} · {u.subject}] {u.title} ({u.strand})
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No curriculum units match &ldquo;{topicSearchQuery}&rdquo;
+                      </option>
+                    )}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={() => handleGenerate(undefined, undefined, undefined, true)}
+                    disabled={loadingPathway}
+                    className="w-full md:w-auto flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
+                    title="Synthesise bespoke scaffolding ladder using NOYA"
+                  >
+                    <Sparkles className={`w-3.5 h-3.5 ${loadingPathway ? 'animate-spin' : ''}`} />
+                    <span>{loadingPathway ? '⚡ NOYA is synthesising (~5-8s)...' : '⚡ NOYA'}</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
@@ -986,6 +1075,8 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
               ))}
             </div>
           </div>
+            </>
+          )}
         </div>
       )}
 

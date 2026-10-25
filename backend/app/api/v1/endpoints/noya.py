@@ -17,6 +17,8 @@ from app.schemas.pathway import (
     CurriculumUnit,
     LessonPathwayResponse,
     PathwayGenerateRequest,
+    PupilCurriculumProgressResponse,
+    UnitStatusUpdateRequest,
 )
 from app.services.oak_service import OakCurriculumService
 from app.services.pathway_service import PathwayService
@@ -132,5 +134,49 @@ def clear_ai_audit_runs(
     count = query.delete(synchronize_session=False)
     db.commit()
     return {"deleted_count": count}
+
+
+@router.get("/pathway/progress/{child_id}", response_model=PupilCurriculumProgressResponse)
+def get_pupil_curriculum_progress(
+    child_id: UUID,
+    year_group: str | None = Query(None, description="Filter by year group, e.g. 'Year 5'"),
+    db: Session = Depends(get_db),
+):
+    """Retrieve comprehensive National Curriculum coverage and progress metrics for a pupil."""
+    try:
+        return PathwayService.get_pupil_curriculum_progress(
+            db=db, child_id=child_id, year_group=year_group
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch pupil curriculum progress: {e!s}"
+        )
+
+
+@router.put("/pathway/progress/{child_id}/unit/{unit_id}")
+def update_pupil_unit_progress(
+    child_id: UUID,
+    unit_id: str,
+    request: UnitStatusUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """Update progress status (mastered, in_progress, not_started) for a curriculum unit."""
+    try:
+        return PathwayService.update_pupil_unit_progress(
+            db=db,
+            child_id=child_id,
+            unit_id=unit_id,
+            status=request.status,
+            note=request.mastery_note,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to update unit progress: {e!s}"
+        )
+
 
 

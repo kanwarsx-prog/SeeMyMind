@@ -41,6 +41,7 @@ import {
   CurriculumMetadataResponse,
   PathwayGenerateRequest,
   LessonPathwayResponse,
+  PupilCurriculumProgressResponse,
   AIRunAuditItem,
 } from './types';
 
@@ -446,6 +447,35 @@ export const api = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Failed to generate adapted pathway');
     }
+    return res.json();
+  },
+
+  async getPupilCurriculumProgress(
+    childId: string,
+    yearGroup?: string
+  ): Promise<PupilCurriculumProgressResponse> {
+    const params = new URLSearchParams();
+    if (yearGroup) params.append('year_group', yearGroup);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/noya/pathway/progress/${childId}${query}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch pupil curriculum progress');
+    return res.json();
+  },
+
+  async updatePupilUnitProgress(
+    childId: string,
+    unitId: string,
+    status: string,
+    masteryNote?: string
+  ): Promise<any> {
+    const res = await fetch(`${API_BASE}/noya/pathway/progress/${childId}/unit/${unitId}`, {
+      method: 'PUT',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ status, mastery_note: masteryNote }),
+    });
+    if (!res.ok) throw new Error('Failed to update curriculum unit progress');
     return res.json();
   },
 

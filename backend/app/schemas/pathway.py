@@ -62,3 +62,44 @@ class CurriculumMetadataResponse(BaseModel):
     subjects: list[str]
     total_units: int
 
+
+class SubjectProgressSchema(BaseModel):
+    subject: str
+    total_units: int
+    completed_units: int
+    in_progress_units: int
+    percentage: float
+
+
+class UnitProgressItemSchema(BaseModel):
+    unit_id: str
+    title: str
+    subject: str
+    strand: str
+    year_group: str
+    default_objective: str
+    status: str  # "mastered" | "in_progress" | "adapted_ready" | "not_started"
+    last_scaffolded_at: str | None = None
+    accommodations_used: list[str] = Field(default_factory=list)
+    mastery_note: str | None = None
+
+
+class PupilCurriculumProgressResponse(BaseModel):
+    child_id: UUID
+    child_name: str
+    year_group: str
+    primary_need: str
+    total_statutory_units: int
+    total_completed_units: int
+    total_in_progress_units: int
+    coverage_percentage: float
+    subjects_breakdown: list[SubjectProgressSchema]
+    units: list[UnitProgressItemSchema]
+    strengths_summary: str
+    next_recommended_units: list[str] = Field(default_factory=list)
+
+
+class UnitStatusUpdateRequest(BaseModel):
+    status: str  # "mastered" | "in_progress" | "not_started"
+    mastery_note: str | None = None
+
