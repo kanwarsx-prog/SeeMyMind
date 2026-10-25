@@ -53,6 +53,30 @@ def list_children(
     db: Session = Depends(get_db),
 ):
     query = db.query(Child).options(joinedload(Child.support_profile))
+
+    # Strict isolation for parent role: only return their legally linked children
+    if current_user.role == "parent":
+        linked_ids = set()
+        if current_user.child_id:
+            linked_ids.add(current_user.child_id)
+        guardian_id = current_user.guardian_id
+        if not guardian_id and current_user.email:
+            guardian = db.query(models.Guardian).filter(models.Guardian.email == current_user.email).first()
+            if guardian:
+                guardian_id = guardian.id
+        if guardian_id:
+            links = (
+                db.query(models.ChildGuardianLink.child_id)
+                .filter(models.ChildGuardianLink.guardian_id == guardian_id)
+                .all()
+            )
+            for (cid,) in links:
+                linked_ids.add(cid)
+        if not linked_ids:
+            return []
+        query = query.filter(Child.id.in_(linked_ids))
+        return query.order_by(Child.date_of_birth.desc()).all()
+
     # If explicit school_id passed (e.g. by admin), use it
     target_school_id = school_id
     if not target_school_id and current_user.role != "admin" and current_user.school_id:

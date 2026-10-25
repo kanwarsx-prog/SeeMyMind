@@ -8,6 +8,7 @@ import {
   ParentWinsGalleryItem,
   EveningCheckInCreate,
   CamhsClinicalDossierResponse,
+  UserProfile,
 } from '../types';
 import { api } from '../api';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
@@ -32,6 +33,9 @@ import {
 
 interface ParentViewProps {
   child: Child;
+  pupils?: Child[];
+  onSelectChild?: (childId: string) => void;
+  currentUser?: UserProfile | null;
   timeline: ChildEvent[];
   latestHandover?: TransitionLogDetail | null;
   onSubmitHandover: (data: any) => Promise<void>;
@@ -41,6 +45,9 @@ interface ParentViewProps {
 
 export const ParentView: React.FC<ParentViewProps> = ({
   child,
+  pupils,
+  onSelectChild,
+  currentUser,
   timeline,
   latestHandover,
   onSubmitHandover,
@@ -183,16 +190,59 @@ export const ParentView: React.FC<ParentViewProps> = ({
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
+      {/* Sibling Switcher Ribbon for Multi-Child Families */}
+      {pupils && pupils.length > 1 && (
+        <div className="card p-3 sm:p-3.5 bg-cardBg border border-borderMain flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-sm font-bold text-teal flex items-center gap-1.5">
+              <span>👨‍👩‍👧‍👦</span>
+              <span className="text-xs uppercase tracking-wider text-textDim font-bold">Your Children:</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+            {pupils.map((p) => {
+              const isSelected = p.id === child.id;
+              const displayName = p.preferred_name || p.first_name || p.full_name;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => onSelectChild?.(p.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
+                    isSelected
+                      ? 'bg-teal text-white shadow-xs ring-2 ring-teal/30'
+                      : 'bg-cardSubtle hover:bg-borderMain/30 text-textMain border border-borderMain hover:border-teal/50'
+                  }`}
+                  aria-pressed={isSelected}
+                  title={`Switch view to ${displayName}`}
+                >
+                  <span className="text-sm">🧒</span>
+                  <span>{displayName} {p.last_name}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-cardBg text-textDim'
+                    }`}
+                  >
+                    {p.year_group || 'SEND'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 1. Welcome & Adult Intelligence Banner */}
       <div className="card p-5 sm:p-6 bg-gradient-to-r from-amber-light/30 via-cardBg to-mint/20 dark:from-amber-950/20 dark:via-cardBg dark:to-teal-950/20 border-l-4 border-l-amber-dark">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl">👩‍👦</span>
-              <h2 className="text-xl font-serif font-bold text-navy dark:text-white">Welcome, Dana Carter</h2>
+              <h2 className="text-xl font-serif font-bold text-navy dark:text-white">
+                Welcome, {currentUser?.full_name || 'Dana Carter'}
+              </h2>
             </div>
             <p className="text-xs text-textSub dark:text-slate-300 mt-1">
-              Direct connection with school inclusion team for {child.full_name || 'your child'}
+              Direct connection with school inclusion team for {child.full_name || `${child.first_name} ${child.last_name}` || 'your child'}
             </p>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-200/50 dark:border-teal-800/40">

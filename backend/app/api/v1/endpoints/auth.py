@@ -280,6 +280,13 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             detail="Account is deactivated. Please contact your school administrator.",
         )
 
+    if user.role == "parent" and not user.guardian_id:
+        guardian = db.query(models.Guardian).filter(models.Guardian.email == user.email).first()
+        if guardian:
+            user.guardian_id = guardian.id
+            db.commit()
+            db.refresh(user)
+
     user_school = db.query(models.School).filter(models.School.id == user.school_id).first() if user.school_id else None
     token = create_access_token(subject=user.id)
     return AuthTokenResponse(
@@ -293,6 +300,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             "school_id": str(user.school_id) if user.school_id else None,
             "school_name": user_school.school_name if user_school else None,
             "child_id": str(user.child_id) if user.child_id else None,
+            "guardian_id": str(user.guardian_id) if getattr(user, "guardian_id", None) else None,
             "theme_preference": getattr(user, "theme_preference", "system") or "system",
         },
     )
@@ -319,6 +327,10 @@ def demo_login(body: DemoLoginRequest, db: Session = Depends(get_db)):
     cfg = DEMO_ACCOUNTS[role]
     email = cfg["email"]
 
+    guardian = None
+    if role == "parent":
+        guardian = db.query(models.Guardian).filter(models.Guardian.email == email).first()
+
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user:
         user = models.User(
@@ -330,10 +342,16 @@ def demo_login(body: DemoLoginRequest, db: Session = Depends(get_db)):
             is_verified=True,
             school_id=school.id,
             child_id=child.id if role in ["parent", "child"] else None,
+            guardian_id=guardian.id if guardian else None,
         )
         db.add(user)
         db.commit()
         db.refresh(user)
+    else:
+        if role == "parent" and guardian and not user.guardian_id:
+            user.guardian_id = guardian.id
+            db.commit()
+            db.refresh(user)
 
     user_school = db.query(models.School).filter(models.School.id == user.school_id).first() if user.school_id else None
     token = create_access_token(subject=user.id)
@@ -348,6 +366,7 @@ def demo_login(body: DemoLoginRequest, db: Session = Depends(get_db)):
             "school_id": str(user.school_id) if user.school_id else None,
             "school_name": user_school.school_name if user_school else None,
             "child_id": str(user.child_id) if user.child_id else None,
+            "guardian_id": str(user.guardian_id) if getattr(user, "guardian_id", None) else None,
             "theme_preference": getattr(user, "theme_preference", "system") or "system",
         },
     )

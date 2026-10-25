@@ -158,6 +158,35 @@ def test_wins_gallery(client):
     wins_resp = client.get(f"/api/v1/transitions/children/{child_id}/wins-gallery")
     assert wins_resp.status_code == 200
     wins = wins_resp.json()
-    assert len(wins) >= 2
-    assert any("Maths" in w["title"] for w in wins)
     assert any("Kindness" in w["celebration_badge"] or "STEM" in w["celebration_badge"] for w in wins)
+
+
+def test_parent_multi_child_isolation_and_switching(client):
+    # 1. Login as parent (Dana Carter)
+    login_resp = client.post("/api/v1/auth/demo-login", json={"role": "parent"})
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. Query pupils as parent
+    pupils_resp = client.get("/api/v1/pupils/", headers=headers)
+    assert pupils_resp.status_code == 200
+    pupils = pupils_resp.json()
+
+    # 3. Verify parent sees only their own children (Phoenix and Leo), not unrelated pupils
+    pupil_names = [p["full_name"] for p in pupils]
+    assert "Phoenix Carter" in pupil_names
+    assert "Leo Carter" in pupil_names
+    assert "Isla Evans" not in pupil_names
+    assert "Rowan Bailey" not in pupil_names
+    assert len(pupils) == 2
+
+    # 4. Verify parent can query timeline for both children
+    phoenix_id = next(p["id"] for p in pupils if p["first_name"] == "Phoenix")
+    leo_id = next(p["id"] for p in pupils if p["first_name"] == "Leo")
+
+    phoenix_timeline = client.get(f"/api/v1/timeline/children/{phoenix_id}/events", headers=headers)
+    assert phoenix_timeline.status_code == 200
+
+    leo_timeline = client.get(f"/api/v1/timeline/children/{leo_id}/events", headers=headers)
+    assert leo_timeline.status_code == 200

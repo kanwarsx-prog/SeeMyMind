@@ -295,6 +295,55 @@ class SeederService:
                 )
             )
 
+        # Sibling: Leo Carter (Year 3) linked to Dana Carter
+        leo = db.query(models.Child).filter(models.Child.first_name == "Leo", models.Child.last_name == "Carter").first()
+        if not leo:
+            leo = models.Child(
+                school_id=school.id,
+                first_name="Leo",
+                last_name="Carter",
+                full_name="Leo Carter",
+                preferred_name="Leo",
+                date_of_birth=date(2017, 3, 14),
+                sex="Male",
+                year_group="Year 3",
+                room_name="Room 2",
+                active=True,
+            )
+            db.add(leo)
+            db.flush()
+
+            leo_profile = models.ChildSupportProfile(
+                child_id=leo.id,
+                primary_need="Speech, Language and Communication Needs (SLCN)",
+                secondary_need="Sensory Processing Sensitivity",
+                has_ehcp=False,
+                summary="Responds exceptionally well to visual cue cards and sensory pauses during numeracy.",
+            )
+            db.add(leo_profile)
+            db.flush()
+
+        leo_link = (
+            db.query(models.ChildGuardianLink)
+            .filter(
+                models.ChildGuardianLink.child_id == leo.id,
+                models.ChildGuardianLink.guardian_id == guardian.id,
+            )
+            .first()
+        )
+        if not leo_link:
+            db.add(
+                models.ChildGuardianLink(
+                    child_id=leo.id,
+                    guardian_id=guardian.id,
+                    parental_responsibility=True,
+                    emergency_contact=True,
+                    primary_carer=True,
+                    receive_daily_updates=True,
+                )
+            )
+            db.flush()
+
         # 5. Pupil Voice Account for Phoenix
         phoenix_acc = (
             db.query(models.ChildAccount)

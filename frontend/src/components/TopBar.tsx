@@ -73,7 +73,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 )}
                 {pupils!.map((p) => (
                   <option key={p.id} value={p.id} className="bg-cardBg text-textMain">
-                    Pupil: {p.full_name || `${p.first_name} ${p.last_name}`} ({p.year_group || 'SEND'})
+                    {p.full_name || `${p.first_name} ${p.last_name}`} ({p.year_group || 'SEND'})
                   </option>
                 ))}
               </select>

@@ -96,12 +96,17 @@ def verify_child_access(
         # Check if parent is legally linked to this child
         if current_user.child_id == child_id:
             return child
-        if current_user.guardian_id:
+        guardian_id = current_user.guardian_id
+        if not guardian_id and current_user.email:
+            guardian = db.query(models.Guardian).filter(models.Guardian.email == current_user.email).first()
+            if guardian:
+                guardian_id = guardian.id
+        if guardian_id:
             link = (
                 db.query(models.ChildGuardianLink)
                 .filter(
                     models.ChildGuardianLink.child_id == child_id,
-                    models.ChildGuardianLink.guardian_id == current_user.guardian_id,
+                    models.ChildGuardianLink.guardian_id == guardian_id,
                 )
                 .first()
             )

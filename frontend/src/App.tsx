@@ -609,7 +609,7 @@ const AppContent: React.FC = () => {
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
           actionButton={topBarConfig.actionButton}
-          pupils={currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
+          pupils={currentUser.role === 'parent' || currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
           overviewLabel={
             activeView === 'teacher'
               ? `🏫 ${child?.room_name || 'Room 4'} Classroom Hub (All Pupils)`
@@ -662,6 +662,9 @@ const AppContent: React.FC = () => {
           {activeView === 'parent' && (
             <ParentView
               child={child!}
+              pupils={pupils}
+              onSelectChild={handleChildSelect}
+              currentUser={currentUser}
               timeline={timeline}
               latestHandover={latestHandover}
               activeTab={parentSubTab}

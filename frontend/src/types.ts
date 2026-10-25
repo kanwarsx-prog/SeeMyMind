@@ -386,6 +386,7 @@ export interface UserProfile {
   school_id?: string;
   school_name?: string;
   child_id?: string;
+  guardian_id?: string;
   username?: string;
   avatar_emoji?: string;
   theme_preference?: 'light' | 'dark' | 'system';
