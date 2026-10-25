@@ -56,7 +56,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
   };
 
   const handleCopyRecipe = () => {
-    const text = `Tonight's Home Decompression Recipe for ${childName} (${bridge.battery_percentage}% Sensory Battery - ${bridge.masking_level}):\n` +
+    const text = `Home-Time Note for ${childName} (${bridge.battery_percentage}% Energy Level):\n` +
       bridge.decompression_recipe.map(r => `• Step ${r.step} (${r.subtitle}): ${r.title} - ${r.description}`).join('\n') +
       `\n\nTips: ${bridge.recommended_evening_activities.join(', ')}`;
     navigator.clipboard.writeText(text);
@@ -66,7 +66,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
 
   return (
     <div className="space-y-6">
-      {/* 1. Sensory Battery & Masking Prediction Hero Banner */}
+      {/* 1. Afternoon Energy Level & Pick-Up Hero Banner */}
       <div className="p-6 rounded-2xl bg-gradient-to-br from-teal-50/80 via-cardBg to-slate-50 dark:from-[#142234] dark:via-[#1B2F44] dark:to-[#142234] text-textMain dark:text-white shadow-sm relative overflow-hidden border border-teal-100 dark:border-borderMain">
         {/* Soft decorative glow */}
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -75,12 +75,12 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 bg-teal-100 dark:bg-teal-500/20 px-2.5 py-1 rounded-full border border-teal-200/50 dark:border-transparent">
-                3:15 PM Decompression Bridge
+                Home-Time Note (3:15 PM)
               </span>
-              <span className="text-xs text-textDim dark:text-white/60">Adult Observation Prediction</span>
+              <span className="text-xs text-textDim dark:text-white/60">Pick-Up & Evening Guide</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-serif font-bold text-navy dark:text-white mt-1.5">
-              {childName}'s Post-School Sensory Battery
+              {childName}&apos;s Afternoon Energy Level
             </h2>
           </div>
 
@@ -88,10 +88,10 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
             <button
               onClick={handleCopyRecipe}
               className="px-3.5 py-1.5 bg-cardBg dark:bg-white/10 hover:bg-cardSubtle dark:hover:bg-white/20 active:scale-95 text-xs text-textMain dark:text-white rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border border-borderMain dark:border-white/10 shadow-2xs"
-              title="Copy tonight's recipe to share with family"
+              title="Copy home-time note to share with family"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-300" />}
-              <span>{copied ? 'Copied Recipe!' : 'Share Recipe'}</span>
+              <span>{copied ? 'Copied Note!' : 'Share Home-Time Note'}</span>
             </button>
           </div>
         </div>
@@ -224,20 +224,20 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
         </div>
       </div>
 
-      {/* 4. Tonight's Step-by-Step Home Decompression Recipe */}
+      {/* 4. Tonight's Step-by-Step Calming Steps */}
       <div className="card p-5 space-y-4 border border-teal/20 bg-gradient-to-b from-cardBg to-mint/5 dark:from-cardBg dark:to-cardBg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-borderMain pb-3">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-dark dark:text-amber-300" />
-              <h3 className="text-sm font-bold text-navy dark:text-white">Tonight's Step-by-Step Decompression Recipe</h3>
+              <h3 className="text-sm font-bold text-navy dark:text-white">Tonight&apos;s Calming Steps</h3>
             </div>
             <p className="text-xs text-textDim dark:text-slate-300 mt-0.5">
-              Targeted arrival sequence for {childName} based on today's acoustic and cognitive load.
+              Targeted arrival steps for {childName} based on today&apos;s classroom energy.
             </p>
           </div>
           <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-teal/10 dark:bg-teal-500/20 text-teal-dark dark:text-teal-300 self-start sm:self-auto">
-            Ready for 3:30 PM Pickup
+            Ready for 3:15 PM Pick-Up
           </span>
         </div>
 

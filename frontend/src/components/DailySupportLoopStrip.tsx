@@ -1,0 +1,269 @@
+import React, { useState } from 'react';
+import {
+  Sun,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  BatteryCharging,
+  BatteryWarning,
+  Battery,
+  Check,
+} from 'lucide-react';
+import { Child, TransitionLogDetail, DecompressionBridgeResponse } from '../types';
+
+interface DailySupportLoopStripProps {
+  child?: Child | null;
+  latestHandover?: TransitionLogDetail | null;
+  bridge?: DecompressionBridgeResponse | null;
+  currentUserRole?: string;
+  onAcknowledgeHandover?: () => Promise<void> | void;
+  onOpenHomeTimeNote?: () => void;
+  onOpenMorningCheckIn?: () => void;
+}
+
+export const DailySupportLoopStrip: React.FC<DailySupportLoopStripProps> = ({
+  child,
+  latestHandover,
+  bridge,
+  currentUserRole = 'teacher',
+  onAcknowledgeHandover,
+  onOpenHomeTimeNote,
+  onOpenMorningCheckIn,
+}) => {
+  const [acknowledging, setAcknowledging] = useState(false);
+  const [localAcknowledged, setLocalAcknowledged] = useState(false);
+
+  const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
+  const isAcknowledged = localAcknowledged || Boolean(latestHandover?.acknowledged_by_staff);
+
+  const handleAcknowledge = async () => {
+    if (!onAcknowledgeHandover || acknowledging || isAcknowledged) return;
+    try {
+      setAcknowledging(true);
+      await onAcknowledgeHandover();
+      setLocalAcknowledged(true);
+    } catch (err) {
+      console.error('Failed to acknowledge:', err);
+    } finally {
+      setAcknowledging(false);
+    }
+  };
+
+  const getEnergyIcon = (pct?: number) => {
+    if (!pct || pct < 35) return <BatteryWarning className="w-3.5 h-3.5 text-rose-500" />;
+    if (pct < 65) return <Battery className="w-3.5 h-3.5 text-amber-500" />;
+    return <BatteryCharging className="w-3.5 h-3.5 text-emerald-500" />;
+  };
+
+  return (
+    <div className="card p-4 sm:p-5 border-l-4 border-l-teal shadow-xs mb-5 bg-cardBg transition-all">
+      {/* Top Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-borderMain">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🔁</span>
+          <div>
+            <h2 className="text-xs sm:text-sm font-bold text-textHead tracking-tight flex items-center gap-2">
+              <span>Today&apos;s Daily Loop</span>
+              <span className="text-[10px] font-semibold text-teal px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800">
+                Home · School · Home
+              </span>
+            </h2>
+            <p className="text-[11px] text-textDim">
+              The continuous 24-hour support circle keeping {pupilName}&apos;s home and classroom in sync.
+            </p>
+          </div>
+        </div>
+
+        {/* Loop health badge */}
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-textDim">
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Active Loop for Today</span>
+        </div>
+      </div>
+
+      {/* 4 Connected Stations Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative">
+        {/* ========================================================= */}
+        {/* STATION 1: MORNING CHECK-IN (Home -> School)              */}
+        {/* ========================================================= */}
+        <div
+          onClick={onOpenMorningCheckIn}
+          className={`p-3 rounded-xl border transition-all ${
+            latestHandover
+              ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/60'
+              : 'bg-cardSubtle border-borderMain'
+          } ${onOpenMorningCheckIn ? 'cursor-pointer hover:shadow-xs' : ''}`}
+        >
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-textHead">
+              <Sun className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+              <span>1. Morning Check-In</span>
+            </div>
+            <span
+              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                latestHandover
+                  ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200'
+                  : 'bg-cardBg text-textDim border border-borderMain'
+              }`}
+            >
+              {latestHandover ? '✓ Sent 07:42' : '⏳ Awaiting'}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-textDim leading-snug mb-2">
+            {latestHandover ? (
+              <span>
+                Mood: <strong className="text-textHead capitalize">{latestHandover.morning_mood || 'Calm'}</strong> · Sleep: <strong className="text-textHead">{latestHandover.sleep_quality || 'Good'}</strong>
+              </span>
+            ) : (
+              'No home note yet today. Standing classroom baselines active.'
+            )}
+          </p>
+
+          <div className="flex items-center gap-1.5 text-[10px] text-textDim pt-1 border-t border-borderMain/50">
+            <span className="font-semibold text-amber-700 dark:text-amber-400">Home &rarr; School</span>
+            {latestHandover?.special_notes_for_day && (
+              <span className="truncate italic">· &ldquo;{latestHandover.special_notes_for_day}&rdquo;</span>
+            )}
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* STATION 2: SCHOOL HEADS-UP (Classroom Receipt)            */}
+        {/* ========================================================= */}
+        <div
+          className={`p-3 rounded-xl border transition-all ${
+            isAcknowledged
+              ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60'
+              : latestHandover
+              ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60 ring-1 ring-rose-300'
+              : 'bg-cardSubtle border-borderMain'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-textHead">
+              <CheckCircle2
+                className={`w-3.5 h-3.5 flex-shrink-0 ${
+                  isAcknowledged ? 'text-emerald-600 dark:text-emerald-400' : 'text-textDim'
+                }`}
+              />
+              <span>2. School Heads-Up</span>
+            </div>
+            <span
+              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                isAcknowledged
+                  ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200'
+                  : latestHandover
+                  ? 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 animate-pulse'
+                  : 'bg-cardBg text-textDim border border-borderMain'
+              }`}
+            >
+              {isAcknowledged ? '✓ Seen by Staff' : latestHandover ? 'Needs Check' : 'Standby'}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-textDim leading-snug mb-2">
+            {isAcknowledged ? (
+              <span className="text-emerald-800 dark:text-emerald-300 font-medium">
+                Miss Johnson acknowledged note. Parent confirmed receipt.
+              </span>
+            ) : latestHandover ? (
+              <span className="text-rose-700 dark:text-rose-300 font-medium">
+                New morning note ready for teacher review before class.
+              </span>
+            ) : (
+              'Classroom team notified when morning note arrives.'
+            )}
+          </p>
+
+          {/* Interactive Teacher Action Button */}
+          {!isAcknowledged && latestHandover && (currentUserRole === 'teacher' || currentUserRole === 'ta' || currentUserRole === 'senco') ? (
+            <button
+              onClick={handleAcknowledge}
+              disabled={acknowledging}
+              className="w-full mt-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-all shadow-2xs flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            >
+              <Check className="w-3 h-3" />
+              <span>{acknowledging ? 'Confirming...' : 'Acknowledge Note'}</span>
+            </button>
+          ) : (
+            <div className="text-[10px] text-textDim pt-1 border-t border-borderMain/50 font-medium">
+              {isAcknowledged ? '✓ Read receipt active' : 'Classroom arrival gate'}
+            </div>
+          )}
+        </div>
+
+        {/* ========================================================= */}
+        {/* STATION 3: WHAT HELPED (In-Classroom Support)             */}
+        {/* ========================================================= */}
+        <div className="p-3 rounded-xl border bg-cardSubtle border-borderMain transition-all">
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-textHead">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+              <span>3. What Helped</span>
+            </div>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              Active In-Class
+            </span>
+          </div>
+
+          <p className="text-[11px] text-textDim leading-snug mb-2">
+            Proven calming tool: <strong className="text-textHead">Quiet Headphones</strong> (92% win rate). Visual step ladder active in Maths.
+          </p>
+
+          <div className="text-[10px] text-textDim pt-1 border-t border-borderMain/50 font-medium">
+            1:1 Support &bull; Quick strategy logging
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* STATION 4: HOME-TIME NOTE (School -> Home at 3:15 PM)     */}
+        {/* ========================================================= */}
+        <div
+          onClick={onOpenHomeTimeNote}
+          className={`p-3 rounded-xl border transition-all ${
+            bridge
+              ? 'bg-teal-50/40 dark:bg-teal-950/20 border-teal-200 dark:border-teal-800/60'
+              : 'bg-cardSubtle border-borderMain'
+          } ${onOpenHomeTimeNote ? 'cursor-pointer hover:shadow-xs group' : ''}`}
+        >
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-textHead">
+              {getEnergyIcon(bridge?.battery_percentage)}
+              <span>4. Home-Time Note</span>
+            </div>
+            <span
+              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                bridge
+                  ? 'bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200'
+                  : 'bg-cardBg text-textDim border border-borderMain'
+              }`}
+            >
+              {bridge ? `${bridge.battery_percentage}% Energy` : 'Ready 3:15'}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-textDim leading-snug mb-2">
+            {bridge ? (
+              <span>
+                Pick-up advice: <strong className="text-textHead">10-15m quiet buffer</strong> before asking about school.
+              </span>
+            ) : (
+              'Auto-prepared from afternoon logs ready for pick-up at the gates.'
+            )}
+          </p>
+
+          <div className="flex items-center justify-between text-[10px] text-teal pt-1 border-t border-borderMain/50 font-semibold">
+            <span>School &rarr; Home</span>
+            {onOpenHomeTimeNote && (
+              <span className="flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                <span>View Note</span>
+                <ArrowRight className="w-3 h-3" />
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

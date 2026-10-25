@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { api } from '../api';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
+import { DailySupportLoopStrip } from '../components/DailySupportLoopStrip';
 import { EveningCheckInModal } from '../components/EveningCheckInModal';
 import { CamhsEvidenceDossierModal } from '../components/CamhsEvidenceDossierModal';
 import {
@@ -219,7 +220,17 @@ export const ParentView: React.FC<ParentViewProps> = ({
         </div>
       </div>
 
-      {/* 2. 4-Pillar Tab Navigation (Mobile Responsive) */}
+      {/* 1.5 Today's Daily Loop Status Ribbon */}
+      <DailySupportLoopStrip
+        child={child}
+        latestHandover={effectiveHandover}
+        bridge={bridge}
+        currentUserRole="parent"
+        onOpenHomeTimeNote={() => handleTabSelect('bridge')}
+        onOpenMorningCheckIn={() => handleTabSelect('handover')}
+      />
+
+      {/* 2. Tab Navigation (Mobile Responsive) */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-borderMain scrollbar-none">
         <button
           onClick={() => handleTabSelect('bridge')}
@@ -230,7 +241,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
           }`}
         >
           <BatteryCharging className={`w-4 h-4 ${activeTab === 'bridge' ? 'text-white' : 'text-teal dark:text-teal-300'}`} />
-          <span>3:15 PM Decompression Bridge</span>
+          <span>Home-Time Note (3:15 PM)</span>
           {bridge && (
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
               bridge.battery_percentage < 35 
@@ -253,7 +264,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
           }`}
         >
           <Clock className={`w-4 h-4 ${activeTab === 'handover' ? 'text-white' : 'text-amber-600 dark:text-amber-400'}`} />
-          <span>24-Hour Handover Loop</span>
+          <span>Morning Check-In</span>
           {effectiveHandover?.acknowledged_by_staff && (
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
           )}

@@ -4,6 +4,7 @@ import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOp
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
+import { DailySupportLoopStrip } from '../components/DailySupportLoopStrip';
 import { AbcTooltip } from '../components/AbcTooltip';
 
 interface TeacherViewProps {
@@ -178,6 +179,18 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
       {activeTab === 'focused' && (
         <>
+          {/* Today's Daily Loop Ribbon */}
+          <DailySupportLoopStrip
+            child={child}
+            latestHandover={effectiveHandover}
+            currentUserRole="teacher"
+            onAcknowledgeHandover={() => (effectiveHandover?.id ? handleAcknowledge() : Promise.resolve())}
+            onOpenMorningCheckIn={() => {
+              const el = document.getElementById('preflight-handover');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+
           {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <div className="stat-card border border-gray-100 border-l-4 border-l-rose-500">
@@ -285,26 +298,26 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-navy dark:text-white">
-                  Pre-Flight Morning Handover · {child?.last_name === 'Carter' || !child?.last_name ? 'Dana Carter (Mum)' : `${child?.preferred_name || child?.first_name || 'Pupil'}'s Home Handover`}
+                  Morning Check-In · {child?.last_name === 'Carter' || !child?.last_name ? 'Dana Carter (Mum)' : `${child?.preferred_name || child?.first_name || 'Pupil'}'s Home Note`}
                 </h3>
                 {!effectiveHandover ? (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cardSubtle text-textDim border border-borderMain">
-                    ⏳ Awaiting Home Submission
+                    ⏳ Awaiting Home Note
                   </span>
                 ) : effectiveHandover.acknowledged_by_staff ? (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
-                    ✓ Read Receipt Delivered
+                    ✓ Seen by Staff · Parent Reassured
                   </span>
                 ) : (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800/50 shadow-2xs">
-                    🔔 Needs Teacher Acknowledgment
+                    🔔 Needs Teacher Check
                   </span>
                 )}
               </div>
               <p className="text-[11px] text-textDim dark:text-slate-400">
                 {effectiveHandover
                   ? 'Submitted at 8:47am · Direct home-to-classroom loop'
-                  : 'No morning transition log received yet today · Standing sensory baselines active'}
+                  : 'No home note received yet today · Standing classroom baselines active'}
               </p>
             </div>
           </div>
@@ -400,7 +413,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                   <Sparkles className="w-3.5 h-3.5 text-mint" />
                 </div>
                 <span className="font-serif text-sm font-semibold text-white tracking-wide">
-                  NOYA · Morning Transition Intelligence
+                  NOYA · Morning Heads-Up
                 </span>
               </div>
               <button
@@ -408,7 +421,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 onClick={handleRefresh}
                 disabled={refreshing}
                 className="flex items-center gap-1.5 text-xs font-bold bg-mint hover:bg-mint/90 text-navy px-3 py-1.5 rounded-xl transition-all shadow-xs cursor-pointer disabled:opacity-50 active:scale-95"
-                title="Ask NOYA to synthesize fresh morning transition intelligence"
+                title="Ask NOYA to synthesize fresh morning heads-up"
               >
                 <Sparkles className={`w-3.5 h-3.5 text-navy ${refreshing ? 'animate-spin' : ''}`} />
                 <span>{refreshing ? 'Synthesizing...' : 'Ask NOYA'}</span>
@@ -422,7 +435,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             ) : (
               <div className="py-4 text-center space-y-3">
                 <p className="text-xs text-white/80 max-w-md mx-auto leading-relaxed">
-                  Morning transition briefing is on standby. Click below to synthesize individualized guidance grounded in parent morning handover, sleep logs, and EHCP profile.
+                  Morning Heads-Up is on standby. Click below to synthesize individualized guidance grounded in parent morning check-in, sleep logs, and EHCP profile.
                 </p>
                 <button
                   type="button"

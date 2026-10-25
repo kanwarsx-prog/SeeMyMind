@@ -308,9 +308,9 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 3,
-        stepLabel: 'Evening Decompression',
-        title: '3:15 PM Decompression Recipe & Tonight Tips',
-        subtitle: 'Preventing after-school restraint collapse with transition tips',
+        stepLabel: 'Home-Time Handover',
+        title: 'Home-Time Note (3:15 PM) & Calming Steps',
+        subtitle: 'How their day went and how to greet them at the gates',
         icon: BatteryCharging,
         visualPreview: {
           badge: '🌙 Peaceful Evening Recipe',

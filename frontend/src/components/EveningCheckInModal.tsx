@@ -95,7 +95,7 @@ export const EveningCheckInModal: React.FC<EveningCheckInModalProps> = ({
             {/* Arrival status */}
             <div>
               <label className="block text-xs font-bold text-navy dark:text-white mb-1.5">
-                How did {childName}'s arrival and decompression go?
+                How did {childName} settle when arriving home from school?
               </label>
               <select
                 value={decompression}
@@ -174,7 +174,7 @@ export const EveningCheckInModal: React.FC<EveningCheckInModalProps> = ({
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/50 dark:border-amber-800/40 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
               <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="text-[11px] leading-relaxed">
-                <strong>Why this matters:</strong> Logging after-school decompression provides the final puzzle piece for NOYA AI to map whether classroom sensory breaks prevented home meltdowns.
+                <strong>Why this matters:</strong> Closing today&apos;s loop lets Miss Johnson know how the evening went so tomorrow morning starts with the right support.
               </div>
             </div>
 

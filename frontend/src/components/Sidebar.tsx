@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'preflight-handover',
-          label: 'Pre-Flight Handovers & 1:1 Focus',
+          label: 'Morning Check-Ins & 1:1 Focus',
           icon: Sun,
           action: () => {
             onSelectNav?.('preflight-handover');
@@ -195,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       navItems: [
         {
           id: 'bridge',
-          label: '3:15 PM Decompression Bridge',
+          label: 'Home-Time Note (3:15 PM)',
           icon: BatteryCharging,
           action: () => {
             onSelectNav?.('bridge');
@@ -203,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'handover',
-          label: '24-Hour Handover Loop',
+          label: 'Morning Check-In',
           icon: Clock,
           action: () => {
             onSelectNav?.('handover');
