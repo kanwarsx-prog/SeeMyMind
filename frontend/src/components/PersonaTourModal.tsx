@@ -29,7 +29,6 @@ export interface PersonaTourModalProps {
   userRole?: RoleView;
   schoolName?: string;
   userName?: string;
-  onSelectRole?: (role: RoleView) => void;
 }
 
 interface TourStep {
@@ -649,24 +648,20 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   userRole = 'teacher',
   schoolName,
   userName,
-  onSelectRole,
 }) => {
-  // Active role being viewed in the tour
-  const [selectedRole, setSelectedRole] = useState<RoleView>(userRole);
   // Current active step within this role's tour
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
 
-  // Sync selectedRole when modal opens or userRole changes
+  // Reset step index when modal opens or userRole changes
   useEffect(() => {
     if (isOpen) {
-      setSelectedRole(userRole || 'teacher');
       setActiveStepIndex(0);
     }
   }, [isOpen, userRole]);
 
   if (!isOpen) return null;
 
-  const currentTour = ROLE_TOURS[selectedRole] || ROLE_TOURS.teacher;
+  const currentTour = ROLE_TOURS[userRole] || ROLE_TOURS.teacher;
   const totalSteps = currentTour.steps.length;
   const currentStep = currentTour.steps[activeStepIndex] || currentTour.steps[0];
   const isFirstStep = activeStepIndex === 0;
@@ -682,14 +677,6 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 
   const handlePrev = () => {
     setActiveStepIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleSwitchRole = (newRole: RoleView) => {
-    setSelectedRole(newRole);
-    setActiveStepIndex(0);
-    if (onSelectRole) {
-      onSelectRole(newRole);
-    }
   };
 
   return (
@@ -840,22 +827,11 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 
         {/* Modal Footer Controls */}
         <div className="px-5 py-4 bg-slate-50 dark:bg-slate-850 border-t border-gray-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
-          {/* Subtle Role Switcher Dropdown (in case a SENCO or Admin wants to preview another role's tour) */}
+          {/* Step Context */}
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 w-full sm:w-auto justify-between sm:justify-start">
-            <span className="text-[11px]">Role Tour:</span>
-            <select
-              value={selectedRole}
-              onChange={(e) => handleSwitchRole(e.target.value as RoleView)}
-              className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-xs font-semibold text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal cursor-pointer"
-            >
-              <option value="teacher">👩‍🏫 Teacher Tour</option>
-              <option value="senco">🗂️ SENCO Tour</option>
-              <option value="parent">👨‍👩‍👧 Parent Tour</option>
-              <option value="parentplus">🌟 ParentPlus Tour</option>
-              <option value="ta">🤝 TA Tour</option>
-              <option value="child">🧒 Pupil Voice Tour</option>
-              <option value="admin">🏛️ Governance Admin Tour</option>
-            </select>
+            <span className="font-semibold text-gray-800 dark:text-slate-200">{currentTour.roleTitle} Tour</span>
+            <span className="text-gray-400 dark:text-slate-600">·</span>
+            <span>Step {activeStepIndex + 1} of {totalSteps}: {currentStep.stepLabel}</span>
           </div>
 
           {/* Navigation Buttons: Previous / Next / Finish */}

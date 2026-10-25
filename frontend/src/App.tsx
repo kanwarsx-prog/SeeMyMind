@@ -245,20 +245,6 @@ const AppContent: React.FC = () => {
     handleViewChange(user.role as RoleView);
   };
 
-  const handleTourSelectRole = async (role: RoleView) => {
-    try {
-      setLoading(true);
-      const res = await api.demoLogin(role);
-      handleLoginSuccess(res.user);
-    } catch (err) {
-      console.error('Failed to demo login as', role, err);
-      handleViewChange(role);
-    } finally {
-      setLoading(false);
-      setIsTourModalOpen(false);
-    }
-  };
-
   const handleLogout = () => {
     api.logout();
     setCurrentUser(null);
@@ -781,7 +767,6 @@ const AppContent: React.FC = () => {
         userRole={currentUser.role as RoleView}
         schoolName={currentUser.school_name}
         userName={currentUser.full_name}
-        onSelectRole={handleTourSelectRole}
       />
     </div>
   );
