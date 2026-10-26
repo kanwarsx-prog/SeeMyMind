@@ -70,7 +70,7 @@ const AppContent: React.FC = () => {
   // Sub-Navigation state per persona
   const [activeNavId, setActiveNavId] = useState<string>('');
   const [teacherSubView, setTeacherSubView] = useState<TeacherSubView>('matrix');
-  const [parentSubTab, setParentSubTab] = useState<'bridge' | 'handover' | 'correlation' | 'wins'>('bridge');
+  const [parentSubTab, setParentSubTab] = useState<'today' | 'wins' | 'health' | 'bridge' | 'handover' | 'correlation'>('today');
   const [sencoSubTab, setSencoSubTab] = useState<SencoTab>('provision_map');
   const [adminSubTab, setAdminSubTab] = useState<'schools' | 'staff' | 'delegation' | 'audit'>('schools');
 
@@ -116,7 +116,7 @@ const AppContent: React.FC = () => {
   const initNavForRole = (view: RoleView) => {
     if (view === 'teacher') setActiveNavId('room4-matrix');
     else if (view === 'senco') setActiveNavId('provision_map');
-    else if (view === 'parent') setActiveNavId('bridge');
+    else if (view === 'parent') setActiveNavId('today');
     else if (view === 'child') setActiveNavId('child-checkin');
     else if (view === 'ta') setActiveNavId('ta-hub');
     else if (view === 'admin') setActiveNavId('schools');
@@ -155,9 +155,8 @@ const AppContent: React.FC = () => {
     }
 
     if (activeView === 'parent') {
-      if (navId === 'bridge') setParentSubTab('bridge');
-      if (navId === 'handover') setParentSubTab('handover');
-      if (navId === 'correlation') setParentSubTab('correlation');
+      if (navId === 'today' || navId === 'bridge' || navId === 'handover') setParentSubTab('today');
+      if (navId === 'health' || navId === 'correlation') setParentSubTab('health');
       if (navId === 'wins') setParentSubTab('wins');
     }
 

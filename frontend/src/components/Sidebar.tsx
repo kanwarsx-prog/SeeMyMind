@@ -16,7 +16,6 @@ import {
   Award,
   Sun,
   Layers,
-  BatteryCharging,
   Pill,
   X,
   Building2,
@@ -194,35 +193,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: HeartHandshake,
       navItems: [
         {
-          id: 'bridge',
-          label: 'Home-Time Note (3:15 PM)',
-          icon: BatteryCharging,
+          id: 'today',
+          label: "Today's Daily Loop",
+          icon: Sun,
           action: () => {
-            onSelectNav?.('bridge');
-          },
-        },
-        {
-          id: 'handover',
-          label: 'Morning Check-In',
-          icon: Clock,
-          action: () => {
-            onSelectNav?.('handover');
-          },
-        },
-        {
-          id: 'correlation',
-          label: 'Medication & Routine Digest',
-          icon: Pill,
-          action: () => {
-            onSelectNav?.('correlation');
+            onSelectNav?.('today');
           },
         },
         {
           id: 'wins',
-          label: 'Wins & Strengths Space',
+          label: 'Wins & Strengths',
           icon: Award,
           action: () => {
             onSelectNav?.('wins');
+          },
+        },
+        {
+          id: 'health',
+          label: 'Health & Doctor Reports',
+          icon: Pill,
+          action: () => {
+            onSelectNav?.('health');
           },
         },
       ],
