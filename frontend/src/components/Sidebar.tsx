@@ -99,11 +99,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           },
         },
         {
-          id: 'preflight-handover',
-          label: 'Morning Check-Ins & 1:1 Focus',
+          id: 'morning-briefings',
+          label: 'Morning Briefings',
           icon: Sun,
           action: () => {
-            onSelectNav?.('preflight-handover');
+            onSelectNav?.('morning-briefings');
           },
         },
         {

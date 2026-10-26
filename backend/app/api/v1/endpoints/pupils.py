@@ -199,6 +199,67 @@ def get_classroom_matrix(
                 "assembly": "Visual cue card for when to stand/sit; clear line of sight to speaker.",
             }
 
+        if latest_handover:
+            handover_data = {
+                "id": str(latest_handover.id),
+                "sleep_quality": latest_handover.sleep_quality or "Solid 8.5 hrs",
+                "morning_mood": latest_handover.morning_mood or "Calm arrival",
+                "breakfast_eaten": True if latest_handover.breakfast_eaten is None else bool(latest_handover.breakfast_eaten),
+                "medication_given": False if latest_handover.medication_given is None else bool(latest_handover.medication_given),
+                "special_notes_for_day": latest_handover.special_notes_for_day or "",
+                "acknowledged_by_staff": bool(latest_handover.acknowledged_by_staff),
+                "acknowledged_at": latest_handover.acknowledged_at.strftime("%I:%M %p") if latest_handover.acknowledged_at else None,
+                "alerts": ["Noise Defenders in Bag", "Assembly 9:05am"] if p.first_name == "Phoenix" else [],
+            }
+        elif p.first_name == "Phoenix":
+            handover_data = {
+                "id": f"mock-{p.id}",
+                "sleep_quality": "Restless (woke in night at 4am)",
+                "morning_mood": "Anxious / Apprehensive",
+                "breakfast_eaten": True,
+                "medication_given": True,
+                "special_notes_for_day": "lost his soft toy yesterday; please give him one",
+                "acknowledged_by_staff": False,
+                "acknowledged_at": None,
+                "alerts": ["Noise Defenders in Bag", "Assembly 9:05am"],
+            }
+        elif p.first_name == "Archie":
+            handover_data = {
+                "id": f"mock-{p.id}",
+                "sleep_quality": "Woke early (5:30am)",
+                "morning_mood": "High Physical Energy",
+                "breakfast_eaten": True,
+                "medication_given": True,
+                "special_notes_for_day": "Full of energy this morning; movement breaks planned.",
+                "acknowledged_by_staff": True,
+                "acknowledged_at": "08:42 AM",
+                "alerts": ["Movement Break Pass"],
+            }
+        elif p.first_name == "Riya":
+            handover_data = {
+                "id": f"mock-{p.id}",
+                "sleep_quality": "Interrupted sleep (6am)",
+                "morning_mood": "Quiet & Sensitive",
+                "breakfast_eaten": True,
+                "medication_given": False,
+                "special_notes_for_day": "A bit anxious about maths; reminded her of cooling corner.",
+                "acknowledged_by_staff": True,
+                "acknowledged_at": "08:48 AM",
+                "alerts": ["Cooling Corner Token"],
+            }
+        else:
+            handover_data = {
+                "id": f"mock-{p.id}",
+                "sleep_quality": "Solid 8.5 hrs",
+                "morning_mood": "Calm & Regulated",
+                "breakfast_eaten": True,
+                "medication_given": False,
+                "special_notes_for_day": "Smooth morning routine at home.",
+                "acknowledged_by_staff": True,
+                "acknowledged_at": "08:35 AM",
+                "alerts": [],
+            }
+
         cohort.append({
             "id": str(p.id),
             "name": p.full_name or f"{p.first_name} {p.last_name}",
@@ -214,6 +275,7 @@ def get_classroom_matrix(
             "sensory_calming_tools": tools,
             "buddy_pairing": buddy,
             "subject_accommodations": subj_acc,
+            "handover": handover_data,
         })
 
     teacher_name = (current_user and current_user.full_name) or "Ms Clara Johnson"

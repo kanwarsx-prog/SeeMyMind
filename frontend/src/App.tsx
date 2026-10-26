@@ -140,6 +140,8 @@ const AppContent: React.FC = () => {
     if (activeView === 'teacher') {
       if (navId === 'room4-matrix') {
         setTeacherSubView('matrix');
+      } else if (navId === 'morning-briefings' || navId === 'preflight-handover') {
+        setTeacherSubView('briefings');
       } else if (navId === 'lesson-pathways') {
         setTeacherSubView('pathways');
       } else if (navId === 'provision-map') {
@@ -526,11 +528,13 @@ const AppContent: React.FC = () => {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
         ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${child?.room_name || 'Room 4'} (Year 5)`
+        : teacherSubView === 'briefings'
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Room 4 Morning Arrival Briefings`
         : teacherSubView === 'provision_map'
         ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Room 4 Termly SEND Provision Map`
         : teacherSubView === 'pathways'
         ? `Adapted Lesson Pathways · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`
-        : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
+        : `Pupil Profile · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
       actionButton: teacherSubView === 'pathways'
         ? {
             label: 'Interactive Worksheet',
@@ -635,7 +639,7 @@ const AppContent: React.FC = () => {
               : undefined
           }
           selectedChildId={
-            (activeView === 'teacher' && (teacherSubView === 'matrix' || teacherSubView === 'provision_map')) ||
+            (activeView === 'teacher' && (teacherSubView === 'matrix' || teacherSubView === 'provision_map' || teacherSubView === 'briefings')) ||
             (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'))
               ? 'overview'
               : child?.id
@@ -661,11 +665,13 @@ const AppContent: React.FC = () => {
                 setActiveNavId(
                   view === 'matrix'
                     ? 'room4-matrix'
+                    : view === 'briefings'
+                    ? 'morning-briefings'
                     : view === 'pathways'
                     ? 'lesson-pathways'
                     : view === 'provision_map'
                     ? 'provision-map'
-                    : 'preflight-handover'
+                    : ''
                 );
               }}
               onSelectPupil={handleChildSelect}

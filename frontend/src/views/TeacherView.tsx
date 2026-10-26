@@ -5,6 +5,7 @@ import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
 import { ClassroomProvisionMapModal } from '../components/ClassroomProvisionMapModal';
+import { MorningBriefingsView } from '../components/MorningBriefingsView';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
 import { AbcTooltip } from '../components/AbcTooltip';
 import { api } from '../api';
@@ -190,9 +191,37 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
         </div>
       )}
 
+      {activeTab === 'briefings' && (
+        <MorningBriefingsView
+          onSelectPupil={(pupilId) => {
+            if (onSelectPupil) {
+              onSelectPupil(pupilId);
+            }
+            handleTabChange('focused');
+          }}
+          onOpenObservationModal={onOpenObservationModal}
+        />
+      )}
+
       {activeTab === 'focused' && (
         <>
-          {/* ⭐ 30-SECOND MORNING READINESS COCKPIT */}
+          {/* Back Navigation Bar */}
+          <div className="flex items-center justify-between pb-1">
+            <button
+              onClick={() => handleTabChange('briefings')}
+              className="text-xs font-bold text-teal hover:text-teal-dark flex items-center gap-1.5 cursor-pointer"
+            >
+              ← Return to Morning Briefings
+            </button>
+            <button
+              onClick={() => handleTabChange('matrix')}
+              className="text-xs font-medium text-textDim hover:text-textMain cursor-pointer"
+            >
+              Classroom Overview →
+            </button>
+          </div>
+
+          {/* ⭐ INDIVIDUAL PUPIL PROFILE · MORNING READINESS */}
           <div id="preflight-handover" className="card p-5 sm:p-6 bg-gradient-to-r from-cardBg via-cardBg to-amber-50/20 dark:to-teal-950/20 border-l-4 border-l-teal shadow-xs scroll-mt-6 space-y-4">
             {/* Top Row: Pupil Identity + 1-Click Action */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-borderMain">
@@ -209,7 +238,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                       EHCP Active
                     </span>
                     <span className="text-[11px] font-medium text-textDim dark:text-slate-400">
-                      Year {child?.year_group || '5'} · {child?.room_name || 'Room 4'}
+                      {child?.year_group?.startsWith('Year') ? child.year_group : `Year ${child?.year_group || '5'}`} · {child?.room_name || 'Room 4'}
                     </span>
                   </div>
                   <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">

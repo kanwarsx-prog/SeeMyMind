@@ -314,7 +314,19 @@ export interface PupilCurriculumProgressResponse {
 }
 
 export type RoleView = 'teacher' | 'senco' | 'parent' | 'child' | 'ta' | 'parentplus' | 'admin';
-export type TeacherSubView = 'focused' | 'matrix' | 'pathways' | 'provision_map';
+export type TeacherSubView = 'focused' | 'matrix' | 'pathways' | 'provision_map' | 'briefings';
+
+export interface ClassroomMorningHandover {
+  id: string;
+  sleep_quality: string;
+  morning_mood: string;
+  breakfast_eaten: boolean;
+  medication_given: boolean;
+  special_notes_for_day: string;
+  acknowledged_by_staff: boolean;
+  acknowledged_at?: string | null;
+  alerts?: string[];
+}
 
 export interface EmailPreview {
   to_email: string;
@@ -432,6 +444,7 @@ export interface ClassroomPupilSummary {
     assembly?: string;
     [key: string]: string | undefined;
   };
+  handover?: ClassroomMorningHandover;
 }
 
 export interface ClassroomMatrixData {
