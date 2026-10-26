@@ -101,6 +101,44 @@ TOOL_DEFINITIONS = [
                 "required": ["child_id"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "propose_classroom_action",
+            "description": "Propose an actionable classroom note, calming strategy win, or observation to be recorded on the pupil's timeline. Does NOT write directly to DB; generates a proposed action card for human teacher review and confirmation.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "child_id": {
+                        "type": "string",
+                        "description": "The UUID of the pupil"
+                    },
+                    "action_type": {
+                        "type": "string",
+                        "enum": ["log_observation", "calming_win", "morning_receipt"],
+                        "description": "The category of action being proposed"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Brief headline for the note (e.g. 'Noise Defenders in Assembly')"
+                    },
+                    "strategy_used": {
+                        "type": "string",
+                        "description": "Specific regulation strategy or accommodation utilized"
+                    },
+                    "strategy_worked": {
+                        "type": "boolean",
+                        "description": "Whether the strategy successfully prevented dysregulation or aided focus"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "2-3 sentence observational summary of the pupil's response"
+                    }
+                },
+                "required": ["child_id", "title", "summary"]
+            }
+        }
     }
 ]
 
@@ -342,6 +380,69 @@ def execute_query_observations_and_incidents(db: Session, child_id: UUID, curren
     return {"llm_summary": llm_summary, "action_card": None}
 
 
+def execute_propose_classroom_action(
+    db: Session,
+    child_id: UUID,
+    current_user: User,
+    action_type: str = "log_observation",
+    title: str = "Classroom Observation",
+    strategy_used: str | None = None,
+    strategy_worked: bool = True,
+    summary: str = "",
+) -> dict[str, Any]:
+    """Generates a structured Proposed Action Card for human teacher confirmation without mutating the database directly."""
+    child = db.query(Child).filter(Child.id == child_id).first()
+    if not child:
+        return {"llm_summary": "Pupil not found.", "action_card": None}
+
+    # Enforce tenant isolation
+    if current_user and current_user.school_id and child.school_id and current_user.school_id != child.school_id:
+        return {"llm_summary": "Access Denied: Pupil belongs to another school.", "action_card": None}
+
+    pupil_name = child.preferred_name or child.first_name
+
+    action_card = {
+        "card_type": "proposed_action",
+        "type": "proposed_action",
+        "status": "pending",
+        "action_type": action_type,
+        "child_id": str(child.id),
+        "title": f"Proposed: {title}",
+        "subtitle": f"Draft for {pupil_name}'s Timeline (Requires Confirmation)",
+        "payload": {
+            "child_id": str(child.id),
+            "school_id": str(child.school_id) if child.school_id else None,
+            "event_type": "Observation",
+            "reporter_type": (getattr(current_user, "role", None) or "Teacher").title() if current_user else "Teacher",
+            "reporter_name": getattr(current_user, "full_name", None) or "Class Teacher",
+            "title": title,
+            "summary": summary,
+            "significance": "Notable Win" if strategy_worked else "Routine",
+            "visibility": "Shared",
+            "observation": {
+                "strategy_used": strategy_used or "Classroom Accommodation",
+                "strategy_worked": strategy_worked,
+                "notes": summary,
+            },
+        },
+        "details": {
+            "pupil_name": pupil_name,
+            "strategy": strategy_used or "Classroom Adjustment",
+            "outcome": "✓ Worked Well" if strategy_worked else "Needs Refinement",
+            "summary": summary,
+        },
+    }
+
+    return {
+        "llm_summary": (
+            f"I have drafted a classroom observation for {pupil_name}: '{title}'. "
+            f"Strategy: {strategy_used or 'Classroom Accommodation'}, Outcome: {'Worked well' if strategy_worked else 'Needs refinement'}. "
+            "The proposed action card is ready for teacher review and confirmation below."
+        ),
+        "action_card": action_card,
+    }
+
+
 def dispatch_tool_call(db: Session, current_user: User, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     """Master tool dispatcher with UUID parsing and safety catching."""
     try:
@@ -362,6 +463,17 @@ def dispatch_tool_call(db: Session, current_user: User, tool_name: str, argument
         elif tool_name == "query_observations_and_incidents":
             days_back = int(arguments.get("days_back", 14))
             return execute_query_observations_and_incidents(db, child_id, current_user, days_back=days_back)
+        elif tool_name == "propose_classroom_action":
+            return execute_propose_classroom_action(
+                db=db,
+                child_id=child_id,
+                current_user=current_user,
+                action_type=arguments.get("action_type", "log_observation"),
+                title=arguments.get("title", "Classroom Observation"),
+                strategy_used=arguments.get("strategy_used"),
+                strategy_worked=bool(arguments.get("strategy_worked", True)),
+                summary=arguments.get("summary", ""),
+            )
         else:
             return {"llm_summary": f"Tool '{tool_name}' is not recognized.", "action_card": None}
     except Exception as err:

@@ -18,6 +18,9 @@ import {
   Moon,
   Coffee,
   Pill,
+  ClipboardCheck,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import {
   Child,
@@ -65,8 +68,26 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [actionCardStates, setActionCardStates] = useState<Record<string, 'pending' | 'confirming' | 'confirmed' | 'dismissed'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleConfirmAction = async (card: NoyaActionCard, cardId: string) => {
+    if (!card.payload) return;
+    setActionCardStates((prev) => ({ ...prev, [cardId]: 'confirming' }));
+    try {
+      await api.logTimelineEvent(card.payload);
+      setActionCardStates((prev) => ({ ...prev, [cardId]: 'confirmed' }));
+    } catch (err: any) {
+      console.error('Failed to confirm action:', err);
+      setActionCardStates((prev) => ({ ...prev, [cardId]: 'pending' }));
+      alert(`Could not log action: ${err?.message || 'Error occurred'}`);
+    }
+  };
+
+  const handleDismissAction = (cardId: string) => {
+    setActionCardStates((prev) => ({ ...prev, [cardId]: 'dismissed' }));
+  };
 
   const isParent = currentUser?.role === 'parent' || screenContext === 'parent_hub';
   const isClassroom = screenContext === 'classroom_matrix';
@@ -446,6 +467,12 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               >
                 📋 Section F Hours
               </button>
+              <button
+                onClick={() => handleChipClick(`Log that ${pupilName} used noise defenders in class and it worked well`)}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-all cursor-pointer font-bold active:scale-95 shadow-2xs"
+              >
+                📝 Quick Note
+              </button>
             </>
           ) : (
             <>
@@ -506,7 +533,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                 {/* Interactive Action Card (Zero-LLM PII hydrated directly) */}
                 {msg.actionCard && (
                   <div className="mt-3 pt-2 border-t border-borderMain/60">
-                    {renderActionCard(msg.actionCard)}
+                    {renderActionCard(msg.actionCard, msg.id, actionCardStates[msg.id], handleConfirmAction, handleDismissAction)}
                   </div>
                 )}
               </div>
@@ -603,7 +630,13 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 // =========================================================================
 // ACTION CARD RENDERING (Zero-LLM PII Pattern)
 // =========================================================================
-function renderActionCard(card: NoyaActionCard) {
+function renderActionCard(
+  card: NoyaActionCard,
+  cardId: string = 'card',
+  actionState: 'pending' | 'confirming' | 'confirmed' | 'dismissed' = 'pending',
+  onConfirm?: (card: NoyaActionCard, cardId: string) => void,
+  onDismiss?: (cardId: string) => void,
+) {
   // 1. Emergency Contact Card
   if (card.card_type === 'contact_card') {
     if (card.restricted) {
@@ -746,6 +779,100 @@ function renderActionCard(card: NoyaActionCard) {
             </div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  // 4. Proposed Action Card (Human-in-the-Loop Safe Mutation)
+  if (card.card_type === 'proposed_action' || card.type === 'proposed_action') {
+    const d = card.details || {};
+    const status = actionState || 'pending';
+
+    if (status === 'confirmed') {
+      return (
+        <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 space-y-1.5 animate-in fade-in">
+          <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-200 font-bold text-xs">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>✓ Logged to Pupil Timeline</span>
+          </div>
+          <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
+            Recorded: &ldquo;{card.title.replace('Proposed: ', '')}&rdquo; with strategy &ldquo;{d.strategy || 'Classroom Adjustment'}&rdquo;.
+          </p>
+        </div>
+      );
+    }
+
+    if (status === 'dismissed') {
+      return (
+        <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-borderMain text-[11px] text-textDim italic">
+          ✕ Proposal dismissed by educator. No records were modified.
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-300 dark:border-purple-800/80 space-y-2.5 shadow-xs">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1.5 font-bold text-xs text-purple-900 dark:text-purple-200">
+            <ClipboardCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span>{card.title}</span>
+          </div>
+          <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/80 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700">
+            Action Proposal
+          </span>
+        </div>
+
+        {card.subtitle && (
+          <p className="text-[11px] text-purple-800 dark:text-purple-300 font-medium">
+            {card.subtitle}
+          </p>
+        )}
+
+        <div className="p-2.5 rounded-lg bg-white/80 dark:bg-cardBg/80 border border-purple-200 dark:border-purple-900 text-[11px] space-y-1 text-textMain">
+          <div className="flex items-center justify-between text-[10px] text-textDim border-b border-purple-100 dark:border-purple-900/50 pb-1">
+            <span>Strategy: <strong className="text-textMain">{d.strategy || 'Classroom Adjustment'}</strong></span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{d.outcome || '✓ Worked Well'}</span>
+          </div>
+          <p className="text-[11px] leading-relaxed pt-0.5">{d.summary || card.payload?.summary}</p>
+        </div>
+
+        {/* Human-in-the-Loop Action Buttons */}
+        <div className="flex items-center gap-2 pt-1">
+          {onConfirm && (
+            <button
+              type="button"
+              onClick={() => onConfirm(card, cardId)}
+              disabled={status === 'confirming'}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal hover:bg-teal-medium text-white font-bold text-xs shadow-xs transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              {status === 'confirming' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Logging...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Confirm & Log to Timeline</span>
+                </>
+              )}
+            </button>
+          )}
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={() => onDismiss(cardId)}
+              disabled={status === 'confirming'}
+              className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-cardBg hover:bg-gray-100 dark:hover:bg-gray-800 text-textDim hover:text-textMain border border-borderMain text-xs font-semibold transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+
+        <p className="text-[9px] text-purple-700 dark:text-purple-400/80 italic pt-0.5">
+          🛡️ Human-in-the-Loop: This note is never saved to the database until you confirm.
+        </p>
       </div>
     );
   }

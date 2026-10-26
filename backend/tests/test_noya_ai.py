@@ -384,5 +384,90 @@ def test_noya_copilot_chat_senco_overview(client):
     assert any("ehcp" in f.lower() or "annual review" in f.lower() or "ta support" in f.lower() for f in data["suggested_followups"])
 
 
+def test_pii_anonymizer_zero_llm_exposure():
+    """Verify deterministic tokenization of student/guardian names, phones, and emails before LLM transmission."""
+    from app.ai.pii_anonymizer import PIIAnonymizer
+
+    tokens = PIIAnonymizer.extract_entity_tokens(
+        pupil_name="Phoenix Carter",
+        guardian_names=["Dana Carter"],
+        school_name="St. Jude's Inclusive Academy",
+    )
+    raw_prompt = "Phoenix Carter at St. Jude's Inclusive Academy called Dana Carter on 020 7946 0192 regarding test@example.com."
+    anon_text, rehyd_map = PIIAnonymizer.anonymize_text(raw_prompt, tokens)
+
+    # Verify no PII remains in anonymized text
+    assert "Phoenix" not in anon_text
+    assert "Carter" not in anon_text
+    assert "Dana" not in anon_text
+    assert "020 7946 0192" not in anon_text
+    assert "test@example.com" not in anon_text
+
+    # Verify generic tokens are used
+    assert "[PUPIL_NAME]" in anon_text or "[PUPIL_FIRST_NAME]" in anon_text
+    assert "[SCHOOL_NAME]" in anon_text
+    assert "[PHONE_1]" in anon_text
+    assert "[EMAIL_1]" in anon_text
+
+    # Verify perfect local rehydration
+    restored = PIIAnonymizer.rehydrate_text(anon_text, rehyd_map)
+    assert "Phoenix Carter" in restored
+    assert "Dana Carter" in restored
+    assert "St. Jude's Inclusive Academy" in restored
+    assert "020 7946 0192" in restored
+    assert "test@example.com" in restored
+
+
+def test_noya_propose_action_card_human_in_the_loop(client):
+    """Verify NOYA generates an interactive Action Proposal card without unconfirmed database writes."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    )
+    assert child_resp.status_code == 201
+    child_id = child_resp.json()["id"]
+
+    # Request to log an observation via chat
+    chat_resp = client.post(
+        "/api/v1/noya/chat",
+        json={
+            "child_id": child_id,
+            "message": "Log that Phoenix used noise defenders in class and it worked well",
+            "history": [],
+        },
+        headers={"x-user-role": "teacher"},
+    )
+    assert chat_resp.status_code == 200
+    data = chat_resp.json()
+
+    # 1. Action card is generated as a proposal
+    assert data["action_card"] is not None
+    assert data["action_card"]["type"] == "proposed_action"
+    assert data["action_card"]["status"] == "pending"
+    assert "noise" in data["action_card"]["title"].lower() or "sensory" in data["action_card"]["title"].lower()
+    assert data["action_card"]["payload"] is not None
+
+    # 2. Check timeline before human confirmation: NOT yet committed (HITL safety)
+    timeline_before = client.get(f"/api/v1/timeline/children/{child_id}/events")
+    assert timeline_before.status_code == 200
+    events_before = timeline_before.json()
+    assert not any("noise defenders" in (e.get("title") or "").lower() for e in events_before)
+
+    # 3. Human educator clicks confirm: calls timeline events API with card payload
+    confirm_resp = client.post("/api/v1/timeline/events", json=data["action_card"]["payload"])
+    assert confirm_resp.status_code == 201
+
+    # 4. Timeline now reflects the confirmed observation
+    timeline_after = client.get(f"/api/v1/timeline/children/{child_id}/events")
+    assert timeline_after.status_code == 200
+    events_after = timeline_after.json()
+    assert any("noise" in (e.get("title") or "").lower() for e in events_after)
+
+
 
 

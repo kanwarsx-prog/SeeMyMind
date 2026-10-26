@@ -426,6 +426,19 @@ export const api = {
     return this.noyaChat(payload);
   },
 
+  async logTimelineEvent(payload: Record<string, any>): Promise<any> {
+    const res = await fetch(`${API_BASE}/timeline/events`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to log timeline event');
+    }
+    return res.json();
+  },
+
   async getCurriculumUnits(yearGroup?: string, subject?: string, search?: string): Promise<CurriculumUnit[]> {
     const params = new URLSearchParams();
     if (yearGroup && yearGroup !== 'All Years') params.set('year_group', yearGroup);

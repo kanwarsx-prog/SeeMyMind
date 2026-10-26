@@ -109,7 +109,8 @@ export interface NoyaChatMessage {
 }
 
 export interface NoyaActionCard {
-  card_type: 'contact_card' | 'handover_card' | 'de_escalation_card' | string;
+  card_type: 'contact_card' | 'handover_card' | 'de_escalation_card' | 'proposed_action' | string;
+  type?: string;
   title: string;
   subtitle?: string;
   primary_action?: {
@@ -117,6 +118,10 @@ export interface NoyaActionCard {
     label: string;
     value: string;
   };
+  action_type?: 'log_observation' | 'calming_win' | 'morning_receipt' | string;
+  status?: 'pending' | 'confirmed' | 'dismissed';
+  child_id?: string;
+  payload?: Record<string, any>;
   details?: Record<string, any>;
   badges?: string[];
   restricted?: boolean;

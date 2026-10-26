@@ -1,3 +1,4 @@
+import json
 import time
 from datetime import UTC, datetime
 from uuid import UUID
@@ -440,48 +441,89 @@ class NoyaRAGService:
 
         if client and child and not is_parent:
             try:
-                # Format conversation history
-                messages = [{"role": "system", "content": system_prompt}]
-                for msg in request.history[-4:]:
-                    messages.append({"role": msg.role, "content": msg.content})
-                messages.append({"role": "user", "content": request.message})
-
-                # Turn 1: tool selection
-                first_resp = client.chat.completions.create(
-                    model=settings.OPENAI_MODEL,
-                    messages=messages,
-                    tools=TOOL_DEFINITIONS,
-                    tool_choice="auto",
-                    temperature=0.2,
+                # 1. Build local PII pseudonymization mapping (Zero-LLM PII boundary)
+                from app.ai.pii_anonymizer import PIIAnonymizer
+                guardian_names = []
+                if child.guardian_links:
+                    guardian_names = [
+                        f"{link.guardian.first_name} {link.guardian.last_name}"
+                        for link in child.guardian_links
+                        if link.guardian
+                    ]
+                entity_tokens = PIIAnonymizer.extract_entity_tokens(
+                    pupil_name=child.full_name or child.first_name,
+                    guardian_names=guardian_names,
+                    school_name=school_name,
                 )
 
-                first_msg = first_resp.choices[0].message
-                if first_msg.tool_calls:
-                    t_call = first_msg.tool_calls[0]
-                    tool_called = t_call.function.name
-                    raw_args = json.loads(t_call.function.arguments)
-                    # Force active child_id
-                    raw_args["child_id"] = str(child.id)
+                # Format conversation history
+                raw_messages = [{"role": "system", "content": system_prompt}]
+                for msg in request.history[-4:]:
+                    raw_messages.append({"role": msg.role, "content": msg.content})
+                raw_messages.append({"role": "user", "content": request.message})
 
-                    tool_output = dispatch_tool_call(db, current_user, tool_called, raw_args)
-                    action_card = tool_output.get("action_card")
+                # Anonymize messages before sending to external model
+                messages, rehydration_map = PIIAnonymizer.anonymize_messages(raw_messages, entity_tokens)
 
-                    # Turn 2: answer synthesis
-                    messages.append(first_msg)
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": t_call.id,
-                        "content": tool_output.get("llm_summary", "No data returned."),
-                    })
+                # 2. Multi-Step ReAct Agent Loop (Up to 3 sequential reasoning turns)
+                MAX_AGENT_TURNS = 3
+                choice_msg = None
 
-                    second_resp = client.chat.completions.create(
+                for _ in range(MAX_AGENT_TURNS):
+                    resp = client.chat.completions.create(
+                        model=settings.OPENAI_MODEL,
+                        messages=messages,
+                        tools=TOOL_DEFINITIONS,
+                        tool_choice="auto",
+                        temperature=0.2,
+                    )
+                    choice_msg = resp.choices[0].message
+                    if not choice_msg.tool_calls:
+                        answer = choice_msg.content or ""
+                        break
+
+                    # Append assistant's tool selection
+                    messages.append(choice_msg)
+
+                    # Execute each requested tool with server-enforced tenant isolation
+                    for t_call in choice_msg.tool_calls:
+                        tool_called = t_call.function.name
+                        try:
+                            raw_args = json.loads(t_call.function.arguments)
+                        except Exception:
+                            raw_args = {}
+                        raw_args["child_id"] = str(child.id)
+
+                        tool_output = dispatch_tool_call(db, current_user, tool_called, raw_args)
+                        if tool_output.get("action_card"):
+                            action_card = tool_output.get("action_card")
+
+                        # Anonymize tool output before feeding back to external model
+                        anon_summary, sub_map = PIIAnonymizer.anonymize_text(
+                            tool_output.get("llm_summary", "No data returned."),
+                            entity_tokens,
+                        )
+                        rehydration_map.update(sub_map)
+
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": t_call.id,
+                            "content": anon_summary,
+                        })
+
+                # If turns finished on tool outputs, do final synthesis
+                if not answer and choice_msg and choice_msg.tool_calls:
+                    final_resp = client.chat.completions.create(
                         model=settings.OPENAI_MODEL,
                         messages=messages,
                         temperature=0.3,
                     )
-                    answer = second_resp.choices[0].message.content or ""
-                else:
-                    answer = first_msg.content or ""
+                    answer = final_resp.choices[0].message.content or ""
+
+                # 3. Rehydrate entities locally prior to returning to user
+                if answer:
+                    answer = PIIAnonymizer.rehydrate_text(answer, rehydration_map)
+
             except Exception as e:
                 # Fallback to local deterministic execution if cloud call errors
                 model_used = f"local-fallback ({e!s})"
@@ -674,6 +716,34 @@ class NoyaRAGService:
                 action_card = t_out.get("action_card")
                 tool_called = "get_ehcp_statutory_profile"
                 answer = f"{child_name} is supported under Section F statutory provisions including visual desk strip aids, 1:1 TA check-ins at morning transition, and proactive movement breaks."
+            elif child and any(k in q_lower for k in ["log", "record", "propose", "note that", "add note", "record observation", "record win"]):
+                strategy_matched = "Classroom Adjustment"
+                if "headphone" in q_lower or "defender" in q_lower or "noise" in q_lower:
+                    strategy_matched = "Noise-Cancelling Headphones"
+                elif "movement" in q_lower or "break" in q_lower or "walk" in q_lower:
+                    strategy_matched = "Movement Break"
+                elif "visual" in q_lower or "timer" in q_lower:
+                    strategy_matched = "Visual Task Strip"
+
+                t_out = dispatch_tool_call(
+                    db,
+                    current_user,
+                    "propose_classroom_action",
+                    {
+                        "child_id": str(child.id),
+                        "action_type": "log_observation",
+                        "title": f"Sensory Regulation: {strategy_matched}",
+                        "strategy_used": strategy_matched,
+                        "strategy_worked": True,
+                        "summary": f"{child_name} utilized {strategy_matched.lower()} during classroom activity and successfully maintained calm focus.",
+                    },
+                )
+                action_card = t_out.get("action_card")
+                tool_called = "propose_classroom_action"
+                answer = (
+                    f"I have prepared a draft classroom note for {child_name} below. "
+                    "Review the details and tap **Confirm & Log to Timeline** to commit it to the pupil's live record."
+                )
             else:
                 answer = (
                     f"Based on {child_name}'s profile ({primary_need}), support is tailored to their learning and sensory needs. "
@@ -699,6 +769,11 @@ class NoyaRAGService:
                 "What is our whole-school EHCP vs SEN Support distribution?",
                 "Which pupils have annual reviews due this term?",
                 "Show total weekly high-needs TA support hours",
+            ]
+        elif tool_called == "propose_classroom_action":
+            suggested_followups = [
+                f"What proven calming strategies work for {child_name}?",
+                f"When did {child_name}'s parent check in last?",
             ]
         elif tool_called == "get_guardian_contacts":
             suggested_followups = [
