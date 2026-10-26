@@ -739,7 +739,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
         </div>
 
         {/* Step Navigation Ribbon / Pills */}
-        <div className="px-4 py-2 bg-slate-50 dark:bg-slate-850 border-b border-gray-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
+        <div className="lg:hidden px-4 py-2 bg-slate-50 dark:bg-slate-850 border-b border-gray-200 dark:border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar flex-shrink-0">
           {currentTour.steps.map((step, idx) => {
             const isActive = idx === activeStepIndex;
             const isCompleted = idx < activeStepIndex;
@@ -773,7 +773,44 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
         </div>
 
         {/* Modal Main Content Area - Compact to eliminate vertical scroll */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-1 bg-white dark:bg-slate-900">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 bg-white dark:bg-slate-900">
+          <div className="grid lg:grid-cols-[190px_minmax(0,1fr)] gap-5">
+            <nav className="hidden lg:block border-r border-gray-200 dark:border-slate-800 pr-4" aria-label="Tour steps">
+              <div className="sticky top-0 space-y-3">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-teal">Your journey</div>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-snug">A quick tour of the moments that matter most in this workspace.</p>
+                </div>
+                <div className="relative space-y-1.5 before:absolute before:left-4 before:top-5 before:bottom-5 before:w-px before:bg-gray-200 dark:before:bg-slate-700">
+                  {currentTour.steps.map((step, idx) => {
+                    const Icon = step.icon;
+                    const isActive = idx === activeStepIndex;
+                    const isCompleted = idx < activeStepIndex;
+                    return (
+                      <button
+                        key={step.stepNumber}
+                        type="button"
+                        onClick={() => setActiveStepIndex(idx)}
+                        className={`relative w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-all cursor-pointer ${
+                          isActive ? 'bg-teal-50 dark:bg-teal-950/40 ring-1 ring-teal/30' : 'hover:bg-gray-50 dark:hover:bg-slate-800/70'
+                        }`}
+                      >
+                        <span className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          isActive ? 'bg-teal text-white shadow-sm' : isCompleted ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                        </span>
+                        <span className="min-w-0 pt-0.5">
+                          <span className={`block text-[11px] font-bold truncate ${isActive ? 'text-teal-900 dark:text-teal-200' : 'text-gray-700 dark:text-slate-300'}`}>{step.stepLabel}</span>
+                          <span className="block text-[10px] text-gray-500 dark:text-slate-500 mt-0.5">Step {step.stepNumber}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </nav>
+            <div className="space-y-3 min-w-0">
           <div className="flex items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
             <span>Getting started with {currentTour.personaName}</span>
             <span>{Math.round(((activeStepIndex + 1) / totalSteps) * 100)}% complete</span>
@@ -871,6 +908,8 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
               </div>
             </div>
           </div>
+        </div>
+        </div>
         </div>
 
         {/* Modal Footer Controls */}
