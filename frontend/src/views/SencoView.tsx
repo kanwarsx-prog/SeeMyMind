@@ -839,7 +839,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal border border-teal-200 text-xs font-bold transition-all cursor-pointer active:scale-95"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-teal" />
-                    <span>Open Copilot Drawer</span>
+                    <span>Ask NOYA</span>
                   </button>
                 )}
               </div>

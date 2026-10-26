@@ -403,7 +403,7 @@ class NoyaRAGService:
             )
         elif is_classroom_view:
             system_prompt = (
-                f"You are NOYA, an advisory classroom inclusion copilot for educators on SeeMyMind.\n"
+                f"You are NOYA, an advisory classroom inclusion assistant for educators on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
                 f"Active Scope: {cohort.scope_label} ({cohort.total_pupils} pupils).\n"
                 f"Rules: Summarize class sensory accommodations, TA hours, and strategy success rates across the whole cohort. "
@@ -411,7 +411,7 @@ class NoyaRAGService:
             )
         elif is_senco_overview:
             system_prompt = (
-                f"You are NOYA, a SENCO governance copilot on SeeMyMind.\n"
+                f"You are NOYA, a SENCO governance partner on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
                 f"Active Scope: Whole-school SEND register ({cohort.total_pupils} pupils).\n"
                 f"Rules: Focus on EHCP vs SEN Support distribution, annual review dates and high-needs TA support hours. "
@@ -419,7 +419,7 @@ class NoyaRAGService:
             )
         else:
             system_prompt = (
-                f"You are NOYA, an advisory, evidence-grounded AI copilot for educators on SeeMyMind.\n"
+                f"You are NOYA, an advisory, evidence-grounded AI partner for educators on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
                 f"Active Pupil: {child_name} ({year_group}, Primary Need: {primary_need}).\n"
                 f"Active Screen: {request.active_view or 'Pupil Focus'}.\n\n"

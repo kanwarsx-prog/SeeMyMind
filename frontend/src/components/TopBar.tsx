@@ -92,7 +92,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   ? 'bg-teal text-white ring-2 ring-teal/30 shadow-sm'
                   : 'bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal dark:text-teal-300 border border-teal-200 dark:border-teal-800'
               }`}
-              title="Open NOYA Context-Aware Copilot"
+              title="Ask NOYA"
             >
               <Sparkles className={`w-4 h-4 ${isCopilotOpen ? 'text-amber-300' : 'text-teal animate-pulse'}`} />
               <span>✨ Ask NOYA</span>

@@ -67,13 +67,14 @@ def ask_noya(request: AskNoyaRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"NOYA RAG failed: {e!s}")
 
 
+@router.post("/chat", response_model=NoyaCopilotChatResponse)
 @router.post("/copilot/chat", response_model=NoyaCopilotChatResponse)
-def copilot_chat(
+def noya_chat(
     request: NoyaCopilotChatRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Context-aware conversational copilot chat powered by Approach C agentic tool calling."""
+    """Context-aware conversational NOYA chat powered by Approach C agentic tool calling."""
     try:
         return NoyaRAGService.copilot_chat(
             db=db,
@@ -83,7 +84,7 @@ def copilot_chat(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"NOYA Copilot failed: {e!s}")
+        raise HTTPException(status_code=500, detail=f"NOYA chat failed: {e!s}")
 
 
 @router.get("/pathway/curriculum-units", response_model=list[CurriculumUnit])

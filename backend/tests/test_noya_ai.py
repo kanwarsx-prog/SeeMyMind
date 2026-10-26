@@ -178,6 +178,20 @@ def test_noya_copilot_chat_guardian_contacts(client):
     assert resp.status_code == 200
     data = resp.json()
     assert "contact" in data["answer_markdown"].lower() or "guardian" in data["answer_markdown"].lower()
+
+    # Also verify /api/v1/noya/chat route alias works identically
+    resp_chat = client.post(
+        "/api/v1/noya/chat",
+        json={
+            "child_id": child_id,
+            "active_view": "senco_overview",
+            "message": "give me the contact details",
+            "history": [],
+        },
+        headers={"x-user-role": "senco"},
+    )
+    assert resp_chat.status_code == 200
+    assert "contact" in resp_chat.json()["answer_markdown"].lower() or "guardian" in resp_chat.json()["answer_markdown"].lower()
     assert data["action_card"] is not None
     assert data["action_card"]["type"] == "contact_card"
     assert len(data["action_card"]["contacts"]) >= 1

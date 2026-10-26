@@ -99,7 +99,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         `What does ${pupilName}'s 3:15 PM energy note mean for tonight?`,
       ];
     } else if (isClassroom) {
-      greetingContent = `Hello! I'm **NOYA**, your classroom inclusion copilot for **Room 4**. I have real-time visibility across all 4 pupils in your cohort, class sensory accommodations, TA hours, and strategy win rates.\n\nHow can I help support your whole classroom delivery today?`;
+      greetingContent = `Hello! I'm **NOYA**, your classroom inclusion assistant for **Room 4**. I have real-time visibility across all 4 pupils in your cohort, class sensory accommodations, TA hours, and strategy win rates.\n\nHow can I help support your whole classroom delivery today?`;
       followups = [
         'Summarize Room 4 sensory accommodations',
         'Which pupils in Room 4 need proactive quiet breaks?',
@@ -107,7 +107,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         'What are the weekly TA hours across Room 4?',
       ];
     } else if (isSenco) {
-      greetingContent = `Hello! I'm **NOYA**, your school inclusion and statutory governance copilot for St. Jude's. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
+      greetingContent = `Hello! I'm **NOYA**, supporting school inclusion and statutory governance for St. Jude's. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
       followups = [
         'What is our whole-school EHCP vs SEN Support distribution?',
         'Which pupils have statutory annual reviews due this term?',
@@ -115,7 +115,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         'Summarize statutory provisions across classrooms',
       ];
     } else if (child) {
-      greetingContent = `Hello! I'm **NOYA**, your context-aware SEND Copilot. I have live access to verified records, morning handovers, and statutory EHCP Section F data for **${pupilName}**. All queries run under strict multi-tenant isolation with Zero-LLM PII protection.\n\nHow can I assist your classroom delivery today?`;
+      greetingContent = `Hello! I'm **NOYA**, your inclusion assistant. I have live access to verified records, morning handovers, and statutory EHCP Section F data for **${pupilName}**. All queries run under strict multi-tenant isolation with Zero-LLM PII protection.\n\nHow can I assist your classroom delivery today?`;
       followups = [
         `What was the latest morning handover for ${pupilName}?`,
         `Who is the emergency contact for ${pupilName}?`,
@@ -123,7 +123,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         `What are the statutory Section F agreed hours for ${pupilName}?`,
       ];
     } else {
-      greetingContent = `Hello! I'm **NOYA**, your school SEND Copilot. I can query morning handovers, de-escalation strategies, and whole-school provisions. Select a pupil or ask a question below.`;
+      greetingContent = `Hello! I'm **NOYA**, your school SEND assistant. I can query morning handovers, de-escalation strategies, and whole-school provisions. Select a pupil or ask a question below.`;
       followups = [
         'Show class provision overview',
         'Which pupils have upcoming annual reviews?',
@@ -235,11 +235,11 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: any) {
-      console.error('NOYA Copilot Error:', err);
+      console.error('NOYA Error:', err);
       const errorMsg: DisplayMessage = {
         id: 'error-' + Date.now(),
         role: 'assistant',
-        content: `⚠️ **Unable to complete request**: ${err?.message || 'Could not connect to NOYA Copilot engine.'}\n\nPlease try again or verify your connection.`,
+        content: `⚠️ **Unable to complete request**: ${err?.message || 'Could not connect to NOYA.'}\n\nPlease try again or verify your connection.`,
         suggestedFollowups: ['Try again', 'What was the latest morning handover?'],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
@@ -269,7 +269,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
       <aside
         className="fixed inset-y-0 right-0 w-full sm:w-[460px] z-50 bg-cardBg border-l border-borderMain shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out animate-in slide-in-from-right"
         role="dialog"
-        aria-label="NOYA AI Copilot"
+        aria-label="NOYA AI Assistant"
       >
         {/* Drawer Header */}
         <div className="px-4 py-3 border-b border-borderMain bg-cardSubtle flex items-center justify-between gap-2 flex-shrink-0">
@@ -279,7 +279,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-sm font-bold text-textHead tracking-tight">NOYA Copilot</h2>
+                <h2 className="text-sm font-bold text-textHead tracking-tight">NOYA</h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                   Agentic AI
                 </span>
@@ -326,7 +326,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               onClick={onClose}
               type="button"
               className="p-1.5 rounded-lg text-textDim hover:text-textHead hover:bg-cardBg transition-colors cursor-pointer"
-              title="Close NOYA Copilot"
+              title="Close NOYA"
               aria-label="Close drawer"
             >
               <X className="w-5 h-5" />

@@ -409,17 +409,21 @@ export const api = {
     return res.json();
   },
 
-  async copilotChat(payload: NoyaCopilotChatRequest): Promise<NoyaCopilotChatResponse> {
-    const res = await fetch(`${API_BASE}/noya/copilot/chat`, {
+  async noyaChat(payload: NoyaCopilotChatRequest): Promise<NoyaCopilotChatResponse> {
+    const res = await fetch(`${API_BASE}/noya/chat`, {
       method: 'POST',
       headers: getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Failed to communicate with NOYA copilot');
+      throw new Error(err.detail || 'Failed to communicate with NOYA');
     }
     return res.json();
+  },
+
+  async copilotChat(payload: NoyaCopilotChatRequest): Promise<NoyaCopilotChatResponse> {
+    return this.noyaChat(payload);
   },
 
   async getCurriculumUnits(yearGroup?: string, subject?: string, search?: string): Promise<CurriculumUnit[]> {
