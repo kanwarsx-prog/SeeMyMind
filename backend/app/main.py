@@ -75,6 +75,11 @@ async def lifespan(app: FastAPI):
                 )
                 conn.execute(
                     text(
+                        "ALTER TABLE ai_runs ADD COLUMN IF NOT EXISTS execution_steps JSON;"
+                    )
+                )
+                conn.execute(
+                    text(
                         "ALTER TABLE child_support_profiles ADD COLUMN IF NOT EXISTS annual_review_due DATE;"
                     )
                 )

@@ -134,6 +134,16 @@ export interface NoyaCopilotChatRequest {
   history?: NoyaChatMessage[];
 }
 
+export interface NoyaExecutionStep {
+  step_number: number;
+  title: string;
+  detail: string;
+  tool_name?: string | null;
+  status: string;
+  findings?: string | null;
+  latency_ms?: number;
+}
+
 export interface NoyaCopilotChatResponse {
   answer_markdown: string;
   action_card?: NoyaActionCard | null;
@@ -142,6 +152,7 @@ export interface NoyaCopilotChatResponse {
   citations?: EvidenceCitation[];
   model_used?: string;
   latency_ms?: number;
+  execution_steps?: NoyaExecutionStep[];
 }
 
 export interface IncidentDetail {
@@ -248,6 +259,7 @@ export interface AIRunAuditItem {
   child_id?: string | null;
   input_prompt?: string | null;
   output_text?: string | null;
+  execution_steps?: NoyaExecutionStep[] | null;
 }
 
 

@@ -21,6 +21,9 @@ import {
   ClipboardCheck,
   Check,
   Loader2,
+  ChevronDown,
+  ChevronUp,
+  Zap,
 } from 'lucide-react';
 import {
   Child,
@@ -28,6 +31,7 @@ import {
   NoyaChatMessage,
   NoyaActionCard,
   NoyaCopilotChatResponse,
+  NoyaExecutionStep,
 } from '../types';
 import { api } from '../api';
 
@@ -51,6 +55,7 @@ interface DisplayMessage {
   toolCalled?: string | null;
   latencyMs?: number;
   modelUsed?: string;
+  executionSteps?: NoyaExecutionStep[];
   timestamp: string;
 }
 
@@ -69,8 +74,13 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [actionCardStates, setActionCardStates] = useState<Record<string, 'pending' | 'confirming' | 'confirmed' | 'dismissed'>>({});
+  const [expandedSteps, setExpandedSteps] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const toggleSteps = (msgId: string) => {
+    setExpandedSteps((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
+  };
 
   const handleConfirmAction = async (card: NoyaActionCard, cardId: string) => {
     if (!card.payload) return;
@@ -251,6 +261,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         toolCalled: response.tool_called,
         latencyMs: response.latency_ms,
         modelUsed: response.model_used,
+        executionSteps: response.execution_steps,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
@@ -513,7 +524,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                     <div className="flex items-center gap-1.5 font-bold text-teal">
                       <Sparkles className="w-3 h-3 text-teal" />
                       <span>NOYA</span>
-                      {msg.toolCalled && (
+                      {(!msg.executionSteps || msg.executionSteps.length === 0) && msg.toolCalled && (
                         <span className="px-1.5 py-0.2 rounded-full bg-mint/20 text-teal text-[9px] font-mono border border-teal/20">
                           tool:{msg.toolCalled}
                         </span>
@@ -521,6 +532,76 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                     </div>
                     {msg.latencyMs !== undefined && (
                       <span className="text-[9px] font-mono text-textDim">{msg.latencyMs}ms</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Explainable Execution Steps (Reasoning Trace) */}
+                {msg.role === 'assistant' && msg.executionSteps && msg.executionSteps.length > 0 && (
+                  <div className="mb-2 pb-2 border-b border-borderMain/50">
+                    <button
+                      type="button"
+                      onClick={() => toggleSteps(msg.id)}
+                      className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 border border-teal-200/60 dark:border-teal-800/60 text-teal text-[11px] font-medium transition-all cursor-pointer group shadow-2xs"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-teal flex-shrink-0" />
+                        <span className="font-semibold text-teal-dark dark:text-teal-light">
+                          {msg.executionSteps.length} {msg.executionSteps.length === 1 ? 'step taken' : 'steps taken'}
+                        </span>
+                        {msg.latencyMs !== undefined && (
+                          <span className="text-[10px] text-teal/70 font-mono">({msg.latencyMs}ms)</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-teal/80 group-hover:text-teal font-medium">
+                        <span>{expandedSteps[msg.id] ? 'Hide steps' : 'View steps'}</span>
+                        {expandedSteps[msg.id] ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expanded Stepper Card */}
+                    {expandedSteps[msg.id] && (
+                      <div className="mt-2 p-2.5 rounded-xl bg-appBg/80 dark:bg-cardSubtle border border-borderMain text-left space-y-2 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-textDim uppercase tracking-wider px-1">
+                          <span>Reasoning & Record Trace</span>
+                          <span className="text-teal font-mono lowercase">verified live</span>
+                        </div>
+                        <div className="space-y-3 relative before:absolute before:top-2 before:bottom-2 before:left-3 before:w-0.5 before:bg-teal/30 dark:before:bg-teal/20">
+                          {msg.executionSteps.map((step) => (
+                            <div key={step.step_number} className="relative flex items-start gap-2.5 pl-1 text-[11px]">
+                              {/* Step indicator circle */}
+                              <div className="w-4 h-4 rounded-full bg-teal text-white flex items-center justify-center flex-shrink-0 text-[9px] font-bold z-10 shadow-2xs mt-0.5">
+                                {step.step_number}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-1 flex-wrap">
+                                  <span className="font-semibold text-textMain">{step.title}</span>
+                                  {step.tool_name && (
+                                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-cardBg border border-borderMain text-textDim">
+                                      {step.tool_name}
+                                    </span>
+                                  )}
+                                </div>
+                                {step.detail && (
+                                  <p className="text-[11px] text-textDim leading-snug mt-0.5">
+                                    {step.detail}
+                                  </p>
+                                )}
+                                {step.findings && (
+                                  <div className="mt-1 px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/60 border border-teal-200/50 dark:border-teal-800/50 text-[10.5px] text-teal font-medium flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-3 h-3 text-teal flex-shrink-0" />
+                                    <span className="truncate">{step.findings}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}

@@ -35,6 +35,16 @@ class AskNoyaResponse(BaseModel):
     latency_ms: int
 
 
+class NoyaExecutionStep(BaseModel):
+    step_number: int
+    title: str
+    detail: str
+    tool_name: str | None = None
+    status: str = "completed"
+    findings: str | None = None
+    latency_ms: int = 0
+
+
 class AIRunAuditResponse(BaseModel):
     id: UUID
     created_at: datetime
@@ -48,6 +58,7 @@ class AIRunAuditResponse(BaseModel):
     child_id: UUID | None = None
     input_prompt: str | None = None
     output_text: str | None = None
+    execution_steps: list[dict] | None = None
 
 
 class NoyaChatMessage(BaseModel):
@@ -71,4 +82,5 @@ class NoyaCopilotChatResponse(BaseModel):
     citations: list[EvidenceCitation] = []
     model_used: str = "noya-agent"
     latency_ms: int = 0
+    execution_steps: list[NoyaExecutionStep] = []
 

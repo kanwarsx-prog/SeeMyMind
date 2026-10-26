@@ -94,6 +94,7 @@ class AIRun(TimestampedUUIDModel):
     )
     input_prompt = Column(Text, nullable=True)
     output_text = Column(Text, nullable=True)
+    execution_steps = Column(JSON, nullable=True)
 
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)

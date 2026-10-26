@@ -469,5 +469,91 @@ def test_noya_propose_action_card_human_in_the_loop(client):
     assert any("noise" in (e.get("title") or "").lower() for e in events_after)
 
 
+def test_noya_execution_steps_multi_step_trace(client):
+    """Verify NOYA chat returns human-friendly execution_steps showing reasoning and consulted records."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    )
+    assert child_resp.status_code == 201
+    child_id = child_resp.json()["id"]
+
+    # 1. Multi-step query: Proposing an action requires checking profile and drafting note
+    chat_resp = client.post(
+        "/api/v1/noya/chat",
+        json={
+            "child_id": child_id,
+            "message": "Log that Phoenix used noise defenders in class and it worked well",
+            "history": [],
+        },
+        headers={"x-user-role": "teacher"},
+    )
+    assert chat_resp.status_code == 200
+    data = chat_resp.json()
+
+    assert "execution_steps" in data
+    steps = data["execution_steps"]
+    assert len(steps) >= 2
+
+    # Verify first step: profile check
+    assert steps[0]["step_number"] == 1
+    assert "Profile" in steps[0]["title"] or "Support" in steps[0]["title"]
+    assert steps[0]["status"] == "completed"
+    assert steps[0]["detail"] is not None
+
+    # Verify second step: action proposal
+    assert steps[1]["step_number"] == 2
+    assert "Proposal" in steps[1]["title"] or "Drafted" in steps[1]["title"]
+    assert steps[1]["tool_name"] == "propose_classroom_action"
+    assert steps[1]["status"] == "completed"
+
+
+def test_noya_audit_run_persists_execution_steps(client):
+    """Verify that AIRun audit logs capture immutable execution_steps for SENCO compliance."""
+    child_resp = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    )
+    assert child_resp.status_code == 201
+    child_id = child_resp.json()["id"]
+
+    # Trigger a query
+    chat_resp = client.post(
+        "/api/v1/noya/chat",
+        json={
+            "child_id": child_id,
+            "message": "What proven calming strategies work best for Phoenix?",
+            "history": [],
+        },
+        headers={"x-user-role": "teacher"},
+    )
+    assert chat_resp.status_code == 200
+
+    # Retrieve audit runs
+    audit_resp = client.get(f"/api/v1/noya/audit-runs?child_id={child_id}")
+    assert audit_resp.status_code == 200
+    runs = audit_resp.json()
+    assert len(runs) >= 1
+
+    latest_run = runs[0]
+    assert latest_run["prompt_type"] == "CopilotChat"
+    assert latest_run["execution_steps"] is not None
+    assert len(latest_run["execution_steps"]) >= 1
+    first_step = latest_run["execution_steps"][0]
+    assert "Calming" in first_step["title"] or "Strategies" in first_step["title"]
+    assert first_step["status"] == "completed"
+
+
+
 
 
