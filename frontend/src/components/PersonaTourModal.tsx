@@ -116,6 +116,68 @@ const DAY_IN_LIFE: JourneyStep[] = [
   },
 ];
 
+interface PersonaLens {
+  label: string;
+  title: string;
+  thinking: string;
+  need: string;
+  systemHelps: string;
+  whyBetter: string;
+  cta: string;
+}
+
+const PERSONA_LENSES: Record<RoleView, PersonaLens> = {
+  teacher: {
+    label: 'Teacher lens', title: 'Run the room with context, not guesswork.',
+    thinking: 'Who needs a gentler start today, and what will help them access the lesson?',
+    need: 'Scan the cohort, acknowledge home context, and adapt the next transition.',
+    systemHelps: 'Turns handovers, readiness signals, pupil profiles, and lesson adaptations into one classroom view.',
+    whyBetter: 'You spend less time reconstructing context and more time teaching with confidence.', cta: 'Explore teacher workspace',
+  },
+  ta: {
+    label: 'TA lens', title: 'Know where your support matters most.',
+    thinking: 'What is the smallest useful intervention I can offer right now?',
+    need: 'Find the pupil strategy, act in the moment, and capture what actually worked.',
+    systemHelps: 'Puts transition times, calming tools, pupil profiles, and quick notes in reach on any device.',
+    whyBetter: 'Your observations become shared evidence instead of disappearing into end-of-day memory.', cta: 'Explore TA workspace',
+  },
+  senco: {
+    label: 'SENCO lens', title: 'Turn scattered evidence into a live inclusion picture.',
+    thinking: 'Where is provision working, where are reviews due, and which pupil needs attention first?',
+    need: 'Review caseload health, statutory evidence, staffing, and next actions across the school.',
+    systemHelps: 'Connects pupil timelines, provision maps, EHCP evidence, staff allocation, and analytics.',
+    whyBetter: 'Leadership decisions are grounded in current evidence rather than spreadsheet archaeology.', cta: 'Explore SENCO workspace',
+  },
+  parent: {
+    label: 'Parent lens', title: 'Stay connected without chasing the school.',
+    thinking: 'Did the team understand what my child needs today, and how did the day really go?',
+    need: 'Share the useful context quickly, receive acknowledgement, and understand the home-time handover.',
+    systemHelps: 'Creates a calm loop between morning notes, classroom acknowledgement, wins, and evening support.',
+    whyBetter: 'You get reassurance and practical next steps instead of uncertainty or repeated phone calls.', cta: 'Explore parent workspace',
+  },
+  child: {
+    label: 'Pupil lens', title: 'Be understood without having to explain everything.',
+    thinking: 'How am I feeling, what will help, and can I show someone without making a big fuss?',
+    need: 'Use a quick check-in, choose a support tool, and celebrate what went well.',
+    systemHelps: 'Uses visual, low-demand check-ins and strengths-based wins that adults can understand.',
+    whyBetter: 'Your voice travels with you, while support feels more predictable and less clinical.', cta: 'Explore pupil workspace',
+  },
+  admin: {
+    label: 'Admin lens', title: 'Make trust, access, and accountability visible.',
+    thinking: 'Are the right people seeing the right information, and can we evidence every decision?',
+    need: 'Provision schools, manage roles, delegate responsibility, and inspect the audit trail.',
+    systemHelps: 'Centralises tenancy, role permissions, delegation, and security events in one governance hub.',
+    whyBetter: 'Operational confidence comes from traceable controls rather than manual checks.', cta: 'Explore admin workspace',
+  },
+  parentplus: {
+    label: 'Parent Plus lens', title: 'Build a future around strengths, not limitations.',
+    thinking: 'What does my child naturally excel at, and how can that become a meaningful pathway?',
+    need: 'Connect strengths, interests, activities, and future opportunities into an optimistic plan.',
+    systemHelps: 'Turns longitudinal strengths and interests into practical home activities and pathway ideas.',
+    whyBetter: 'Future planning becomes specific, positive, and grounded in the child’s real patterns.', cta: 'Explore Parent Plus workspace',
+  },
+};
+
 const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
   teacher: {
     role: 'teacher',
@@ -716,12 +778,14 @@ function getTourStepAction(role: RoleView, stepLabel: string): string {
 const DayInLifeTour: React.FC<{
   onClose: () => void;
   onExploreRole: () => void;
+  userRole: RoleView;
   userName?: string;
   schoolName?: string;
-}> = ({ onClose, onExploreRole, userName, schoolName }) => {
+}> = ({ onClose, onExploreRole, userRole, userName, schoolName }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [choiceMade, setChoiceMade] = useState(false);
   const step = DAY_IN_LIFE[stepIndex];
+  const lens = PERSONA_LENSES[userRole] || PERSONA_LENSES.teacher;
   const StepIcon = step.icon;
   const isLast = stepIndex === DAY_IN_LIFE.length - 1;
 
@@ -740,7 +804,7 @@ const DayInLifeTour: React.FC<{
               <Sparkles className="w-3.5 h-3.5" />
               A shared day, seen together
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mt-1">Meet Phoenix&apos;s day</h2>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mt-1">{lens.title}</h2>
             <p className="text-xs text-white/70 mt-1 truncate">{userName || 'Your workspace'}{schoolName ? ` · ${schoolName}` : ''}</p>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors" title="Close day journey" aria-label="Close day journey">
@@ -781,9 +845,23 @@ const DayInLifeTour: React.FC<{
               </div>
             </div>
             <p className="text-sm text-textSub leading-relaxed mt-5 max-w-xl">{step.story}</p>
+            <div className="grid sm:grid-cols-2 gap-2 mt-5">
+              <div className="p-3 rounded-2xl bg-cardSubtle border border-borderMain">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-textDim">What you&apos;re thinking</div>
+                <p className="text-xs text-textMain font-medium leading-snug mt-1">{lens.thinking}</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-cardSubtle border border-borderMain">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-textDim">What you need to do</div>
+                <p className="text-xs text-textMain font-medium leading-snug mt-1">{lens.need}</p>
+              </div>
+            </div>
+            <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 mt-2">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-amber-800 dark:text-amber-300">Why this is better</div>
+              <p className="text-xs text-amber-950 dark:text-amber-100 font-medium leading-snug mt-1">{lens.whyBetter}</p>
+            </div>
             <div className="mt-5 p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60">
               <div className="text-[10px] uppercase tracking-wider font-bold text-teal-800 dark:text-teal-300">The connective tissue</div>
-              <p className="text-sm font-semibold text-teal-950 dark:text-teal-100 mt-1">{step.outcome}</p>
+              <p className="text-sm font-semibold text-teal-950 dark:text-teal-100 mt-1">{lens.systemHelps}</p>
             </div>
           </div>
 
@@ -822,7 +900,7 @@ const DayInLifeTour: React.FC<{
           <div className="flex items-center gap-2">
             {isLast && <button type="button" onClick={() => { setStepIndex(0); setChoiceMade(false); }} className="px-3 py-2 rounded-xl text-xs font-semibold text-textDim hover:text-textMain hover:bg-cardBg transition-colors inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Replay</button>}
             <button type="button" onClick={isLast ? onExploreRole : advance} disabled={!choiceMade && !isLast} className="px-4 py-2 rounded-xl bg-teal text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1.5 transition-all active:scale-95">
-              {isLast ? 'Explore my role' : 'Continue the day'} <ChevronRight className="w-4 h-4" />
+              {isLast ? lens.cta : 'Continue the day'} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -858,6 +936,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
       <DayInLifeTour
         onClose={onClose}
         onExploreRole={() => setTourMode('role')}
+        userRole={userRole}
         userName={userName}
         schoolName={schoolName}
       />
