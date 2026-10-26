@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { ClassroomMatrixData, ClassroomProvisionSummary } from '../types';
 import { api } from '../api';
-import { Sparkles, AlertTriangle, CheckCircle2, Printer, X, BookOpen, HeartHandshake } from 'lucide-react';
+import {
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  Printer,
+  X,
+  BookOpen,
+  HeartHandshake,
+  ChevronDown,
+  ChevronUp,
+  Layers,
+} from 'lucide-react';
 import { ClassroomProvisionMapModal } from './ClassroomProvisionMapModal';
 
 interface ClassSendMatrixProps {
@@ -16,6 +27,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
   const [provisionSummary, setProvisionSummary] = useState<ClassroomProvisionSummary | null>(null);
   const [showProvisionModal, setShowProvisionModal] = useState<boolean>(false);
   const [loadingProvision, setLoadingProvision] = useState<boolean>(false);
+  const [expandedPupilIds, setExpandedPupilIds] = useState<Record<string, boolean>>({});
 
   const handleOpenProvisionMap = async () => {
     try {
@@ -46,10 +58,10 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
 
   const subjects = [
     { key: 'all', label: 'All-Day General' },
-    { key: 'maths', label: '📐 Maths (Slopes & Numbers)' },
-    { key: 'english', label: '📖 English (Inference & Reading)' },
-    { key: 'science', label: '🔬 Science (Practicals & Labs)' },
-    { key: 'assembly', label: '⚡ Assembly & PE (High Acoustic)' },
+    { key: 'maths', label: '📐 Maths' },
+    { key: 'english', label: '📖 English' },
+    { key: 'science', label: '🔬 Science' },
+    { key: 'assembly', label: '⚡ Assembly & PE' },
   ];
 
   if (loading) {
@@ -62,90 +74,136 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
   }
 
   const cohort = matrixData?.cohort || [];
+  const cautionPupils = cohort.filter((p) => p.readiness_level === 'amber' || p.readiness_level === 'red');
+  const allExpanded = cohort.length > 0 && cohort.every((p) => expandedPupilIds[p.id]);
+
+  const togglePupilExpand = (id: string) => {
+    setExpandedPupilIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleAll = () => {
+    if (allExpanded) {
+      setExpandedPupilIds({});
+    } else {
+      const next: Record<string, boolean> = {};
+      cohort.forEach((p) => {
+        next[p.id] = true;
+      });
+      setExpandedPupilIds(next);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-cardBg p-3.5 sm:p-4 rounded-2xl border border-borderMain shadow-xs">
+    <div className="space-y-4">
+      {/* Consolidated Header & Command Bar */}
+      <div className="card p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm sm:text-base font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>{matrixData?.room_name || 'Room 4'} SEND Classroom Matrix</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-                {cohort.length} Pupils
-              </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base sm:text-lg font-serif font-bold text-navy dark:text-white flex items-center gap-2">
+              <span>{matrixData?.room_name || 'Room 4'} Classroom Hub</span>
             </h2>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
+              {cohort.length} SEND Learners
+            </span>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold border border-purple-200 dark:border-purple-800/40">
+              {matrixData?.ehcp_count ?? cohort.filter((p) => p.has_ehcp).length} Active EHCPs
+            </span>
+            <span className="text-[11px] text-textDim dark:text-slate-400">
+              TA: <strong className="text-textSub dark:text-slate-200">{matrixData?.assigned_ta || 'Class TA'}</strong>
+            </span>
           </div>
-          <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-            Differentiated adaptations, sensory triggers, and arrival intelligence for all {cohort.length} pupils.
+          <p className="text-xs text-textDim dark:text-slate-400 mt-1">
+            Live differentiated scaffolding, arrival intelligence, and statutory provision map.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+        {/* Header Action Tools */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={toggleAll}
+            className="px-3 py-1.5 rounded-xl border border-borderMain hover:bg-cardSubtle text-textDim hover:text-navy dark:hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Expand or collapse sensory & trigger details across all cards"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>{allExpanded ? 'Collapse All' : 'Expand All'}</span>
+          </button>
+
           <button
             onClick={handleOpenProvisionMap}
             disabled={loadingProvision}
-            className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0 disabled:opacity-60"
+            className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             title="SEND Code of Practice CoP 6.44-6.56 Termly Graduated Response Review"
           >
             {loadingProvision ? (
               <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <BookOpen className="w-4 h-4 text-white" />
+              <BookOpen className="w-3.5 h-3.5 text-white" />
             )}
-            <span>Termly Provision Map & APDR</span>
+            <span>Termly Provision Map</span>
           </button>
 
           <button
             onClick={() => setShowSupplyModal(true)}
-            className="w-full sm:w-auto justify-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-navy to-slate-800 hover:from-slate-800 hover:to-navy text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer flex-shrink-0"
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-navy to-slate-800 hover:from-slate-800 hover:to-navy text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <Printer className="w-4 h-4 text-mint" />
-            <span>60s Supply Teacher Briefing</span>
+            <Printer className="w-3.5 h-3.5 text-mint" />
+            <span>60s Supply Briefing</span>
           </button>
         </div>
       </div>
 
-      {/* Cohort Stats Ribbon */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="stat-card border-teal">
-          <div className="font-serif text-2xl font-bold text-teal dark:text-teal-300">
-            {matrixData?.total_send_count ?? cohort.length}
+      {/* Morning Triage & Arrival Intelligence Scan */}
+      {cautionPupils.length > 0 ? (
+        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded-lg bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 flex-shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="font-bold text-amber-900 dark:text-amber-200">
+                Morning Arrival Check-In: {cautionPupils.length} learner{cautionPupils.length > 1 ? 's need' : ' needs'} gentle transition
+              </span>
+              <span className="text-amber-700 dark:text-amber-300 ml-1.5 text-[11px]">
+                (Restless night / anxious arrival flagged by home)
+              </span>
+            </div>
           </div>
-          <div className="text-[11px] text-textDim dark:text-slate-400 mt-0.5">
-            SEND Learners in {matrixData?.room_name || 'Classroom'}
-          </div>
-        </div>
-        <div className="stat-card border-purple-dark dark:border-purple-500">
-          <div className="font-serif text-2xl font-bold text-purple-dark dark:text-purple-300">
-            {matrixData?.ehcp_count ?? cohort.filter((p) => p.has_ehcp).length}
-          </div>
-          <div className="text-[11px] text-textDim dark:text-slate-400 mt-0.5">Statutory EHCPs Active</div>
-        </div>
-        <div className="stat-card border-amber-dark dark:border-amber-500">
-          <div className="font-serif text-2xl font-bold text-amber-dark dark:text-amber-300">
-            {cohort.filter((p) => p.readiness_level === 'amber').length}
-          </div>
-          <div className="text-[11px] text-textDim dark:text-slate-400 mt-0.5">
-            Arrival Caution Alerts ({cohort.filter((p) => p.readiness_level === 'amber').map((p) => p.preferred_name || p.name.split(' ')[0]).join(', ') || 'None 🟢'})
-          </div>
-        </div>
-        <div className="stat-card border-emerald-600 dark:border-emerald-500">
-          <div className="font-serif text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-            {matrixData?.assigned_ta ? '1-to-1 TA' : 'Class TA'}
-          </div>
-          <div className="text-[11px] text-textDim dark:text-slate-400 mt-0.5">
-            {matrixData?.assigned_ta ? `${matrixData.assigned_ta} Assigned` : 'Shared TA Support'}
-          </div>
-        </div>
-      </div>
 
-      {/* Subject Filter Bar */}
-      <div className="card p-3 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-bold text-navy dark:text-white px-2 flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {cautionPupils.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => onSelectPupil && onSelectPupil(p.id)}
+                className="px-2.5 py-1 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800/70 text-amber-900 dark:text-amber-100 font-bold text-[11px] border border-amber-300 dark:border-amber-700 transition-all flex items-center gap-1 cursor-pointer"
+                title={`Open 1:1 Focus for ${p.name}`}
+              >
+                <span>⚠️ {p.preferred_name || p.name.split(' ')[0]}</span>
+                <span className="text-[10px] opacity-75">({p.readiness_status.split('·')[0].trim()})</span>
+                <span className="text-[10px] ml-0.5 font-normal">→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-xs flex items-center justify-between text-emerald-900 dark:text-emerald-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <span>
+              <strong>Morning Scan Complete:</strong> All {cohort.length} learners arrived regulated and ready for learning.
+            </span>
+          </div>
+          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold hidden sm:inline">
+            Zero active alerts
+          </span>
+        </div>
+      )}
+
+      {/* Lesson Focus Filter Bar */}
+      <div className="card p-2.5 sm:p-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-xs font-bold text-navy dark:text-white px-1">
           <BookOpen className="w-4 h-4 text-teal dark:text-teal-300" />
-          <span>Lesson Focus Filter:</span>
-        </span>
+          <span>Active Lesson Focus:</span>
+        </div>
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {subjects.map((s) => (
             <button
@@ -153,7 +211,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
               onClick={() => setSelectedSubject(s.key as any)}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                 selectedSubject === s.key
-                  ? 'bg-teal text-white shadow-xs font-bold'
+                  ? 'bg-teal text-white shadow-xs'
                   : 'bg-cardSubtle border border-borderMain text-textDim hover:text-textMain hover:bg-slate-100 dark:hover:bg-[#1E324A]'
               }`}
             >
@@ -170,13 +228,14 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
           </div>
           <h4 className="font-bold text-base text-navy dark:text-white">No Pupils in Classroom Register</h4>
           <p className="text-xs max-w-md mx-auto">
-            There are currently no active SEND learners assigned to {matrixData?.room_name || "this classroom"}.
+            There are currently no active SEND learners assigned to {matrixData?.room_name || 'this classroom'}.
           </p>
         </div>
       ) : (
-        /* Matrix Cards Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        /* Streamlined Progressive Disclosure Cards */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {cohort.map((pupil) => {
+            const isExpanded = !!expandedPupilIds[pupil.id];
             const subjectAccommodation =
               selectedSubject !== 'all'
                 ? pupil.subject_accommodations[selectedSubject] || pupil.subject_accommodations.maths
@@ -185,26 +244,28 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
             return (
               <div
                 key={pupil.id}
-                className={`card p-5 border-l-4 transition-all space-y-4 ${
+                className={`card p-4 border-l-4 transition-all space-y-3 ${
                   pupil.readiness_level === 'amber'
-                    ? 'border-l-amber-500 bg-amber-50/15 dark:bg-amber-950/20'
+                    ? 'border-l-amber-500 bg-amber-50/10 dark:bg-amber-950/15'
                     : 'border-l-teal'
                 }`}
               >
-                {/* Card Header */}
-                <div className="flex items-start justify-between gap-2 pb-3 border-b border-borderMain">
+                {/* Pupil Header */}
+                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-borderMain">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-teal/10 dark:bg-teal-950/60 flex items-center justify-center font-bold text-teal dark:text-teal-300 text-base border border-teal/20">
+                    <div className="w-10 h-10 rounded-xl bg-teal/10 dark:bg-teal-950/60 flex items-center justify-center font-bold text-teal dark:text-teal-300 text-sm border border-teal/20">
                       {pupil.name.charAt(0)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-navy dark:text-white">{pupil.name}</h3>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          pupil.has_ehcp
-                            ? 'bg-purple-light dark:bg-purple-950/60 text-purple-dark dark:text-purple-300 border-purple-200 dark:border-purple-800/40'
-                            : 'bg-teal/10 dark:bg-teal-950/60 text-teal dark:text-teal-300 border-teal/20 dark:border-teal-800/40'
-                        }`}>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            pupil.has_ehcp
+                              ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40'
+                              : 'bg-teal/10 dark:bg-teal-950/60 text-teal dark:text-teal-300 border-teal/20 dark:border-teal-800/40'
+                          }`}
+                        >
                           {pupil.support_tier}
                         </span>
                       </div>
@@ -217,7 +278,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
                   {onSelectPupil && (
                     <button
                       onClick={() => onSelectPupil(pupil.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal/10 hover:bg-teal text-teal hover:text-white dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal border border-teal/20 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-teal/10 hover:bg-teal text-teal hover:text-white dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal border border-teal/20 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
                       title={`Open 1:1 Focus for ${pupil.name}`}
                     >
                       <span>1:1 Focus</span>
@@ -226,83 +287,97 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
                   )}
                 </div>
 
-              {/* Today's Readiness Banner */}
-              <div className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
-                pupil.readiness_level === 'amber'
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200'
-                  : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200'
-              }`}>
-                {pupil.readiness_level === 'amber' ? (
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                {/* Today's Readiness Pill */}
+                <div
+                  className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${
+                    pupil.readiness_level === 'amber'
+                      ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200'
+                  }`}
+                >
+                  {pupil.readiness_level === 'amber' ? (
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                  )}
+                  <div className="text-[11.5px] truncate">
+                    <span className="font-semibold">Today: </span>
+                    <span>{pupil.readiness_status}</span>
+                  </div>
+                </div>
+
+                {/* Subject-Specific Adaptation OR Universal Key Tip */}
+                {subjectAccommodation ? (
+                  <div className="p-2.5 rounded-xl bg-teal-50/60 dark:bg-teal-950/30 border border-teal/20 dark:border-teal-800/40 text-xs space-y-0.5">
+                    <div className="font-bold text-teal dark:text-teal-300 flex items-center gap-1 uppercase text-[10px] tracking-wider">
+                      <Sparkles className="w-3 h-3 text-teal dark:text-teal-300" />
+                      <span>{selectedSubject.toUpperCase()} Adaptation:</span>
+                    </div>
+                    <p className="text-textSub dark:text-slate-300 leading-snug text-xs">{subjectAccommodation}</p>
+                  </div>
                 ) : (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                  <div className="p-2 rounded-xl bg-cardSubtle border border-borderMain text-xs text-textDim dark:text-slate-300 flex items-center gap-1.5">
+                    <span className="font-bold text-textSub dark:text-slate-200 text-[11px]">Primary Strategy:</span>
+                    <span className="truncate text-[11.5px]">{pupil.sensory_calming_tools[0] || 'Visual timetable & clear cues'}</span>
+                  </div>
                 )}
-                <div>
-                  <span className="font-bold">Today&apos;s Readiness: </span>
-                  <span>{pupil.readiness_status}</span>
+
+                {/* Progressive Disclosure Section: Triggers & Calming Tools */}
+                {isExpanded && (
+                  <div className="pt-2 border-t border-borderMain space-y-2.5 text-xs animate-in fade-in duration-150">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 mb-1 flex items-center gap-1">
+                        <span>⚡ Primary Triggers to Avoid</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {pupil.primary_triggers.map((t, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-[10.5px] font-medium"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-teal dark:text-teal-300 mb-1 flex items-center gap-1">
+                        <span>✓ Validated Calming Strategies & Equipment</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {pupil.sensory_calming_tools.map((tool, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded-lg bg-cardSubtle border border-borderMain text-textMain dark:text-white text-[10.5px] font-medium"
+                          >
+                            ✓ {tool}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Card Footer: Buddy & Expander Toggle */}
+                <div className="pt-2 border-t border-borderMain flex items-center justify-between text-[11px] text-textDim dark:text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <HeartHandshake className="w-3.5 h-3.5 text-teal dark:text-teal-300" />
+                    <span>Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Jake'}</strong></span>
+                  </span>
+
+                  <button
+                    onClick={() => togglePupilExpand(pupil.id)}
+                    className="flex items-center gap-1 font-semibold text-teal hover:text-teal-dark dark:text-teal-300 dark:hover:text-teal-200 cursor-pointer"
+                  >
+                    <span>{isExpanded ? 'Hide Details' : `Triggers & Tools (${pupil.primary_triggers.length + pupil.sensory_calming_tools.length})`}</span>
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
               </div>
-
-              {/* Dynamic Subject Accommodation (when filtered) */}
-              {subjectAccommodation && (
-                <div className="p-3 rounded-xl bg-teal-50/50 dark:bg-teal-950/30 border border-teal/20 dark:border-teal-800/40 text-xs space-y-1">
-                  <div className="font-bold text-teal dark:text-teal-300 flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-teal dark:text-teal-300" />
-                    <span>{selectedSubject.toUpperCase()} Adaptation Active:</span>
-                  </div>
-                  <p className="text-textSub dark:text-slate-300 leading-relaxed">{subjectAccommodation}</p>
-                </div>
-              )}
-
-              {/* Triggers & Calming Tools */}
-              <div className="space-y-2 text-xs">
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 mb-1">
-                    Primary Triggers to Avoid
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {pupil.primary_triggers.map((t, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-[11px] font-medium"
-                      >
-                        ⚡ {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 mb-1">
-                    Validated Calming Equipment & Strategies
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {pupil.sensory_calming_tools.map((tool, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 rounded-lg bg-cardSubtle border border-borderMain text-textMain dark:text-white text-[11px] font-medium"
-                      >
-                        ✓ {tool}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer Buddy & TA Note */}
-              <div className="pt-2.5 border-t border-borderMain flex items-center justify-between text-[11px] text-textDim dark:text-slate-400">
-                <span className="flex items-center gap-1">
-                  <HeartHandshake className="w-3.5 h-3.5 text-teal dark:text-teal-300" />
-                  <span>Peer Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Jake'}</strong></span>
-                </span>
-                <span className="text-[10px] text-textDim dark:text-slate-400">
-                  {pupil.has_ehcp ? 'TA Support Active' : 'Universal Support'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Supply Teacher 60-Second Briefing Modal */}
