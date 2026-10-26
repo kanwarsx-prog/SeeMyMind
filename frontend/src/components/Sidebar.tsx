@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RoleView, UserProfile } from '../types';
 import { ThemeToggle } from './ThemeToggle';
 import {
@@ -24,6 +24,8 @@ import {
   Printer,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -386,6 +388,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const personaMeta = personaDict[activeView] || personaDict.teacher;
   const RoleIcon = personaMeta.icon;
+  const [teacherMoreOpen, setTeacherMoreOpen] = useState(false);
+  const teacherPrimaryIds = ['room4-matrix', 'morning-briefings', 'evidence-logs'];
+  const primaryNavItems = activeView === 'teacher'
+    ? personaMeta.navItems.filter((item) => teacherPrimaryIds.includes(item.id))
+    : personaMeta.navItems;
+  const secondaryNavItems = activeView === 'teacher'
+    ? personaMeta.navItems.filter((item) => !teacherPrimaryIds.includes(item.id))
+    : [];
 
   // Active check helper
   const isItemActive = (item: NavItem, idx: number) => {
@@ -472,7 +482,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div className="space-y-1">
-              {personaMeta.navItems.map((item, idx) => {
+              {primaryNavItems.map((item, idx) => {
                 const ItemIcon = item.icon;
                 const active = isItemActive(item, idx);
                 return (
@@ -493,6 +503,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 );
               })}
+              {activeView === 'teacher' && secondaryNavItems.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setTeacherMoreOpen((open) => !open)}
+                    className="w-full min-h-11 flex items-center justify-between gap-2.5 px-3 rounded-xl text-xs font-semibold text-sidebarSecondary hover:text-sidebarPrimary hover:bg-sidebarHover transition-all cursor-pointer touch-manipulation"
+                    aria-expanded={teacherMoreOpen}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <BookOpen className="w-4 h-4 text-teal dark:text-mint flex-shrink-0" />
+                      <span>More classroom tools</span>
+                    </span>
+                    {teacherMoreOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  {teacherMoreOpen && (
+                    <div className="ml-3 pl-2 border-l border-sidebarBorder space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {secondaryNavItems.map((item, idx) => {
+                        const ItemIcon = item.icon;
+                        const active = isItemActive(item, idx);
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              item.action?.();
+                              onCloseMobile?.();
+                            }}
+                            className={`w-full min-h-10 flex items-center gap-2.5 px-3 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer touch-manipulation ${
+                              active
+                                ? 'bg-sidebarActive text-sidebarActiveText shadow-sm font-bold'
+                                : 'text-sidebarSecondary hover:text-sidebarPrimary hover:bg-sidebarHover'
+                            }`}
+                          >
+                            <ItemIcon className={`w-3.5 h-3.5 flex-shrink-0 ${active ? 'text-white' : 'text-teal dark:text-mint'}`} />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
