@@ -61,6 +61,7 @@ const AppContent: React.FC = () => {
   const [isAITransparencyOpen, setIsAITransparencyOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [copilotInitialQuery, setCopilotInitialQuery] = useState<string | undefined>(undefined);
+  const [isSupplyModalOpen, setIsSupplyModalOpen] = useState(false);
 
   const handleOpenCopilot = (query?: string) => {
     if (query) setCopilotInitialQuery(query);
@@ -141,6 +142,11 @@ const AppContent: React.FC = () => {
         setTeacherSubView('matrix');
       } else if (navId === 'lesson-pathways') {
         setTeacherSubView('pathways');
+      } else if (navId === 'provision-map') {
+        setTeacherSubView('provision_map');
+      } else if (navId === 'supply-briefing') {
+        setTeacherSubView('matrix');
+        setIsSupplyModalOpen(true);
       } else {
         setTeacherSubView('focused');
       }
@@ -520,6 +526,8 @@ const AppContent: React.FC = () => {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
         ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${child?.room_name || 'Room 4'} (Year 5)`
+        : teacherSubView === 'provision_map'
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Room 4 Termly SEND Provision Map`
         : teacherSubView === 'pathways'
         ? `Adapted Lesson Pathways · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`
         : `1:1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
@@ -627,7 +635,7 @@ const AppContent: React.FC = () => {
               : undefined
           }
           selectedChildId={
-            (activeView === 'teacher' && teacherSubView === 'matrix') ||
+            (activeView === 'teacher' && (teacherSubView === 'matrix' || teacherSubView === 'provision_map')) ||
             (activeView === 'senco' && (sencoSubTab === 'provision_map' || sencoSubTab === 'staff_team'))
               ? 'overview'
               : child?.id
@@ -646,6 +654,8 @@ const AppContent: React.FC = () => {
               briefing={briefing}
               latestHandover={latestHandover}
               activeSubView={teacherSubView}
+              isSupplyModalOpen={isSupplyModalOpen}
+              onCloseSupplyModal={() => setIsSupplyModalOpen(false)}
               onSubViewChange={(view) => {
                 setTeacherSubView(view);
                 setActiveNavId(
@@ -653,6 +663,8 @@ const AppContent: React.FC = () => {
                     ? 'room4-matrix'
                     : view === 'pathways'
                     ? 'lesson-pathways'
+                    : view === 'provision_map'
+                    ? 'provision-map'
                     : 'preflight-handover'
                 );
               }}

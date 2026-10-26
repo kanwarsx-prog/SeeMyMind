@@ -13,30 +13,41 @@ import {
 import { ClassroomProvisionSummary, GraduatedResponseItem } from '../types';
 
 interface ClassroomProvisionMapModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   summary: ClassroomProvisionSummary | null;
+  isScreen?: boolean;
 }
 
 export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProps> = ({
-  isOpen,
+  isOpen = true,
   onClose,
   summary,
+  isScreen = false,
 }) => {
   const [activeView, setActiveView] = useState<'matrix' | 'apdr'>('matrix');
   const [selectedPupilIndex, setSelectedPupilIndex] = useState<number>(0);
 
   // Close on Escape key
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || isScreen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && onClose) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isScreen, onClose]);
 
-  if (!isOpen || !summary) return null;
+  if (!isOpen) return null;
+
+  if (!summary) {
+    return (
+      <div className="card p-12 text-center text-gray-500 space-y-3">
+        <div className="w-8 h-8 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
+        <div className="text-xs font-semibold">Loading Room 4 Termly Provision Map & Graduated Response...</div>
+      </div>
+    );
+  }
 
   const handlePrint = () => {
     window.print();
@@ -83,28 +94,20 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
   const selectedPupil: GraduatedResponseItem =
     summary.graduated_responses[selectedPupilIndex] || summary.graduated_responses[0];
 
-  return (
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-navy/80 backdrop-blur-sm print:p-0 print:bg-white print:static print:inset-auto animate-in fade-in duration-200"
-    >
-      {/* Container Card */}
-      <div className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden print:shadow-none print:border-none print:m-0 print:max-w-none print:max-h-none print:bg-white print:text-black">
-        
-        {/* Pinned Action Toolbar (Screen Only) */}
-        <div className="flex-shrink-0 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 print:hidden">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-teal-600 animate-pulse" />
-            <h2 className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-teal-600" />
-              <span>Teacher Provision Map & Graduated Response Review</span>
-            </h2>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-900 font-semibold">
-              CoP 6.44–6.56
-            </span>
-          </div>
+  const content = (
+    <div className={`relative w-full ${isScreen ? '' : 'max-w-5xl max-h-[92vh]'} flex flex-col bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden print:shadow-none print:border-none print:m-0 print:max-w-none print:max-h-none print:bg-white print:text-black`}>
+      {/* Pinned Action Toolbar (Screen Only) */}
+      <div className="flex-shrink-0 z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 print:hidden">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-teal-600 animate-pulse" />
+          <h2 className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-teal-600" />
+            <span>Teacher Provision Map & Graduated Response Review</span>
+          </h2>
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-900 font-semibold">
+            CoP 6.44–6.56
+          </span>
+        </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* View Switcher */}
@@ -487,6 +490,20 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
 
         </div>
       </div>
+  );
+
+  if (isScreen) {
+    return content;
+  }
+
+  return (
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-navy/80 backdrop-blur-sm print:p-0 print:bg-white print:static print:inset-auto animate-in fade-in duration-200"
+    >
+      {content}
     </div>
   );
 };

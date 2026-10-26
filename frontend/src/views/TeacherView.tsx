@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse, DecompressionBridgeResponse } from '../types';
+import { Child, ChildEvent, MorningBriefing, TransitionLogDetail, TeacherSubView, LessonPathwayResponse, DecompressionBridgeResponse, ClassroomProvisionSummary } from '../types';
 import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOpen, ArrowRight, X } from 'lucide-react';
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
+import { ClassroomProvisionMapModal } from '../components/ClassroomProvisionMapModal';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
 import { AbcTooltip } from '../components/AbcTooltip';
 import { api } from '../api';
@@ -16,6 +17,8 @@ interface TeacherViewProps {
   activeSubView?: TeacherSubView;
   onSubViewChange?: (view: TeacherSubView) => void;
   onSelectPupil?: (pupilId: string) => void;
+  isSupplyModalOpen?: boolean;
+  onCloseSupplyModal?: () => void;
   onRefreshBriefing: () => Promise<void>;
   onAcknowledgeHandover?: (transitionId: string) => Promise<void>;
   onOpenObservationModal: () => void;
@@ -48,6 +51,8 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   activeSubView,
   onSubViewChange,
   onSelectPupil,
+  isSupplyModalOpen,
+  onCloseSupplyModal,
   onRefreshBriefing,
   onAcknowledgeHandover,
   onOpenObservationModal,
@@ -57,12 +62,21 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   onLogDeEscalation,
 }) => {
   const [activeTab, setActiveTab] = useState<TeacherSubView>(activeSubView || 'matrix');
+  const [provisionSummary, setProvisionSummary] = useState<ClassroomProvisionSummary | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [acknowledging, setAcknowledging] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(true);
   const [bridge, setBridge] = useState<DecompressionBridgeResponse | null>(null);
   const [showHomeTimeModal, setShowHomeTimeModal] = useState(false);
   const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
+
+  React.useEffect(() => {
+    if (activeTab === 'provision_map' && !provisionSummary) {
+      api.getClassroomProvisionMap('Room 4')
+        .then(setProvisionSummary)
+        .catch((err) => console.error('Failed to load classroom provision map:', err));
+    }
+  }, [activeTab, provisionSummary]);
 
   React.useEffect(() => {
     if (child?.id) {
@@ -153,7 +167,27 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             }
             handleTabChange('focused');
           }}
+          isSupplyModalOpen={isSupplyModalOpen}
+          onCloseSupplyModal={onCloseSupplyModal}
         />
+      )}
+
+      {activeTab === 'provision_map' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => handleTabChange('matrix')}
+              className="text-xs font-bold text-teal hover:text-teal-dark flex items-center gap-1.5 cursor-pointer"
+            >
+              ← Return to Room 4 Classroom Overview
+            </button>
+          </div>
+          <ClassroomProvisionMapModal
+            isScreen={true}
+            summary={provisionSummary}
+            onClose={() => handleTabChange('matrix')}
+          />
+        </div>
       )}
 
       {activeTab === 'focused' && (

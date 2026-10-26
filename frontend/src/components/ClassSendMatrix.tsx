@@ -1,42 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { ClassroomMatrixData, ClassroomProvisionSummary, ClassroomPupilSummary } from '../types';
+import { ClassroomMatrixData, ClassroomPupilSummary } from '../types';
 import { api } from '../api';
 import {
   AlertTriangle,
   CheckCircle2,
   Printer,
   X,
-  BookOpen,
   HeartHandshake,
   ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
-import { ClassroomProvisionMapModal } from './ClassroomProvisionMapModal';
 
 interface ClassSendMatrixProps {
   onSelectPupil?: (pupilId: string) => void;
+  isSupplyModalOpen?: boolean;
+  onCloseSupplyModal?: () => void;
 }
 
-export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil }) => {
+export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
+  onSelectPupil,
+  isSupplyModalOpen,
+  onCloseSupplyModal,
+}) => {
   const [matrixData, setMatrixData] = useState<ClassroomMatrixData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showSupplyModal, setShowSupplyModal] = useState<boolean>(false);
-  const [provisionSummary, setProvisionSummary] = useState<ClassroomProvisionSummary | null>(null);
-  const [showProvisionModal, setShowProvisionModal] = useState<boolean>(false);
-  const [loadingProvision, setLoadingProvision] = useState<boolean>(false);
 
-  const handleOpenProvisionMap = async () => {
-    try {
-      setLoadingProvision(true);
-      const data = await api.getClassroomProvisionMap('Room 4');
-      setProvisionSummary(data);
-      setShowProvisionModal(true);
-    } catch (err) {
-      console.error('Failed to load classroom provision map:', err);
-      alert('Failed to load classroom provision map: ' + err);
-    } finally {
-      setLoadingProvision(false);
-    }
+  const isSupplyOpen = isSupplyModalOpen !== undefined ? isSupplyModalOpen : showSupplyModal;
+  const handleCloseSupply = () => {
+    setShowSupplyModal(false);
+    onCloseSupplyModal?.();
   };
 
   useEffect(() => {
@@ -56,7 +49,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
     return (
       <div className="card p-12 text-center text-gray-500 space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
-        <div className="text-xs font-semibold">Initializing Room 4 Landing Cockpit...</div>
+        <div className="text-xs font-semibold">Loading Room 4 Classroom Overview...</div>
       </div>
     );
   }
@@ -101,15 +94,15 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
 
   return (
     <div className="space-y-4">
-      {/* Visual Cockpit Header Bar */}
+      {/* Visual Header Bar */}
       <div className="card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-lg sm:text-xl font-serif font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>{matrixData?.room_name || 'Room 4'} Teacher Cockpit</span>
+              <span>{matrixData?.room_name || 'Room 4'} Classroom Overview</span>
             </h2>
             <span className="text-xs text-textDim dark:text-slate-400 font-medium">
-              Year {matrixData?.year_group || '5'} · Lead: <strong>{matrixData?.lead_teacher || 'Ms Johnson'}</strong> · TA: <strong>{matrixData?.assigned_ta || 'Melissa Grant'}</strong>
+              {matrixData?.year_group?.startsWith('Year') ? matrixData.year_group : `Year ${matrixData?.year_group || '5'}`} · Lead: <strong>{matrixData?.lead_teacher || 'Ms Clara Johnson'}</strong> · TA: <strong>{matrixData?.assigned_ta || 'Melissa Grant'}</strong>
             </span>
           </div>
 
@@ -136,32 +129,6 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
               <span>👥 {cohort.length} Total Cohort</span>
             </span>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
-          <button
-            onClick={handleOpenProvisionMap}
-            disabled={loadingProvision}
-            className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
-            title="SEND Code of Practice CoP 6.44-6.56 Termly Graduated Response Review"
-          >
-            {loadingProvision ? (
-              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <BookOpen className="w-3.5 h-3.5 text-white" />
-            )}
-            <span>Termly Provision Map</span>
-          </button>
-
-          <button
-            onClick={() => setShowSupplyModal(true)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-navy to-slate-800 hover:from-slate-800 hover:to-navy text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            title="Open printable 60-second emergency supply pack"
-          >
-            <Printer className="w-3.5 h-3.5 text-mint" />
-            <span>60s Supply Briefing</span>
-          </button>
         </div>
       </div>
 
@@ -310,7 +277,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
       )}
 
       {/* Supply Teacher 60-Second Briefing Modal */}
-      {showSupplyModal && (
+      {isSupplyOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
           <div className="bg-cardBg rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-borderMain p-4 sm:p-6 space-y-4 sm:space-y-6 text-textMain">
             <div className="flex items-center justify-between border-b border-borderMain pb-3 sm:pb-4">
@@ -326,7 +293,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
                 </p>
               </div>
               <button
-                onClick={() => setShowSupplyModal(false)}
+                onClick={handleCloseSupply}
                 className="w-8 h-8 rounded-full bg-cardSubtle hover:bg-slate-100 dark:hover:bg-[#1E324A] border border-borderMain flex items-center justify-center text-textDim hover:text-textMain cursor-pointer flex-shrink-0"
               >
                 <X className="w-4 h-4" />
@@ -379,7 +346,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-borderMain">
               <button
-                onClick={() => setShowSupplyModal(false)}
+                onClick={handleCloseSupply}
                 className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-textDim hover:text-textMain hover:bg-slate-100 dark:hover:bg-[#1E324A] cursor-pointer text-center"
               >
                 Close
@@ -394,15 +361,6 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({ onSelectPupil 
             </div>
           </div>
         </div>
-      )}
-
-      {/* Whole-Classroom Provision Map & APDR Review Modal */}
-      {showProvisionModal && (
-        <ClassroomProvisionMapModal
-          isOpen={showProvisionModal}
-          onClose={() => setShowProvisionModal(false)}
-          summary={provisionSummary}
-        />
       )}
     </div>
   );

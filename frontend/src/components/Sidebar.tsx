@@ -20,6 +20,8 @@ import {
   X,
   Building2,
   BarChart3,
+  Target,
+  Printer,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -90,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       navItems: [
         {
           id: 'room4-matrix',
-          label: 'Room 4 Classroom Hub',
+          label: 'Room 4 Classroom Overview',
           icon: Layers,
           action: () => {
             onSelectNav?.('room4-matrix');
@@ -110,6 +112,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: BookOpen,
           action: () => {
             onSelectNav?.('lesson-pathways');
+          },
+        },
+        {
+          id: 'provision-map',
+          label: 'Termly Provision Map',
+          icon: Target,
+          action: () => {
+            onSelectNav?.('provision-map');
+          },
+        },
+        {
+          id: 'supply-briefing',
+          label: '60s Supply Briefing',
+          icon: Printer,
+          action: () => {
+            onSelectNav?.('supply-briefing');
           },
         },
         {

@@ -314,7 +314,7 @@ export interface PupilCurriculumProgressResponse {
 }
 
 export type RoleView = 'teacher' | 'senco' | 'parent' | 'child' | 'ta' | 'parentplus' | 'admin';
-export type TeacherSubView = 'focused' | 'matrix' | 'pathways';
+export type TeacherSubView = 'focused' | 'matrix' | 'pathways' | 'provision_map';
 
 export interface EmailPreview {
   to_email: string;
