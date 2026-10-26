@@ -554,6 +554,34 @@ def test_noya_audit_run_persists_execution_steps(client):
     assert first_step["status"] == "completed"
 
 
+def test_noya_persona_grounded_dynamic_pupil_resolution(client):
+    """Verify that a teacher or parent can ask about any accessible pupil without rigid UI scope switching."""
+    phoenix_id = client.post(
+        "/api/v1/pupils/",
+        json={"first_name": "Phoenix", "last_name": "Carter", "date_of_birth": "2015-04-12", "primary_need": "Autism Spectrum Condition"},
+    ).json()["id"]
+    client.post(
+        "/api/v1/pupils/",
+        json={"first_name": "Leo", "last_name": "Carter", "date_of_birth": "2017-09-10", "primary_need": "Speech, Language and Communication"},
+    ).json()["id"]
+
+    # Teacher has Phoenix focused on screen, but asks about Leo in natural language
+    chat_resp = client.post(
+        "/api/v1/noya/chat",
+        json={
+            "child_id": phoenix_id,  # Phoenix is focused in UI
+            "message": "What proven calming strategies work for Leo?",
+            "history": [],
+        },
+        headers={"x-user-role": "teacher"},
+    )
+    assert chat_resp.status_code == 200
+    data = chat_resp.json()
+    # Response dynamically resolves Leo!
+    assert "Leo" in data["answer_markdown"]
+
+
+
 
 
 

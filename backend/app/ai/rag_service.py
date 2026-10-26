@@ -437,11 +437,48 @@ class NoyaRAGService:
         primary_need = "Unspecified"
         year_group = "Unassigned"
 
-        if request.child_id:
-            child = db.query(Child).filter(Child.id == request.child_id).first()
-            if child:
-                # Multi-tenant school isolation check
-                if current_user and current_user.school_id and child.school_id and current_user.school_id != child.school_id:
+        staff_name = getattr(current_user, "full_name", "Educator")
+        staff_role = getattr(current_user, "role", "Teacher")
+        school_obj = getattr(current_user, "school", None)
+        school_name = getattr(current_user, "school_name", None) or (school_obj.school_name if school_obj else "Inclusive Academy")
+        is_parent = getattr(current_user, "role", "").lower() == "parent" or request.active_view == "parent_hub"
+
+        # 1. Resolve accessible pupils for this persona under strict legal RBAC
+        accessible_pupils = []
+        if is_parent:
+            guardian_id = getattr(current_user, "guardian_id", None)
+            if guardian_id:
+                from app.models.pupil import ChildGuardianLink
+                links = db.query(ChildGuardianLink).filter(ChildGuardianLink.guardian_id == guardian_id).all()
+                accessible_pupils = [link.child for link in links if link.child]
+            if not accessible_pupils and getattr(current_user, "child_id", None):
+                c = db.query(Child).filter(Child.id == current_user.child_id).first()
+                if c:
+                    accessible_pupils = [c]
+        else:
+            school_id = getattr(current_user, "school_id", None)
+            if school_id:
+                accessible_pupils = db.query(Child).filter(Child.school_id == school_id).all()
+            else:
+                accessible_pupils = db.query(Child).limit(50).all()
+
+        # 2. Dynamic Child Entity Resolution from natural language message
+        q_lower = request.message.lower()
+        matched_child = None
+        for p in accessible_pupils:
+            p_first = (p.preferred_name or p.first_name or "").lower()
+            p_last = (p.last_name or "").lower()
+            if (p_first and p_first in q_lower) or (p_last and len(p_last) > 3 and p_last in q_lower):
+                matched_child = p
+                break
+
+        child = matched_child
+        if not child and request.child_id:
+            child = next((p for p in accessible_pupils if p.id == request.child_id), None)
+            if not child:
+                # Check for cross-school unauthorized attempt
+                c_attempt = db.query(Child).filter(Child.id == request.child_id).first()
+                if c_attempt and current_user.school_id and c_attempt.school_id and current_user.school_id != c_attempt.school_id:
                     return NoyaCopilotChatResponse(
                         answer_markdown="Access Denied: You do not have permission to query pupils from another school.",
                         action_card=None,
@@ -450,35 +487,32 @@ class NoyaRAGService:
                         model_used="security-guardrail",
                         latency_ms=1,
                     )
-                child_name = child.preferred_name or child.first_name
-                year_group = child.year_group or "Year 5"
-                if child.support_profile and child.support_profile.primary_need:
-                    primary_need = child.support_profile.primary_need
 
-        staff_name = getattr(current_user, "full_name", "Educator")
-        staff_role = getattr(current_user, "role", "Teacher")
-        school_obj = getattr(current_user, "school", None)
-        school_name = getattr(current_user, "school_name", None) or (school_obj.school_name if school_obj else "Inclusive Academy")
+        if child:
+            child_name = child.preferred_name or child.first_name
+            year_group = child.year_group or "Year 5"
+            if child.support_profile and child.support_profile.primary_need:
+                primary_need = child.support_profile.primary_need
 
         is_classroom_view = (
-            not request.child_id
-            and getattr(current_user, "role", "") != "parent"
+            not child
+            and not is_parent
             and (
                 request.active_view in ["classroom_matrix", "room4-matrix", "matrix", "classroom"]
-                or getattr(current_user, "role", "") in ["teacher", "ta"]
+                or getattr(current_user, "role", "").lower() in ["teacher", "ta"]
+                or any(k in q_lower for k in ["class", "room", "cohort", "all pupils", "accommodat", "sensory matrix", "win rate"])
             )
         )
         is_senco_overview = (
-            not request.child_id
-            and getattr(current_user, "role", "") != "parent"
+            not child
+            and not is_parent
             and (
                 request.active_view in ["senco_overview", "provision_map", "staff_team"]
-                or getattr(current_user, "role", "") == "senco"
+                or getattr(current_user, "role", "").lower() == "senco"
+                or any(k in q_lower for k in ["register", "annual review", "whole school", "distribution", "statutory compliance"])
             )
         )
-        is_parent = getattr(current_user, "role", "") == "parent" or request.active_view == "parent_hub"
 
-        # Live, school-scoped figures for classroom / SENCO views (never hardcoded)
         cohort = None
         if (is_classroom_view or is_senco_overview) and not is_parent:
             from app.services.cohort_stats_service import CohortStatsService
@@ -490,15 +524,16 @@ class NoyaRAGService:
             else:
                 cohort = CohortStatsService.compute(db, user_school_id, school_label=school_name)
 
-        if is_parent and child:
+        if is_parent:
+            acc_names = ", ".join([p.first_name for p in accessible_pupils]) if accessible_pupils else child_name
             system_prompt = (
                 f"You are NOYA, a warm, non-clinical AI partner supporting parents on SeeMyMind.\n"
-                f"Current User: {staff_name} (Parent of {child_name}).\n"
-                f"Active Child: {child_name} ({year_group}, Primary Need: {primary_need}).\n"
+                f"Current User: {staff_name} (Parent of {acc_names}).\n"
+                f"Active Child Focus: {child_name} ({year_group}, Primary Need: {primary_need}).\n"
                 f"Rules: Speak in simple, reassuring, human language. Zero diagnostic or bureaucratic jargon.\n"
                 f"Focus on how {child_name} settled arriving home, tonight's calming steps, strengths in class, and reassurance."
             )
-        elif is_classroom_view:
+        elif is_classroom_view and cohort:
             system_prompt = (
                 f"You are NOYA, an advisory classroom inclusion assistant for educators on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
@@ -506,7 +541,7 @@ class NoyaRAGService:
                 f"Rules: Summarize class sensory accommodations, TA hours, and strategy success rates across the whole cohort. "
                 f"Only quote figures you have been given; never invent numbers."
             )
-        elif is_senco_overview:
+        elif is_senco_overview and cohort:
             system_prompt = (
                 f"You are NOYA, a SENCO governance partner on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
@@ -518,8 +553,8 @@ class NoyaRAGService:
             system_prompt = (
                 f"You are NOYA, an advisory, evidence-grounded AI partner for educators on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
-                f"Active Pupil: {child_name} ({year_group}, Primary Need: {primary_need}).\n"
-                f"Active Screen: {request.active_view or 'Pupil Focus'}.\n\n"
+                f"Active Focus: {child_name} ({year_group}, Primary Need: {primary_need}).\n"
+                f"Active Scope: Inclusion support across accessible pupils.\n\n"
                 f"CRITICAL SAFETY & GOVERNANCE RULES:\n"
                 f"1. You are non-diagnostic and strengths-based.\n"
                 f"2. You have access to tools to query guardian contacts, parent morning handovers, de-escalation strategies, and EHCP profiles.\n"
@@ -537,19 +572,21 @@ class NoyaRAGService:
         execution_steps: list[NoyaExecutionStep] = []
         step_counter = 1
 
-        if client and child and not is_parent:
+        if client and not is_parent:
             try:
                 # 1. Build local PII pseudonymization mapping (Zero-LLM PII boundary)
                 from app.ai.pii_anonymizer import PIIAnonymizer
                 guardian_names = []
-                if child.guardian_links:
-                    guardian_names = [
-                        f"{link.guardian.first_name} {link.guardian.last_name}"
-                        for link in child.guardian_links
-                        if link.guardian
-                    ]
+                pupil_names = []
+                for p in (accessible_pupils if accessible_pupils else ([child] if child else [])):
+                    pupil_names.append(p.full_name or p.first_name)
+                    if p.guardian_links:
+                        for link in p.guardian_links:
+                            if link.guardian:
+                                guardian_names.append(f"{link.guardian.first_name} {link.guardian.last_name}")
+
                 entity_tokens = PIIAnonymizer.extract_entity_tokens(
-                    pupil_name=child.full_name or child.first_name,
+                    pupil_name=", ".join(pupil_names) if pupil_names else child_name,
                     guardian_names=guardian_names,
                     school_name=school_name,
                 )
@@ -591,7 +628,12 @@ class NoyaRAGService:
                             raw_args = json.loads(t_call.function.arguments)
                         except Exception:
                             raw_args = {}
-                        raw_args["child_id"] = str(child.id)
+                        if not raw_args.get("child_id") and child:
+                            raw_args["child_id"] = str(child.id)
+                        elif raw_args.get("child_id"):
+                            valid_ids = [str(p.id) for p in accessible_pupils]
+                            if valid_ids and raw_args["child_id"] not in valid_ids and child:
+                                raw_args["child_id"] = str(child.id)
 
                         tool_output = dispatch_tool_call(db, current_user, tool_called, raw_args)
                         t_call_latency = int((time.time() - t_call_start) * 1000)
@@ -765,14 +807,16 @@ class NoyaRAGService:
                     answer = f"There are no active pupils recorded in {label} yet, so I have no figures to share."
                 elif any(k in q_lower for k in ["sensory", "accommodat", "environment", "class", "quiet", "break"]):
                     if stats.top_strategies:
+                        strategies_bullets = "\n".join([f"• {s}" for s in stats.top_strategies])
                         answer = (
-                            f"{label} sensory accommodations & support ({stats.total_pupils} pupils): "
-                            f"The sensory accommodations and calming strategies that have helped most often so far are: {', '.join(stats.top_strategies)}."
+                            f"**{label} Sensory Accommodations & Support** ({stats.total_pupils} pupils)\n\n"
+                            f"**Most Effective Calming Strategies:**\n"
+                            f"{strategies_bullets}"
                         )
                     else:
                         answer = (
-                            f"{label} has {stats.total_pupils} pupils with SEND support, but no sensory accommodations "
-                            "or calming strategies have been recorded yet. Log a quick classroom note after a strategy and I will start tracking what helps."
+                            f"**{label} Support Overview** ({stats.total_pupils} pupils)\n\n"
+                            "No specific calming strategies have been recorded yet. Log a classroom note to start tracking what helps."
                         )
                 elif any(k in q_lower for k in ["ta hours", "teaching assistant", "staff allocation", "support hours"]):
                     answer = (
@@ -977,50 +1021,51 @@ class NoyaRAGService:
             ))
 
         # Generate contextual suggested follow-ups
-        if is_parent and child:
+        # Generate clean, concise follow-up chips
+        if is_parent:
             suggested_followups = [
-                f"How can I help {child_name} settle arriving home tonight?",
-                f"Has {child_name}'s morning check-in been seen by the teacher?",
-                f"What are {child_name}'s proven strengths in class?",
+                f"Help {child_name} settle arriving home tonight",
+                f"Has {child_name}'s morning check-in been seen?",
+                f"Celebrate {child_name}'s strengths in class",
             ]
         elif is_classroom_view:
-            scope = cohort.scope_label if cohort else "the class"
+            scope = cohort.scope_label if cohort else "Room 4"
             suggested_followups = [
-                f"Summarize {scope} sensory accommodations",
-                f"What are the weekly TA hours across {scope}?",
-                "How well are calming strategies working in our class?",
+                f"{scope} sensory accommodations",
+                f"Weekly TA hours in {scope}",
+                f"{scope} strategy win rate",
             ]
         elif is_senco_overview:
             suggested_followups = [
-                "What is our whole-school EHCP vs SEN Support distribution?",
-                "Which pupils have annual reviews due this term?",
-                "Show total weekly high-needs TA support hours",
+                "Whole-school provision breakdown",
+                "Statutory annual reviews due",
+                "High-needs TA hours summary",
             ]
         elif tool_called == "propose_classroom_action":
             suggested_followups = [
-                f"What proven calming strategies work for {child_name}?",
-                f"When did {child_name}'s parent check in last?",
+                f"Calming strategies for {child_name}",
+                f"Morning handover for {child_name}",
             ]
         elif tool_called == "get_guardian_contacts":
             suggested_followups = [
-                f"When did {child_name}'s parent check in last?",
-                f"What calming strategies work for {child_name}?",
+                f"Morning handover for {child_name}",
+                f"Calming strategies for {child_name}",
             ]
         elif tool_called == "get_latest_parent_handover":
             suggested_followups = [
-                f"What calming strategies work for {child_name}?",
-                f"Give me {child_name}'s contact details",
+                f"Calming strategies for {child_name}",
+                f"Emergency contact for {child_name}",
             ]
         elif tool_called == "get_proven_de_escalations":
             suggested_followups = [
-                f"What Section F provisions are in {child_name}'s EHCP?",
-                f"When did {child_name}'s parent check in last?",
+                f"Section F hours for {child_name}",
+                f"Morning handover for {child_name}",
             ]
         else:
             suggested_followups = [
-                f"When did {child_name}'s parent check in last?",
-                f"Give me {child_name}'s contact details",
-                f"What calming strategies work for {child_name}?",
+                f"Morning handover for {child_name}",
+                f"Calming strategies for {child_name}",
+                f"Emergency contact for {child_name}",
             ]
 
         latency_ms = int((time.time() - start_time) * 1000)

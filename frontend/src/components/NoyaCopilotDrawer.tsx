@@ -4,7 +4,6 @@ import {
   X,
   Send,
   RotateCcw,
-  User,
   Phone,
   Mail,
   CheckCircle2,
@@ -100,64 +99,35 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
   };
 
   const isParent = currentUser?.role === 'parent' || screenContext === 'parent_hub';
-  const isClassroom = screenContext === 'classroom_matrix';
   const isSenco = screenContext === 'senco_overview';
   const pupilName = child?.preferred_name || child?.first_name || 'Pupil';
   const parentFirstName = currentUser?.full_name ? currentUser.full_name.split(' ')[0] : 'Dana';
 
-  // Compute a unique key representing current conversation scope
-  const currentContextKey = isClassroom
-    ? 'scope:classroom_matrix'
-    : isSenco
-    ? 'scope:senco_overview'
-    : isParent
-    ? `scope:parent_${child?.id || 'general'}`
-    : `scope:pupil_${child?.id || 'none'}`;
-
-  const prevContextKeyRef = useRef<string>('');
-
-  // Initialize or reset conversation when scope or child changes
+  // Initialize or reset conversation based on persona
   const resetConversation = () => {
     let greetingContent = '';
     let followups: string[] = [];
 
-    if (isParent && child) {
-      greetingContent = `Hello ${parentFirstName}! I'm **NOYA**, your family inclusion partner. I keep you directly connected with **${pupilName}**'s classroom support team, home-time energy updates, and proven calming routines with zero clinical jargon.\n\nHow can I help you and ${pupilName} today?`;
+    if (isParent) {
+      greetingContent = `Hello ${parentFirstName}! I'm **NOYA**, your family inclusion partner. I keep you directly connected with your children's classroom team, home-time energy updates, and practical calming routines.\n\nHow can I help you today?`;
       followups = [
-        `How can I help ${pupilName} settle arriving home tonight?`,
-        `Has ${pupilName}'s morning check-in been seen by the teacher?`,
-        `What sensory calming tools worked best in class today?`,
-        `What does ${pupilName}'s 3:15 PM energy note mean for tonight?`,
-      ];
-    } else if (isClassroom) {
-      greetingContent = `Hello! I'm **NOYA**, your classroom inclusion assistant for **Room 4**. I have real-time visibility across all 4 pupils in your cohort, class sensory accommodations, TA hours, and strategy win rates.\n\nHow can I help support your whole classroom delivery today?`;
-      followups = [
-        'Summarize Room 4 sensory accommodations',
-        'Which pupils in Room 4 need proactive quiet breaks?',
-        'What is our class strategy win rate this week?',
-        'What are the weekly TA hours across Room 4?',
+        "Tonight's calming steps",
+        "Has morning check-in been seen?",
+        "Classroom wins",
       ];
     } else if (isSenco) {
-      greetingContent = `Hello! I'm **NOYA**, supporting school inclusion and statutory governance for St. Jude's. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
+      greetingContent = `Hello! I'm **NOYA**, your school inclusion and statutory governance partner. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
       followups = [
-        'What is our whole-school EHCP vs SEN Support distribution?',
-        'Which pupils have statutory annual reviews due this term?',
-        'Show total weekly High-Needs TA support hours',
-        'Summarize statutory provisions across classrooms',
-      ];
-    } else if (child) {
-      greetingContent = `Hello! I'm **NOYA**, your inclusion assistant. I have live access to verified records, morning handovers, and statutory EHCP Section F data for **${pupilName}**. All queries run under strict multi-tenant isolation with Zero-LLM PII protection.\n\nHow can I assist your classroom delivery today?`;
-      followups = [
-        `What was the latest morning handover for ${pupilName}?`,
-        `Who is the emergency contact for ${pupilName}?`,
-        `What proven de-escalation strategies work best for ${pupilName}?`,
-        `What are the statutory Section F agreed hours for ${pupilName}?`,
+        'Provision breakdown',
+        'Statutory annual reviews due',
+        'High-needs TA hours summary',
       ];
     } else {
-      greetingContent = `Hello! I'm **NOYA**, your school SEND assistant. I can query morning handovers, de-escalation strategies, and whole-school provisions. Select a pupil or ask a question below.`;
+      greetingContent = `Hello! I'm **NOYA**, your classroom inclusion assistant for St. Jude's. I have real-time visibility across your class cohort, pupil support profiles, and morning handovers.\n\nHow can I support your classroom delivery today?`;
       followups = [
-        'Show class provision overview',
-        'Which pupils have upcoming annual reviews?',
+        'Room 4 accommodations',
+        'Proven calming strategies',
+        'Class strategy win rate',
       ];
     }
 
@@ -171,13 +141,12 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
     setMessages([greeting]);
   };
 
-  // Reset chat whenever child ID or screen context changes (fixes stuck old conversation)
+  // Only initialize greeting once if empty; never wipe conversation on pupil or screen switch
   useEffect(() => {
-    if (prevContextKeyRef.current !== currentContextKey) {
-      prevContextKeyRef.current = currentContextKey;
+    if (messages.length === 0) {
       resetConversation();
     }
-  }, [currentContextKey]);
+  }, []);
 
   // Handle incoming initialQuery (e.g. from SencoView search box)
   useEffect(() => {
@@ -307,38 +276,24 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         <div className="px-4 py-3 border-b border-borderMain bg-cardSubtle flex items-center justify-between gap-2 flex-shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal to-emerald-500 flex items-center justify-center text-white shadow-xs flex-shrink-0">
-              <Sparkles className="w-4 h-4 animate-pulse" />
+              <Sparkles className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-textHead tracking-tight">NOYA</h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                  Agentic AI
-                </span>
+                {child && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 font-medium truncate">
+                    Focused: {pupilName}
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-textDim truncate">
-                {isParent && child ? (
-                  <span className="flex items-center gap-1 font-medium text-textMain">
-                    <span>👩‍👧</span>
-                    <span>Family Partner for {pupilName} {child.last_name}</span>
-                  </span>
-                ) : isClassroom ? (
-                  <span className="flex items-center gap-1 font-medium text-textMain">
-                    <span>🏫</span>
-                    <span>Room 4 Classroom Hub · All 4 Pupils</span>
-                  </span>
+                {isParent ? (
+                  <span>Family Partner · St. Jude&apos;s</span>
                 ) : isSenco ? (
-                  <span className="flex items-center gap-1 font-medium text-textMain">
-                    <span>🛡️</span>
-                    <span>Whole-School SENCO Hub · Statutory Register</span>
-                  </span>
-                ) : child ? (
-                  <span className="flex items-center gap-1 font-medium text-textMain">
-                    <User className="w-3 h-3 text-teal" />
-                    <span>{pupilName} {child.last_name} · {child.year_group || 'SEND'}</span>
-                  </span>
+                  <span>SENCO Statutory Inclusion Partner</span>
                 ) : (
-                  <span>Whole School &bull; General Guidance</span>
+                  <span>Classroom Inclusion Partner</span>
                 )}
               </p>
             </div>
@@ -364,143 +319,6 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
-
-        {/* Quick Context Chips Bar (Role and Screen Aware) */}
-        <div className="px-3.5 py-2 bg-cardBg border-b border-borderMain/60 overflow-x-auto flex items-center gap-1.5 no-scrollbar flex-shrink-0">
-          <span className="text-[10px] font-bold text-textDim uppercase tracking-wider flex-shrink-0 mr-1">
-            Quick:
-          </span>
-          {isParent && child ? (
-            <>
-              <button
-                onClick={() => handleChipClick(`Has ${pupilName}'s morning check-in been seen by the teacher?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🌅 Morning Note Seen?
-              </button>
-              <button
-                onClick={() => handleChipClick(`What does ${pupilName}'s 3:15 PM energy note mean for tonight?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🎒 Home-Time Energy
-              </button>
-              <button
-                onClick={() => handleChipClick(`How can I help ${pupilName} settle arriving home tonight?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                Tonight&apos;s Calming Steps
-              </button>
-              <button
-                onClick={() => handleChipClick(`What strengths and positive moments were celebrated for ${pupilName} recently?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                ⭐ Classroom Wins
-              </button>
-            </>
-          ) : isClassroom ? (
-            <>
-              <button
-                onClick={() => handleChipClick('Summarize Room 4 sensory accommodations and environmental adjustments.')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🧩 Sensory Matrix
-              </button>
-              <button
-                onClick={() => handleChipClick('What are the total weekly TA hours across Room 4 pupils?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                👥 TA Allocations
-              </button>
-              <button
-                onClick={() => handleChipClick('What is our class strategy win rate this week?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🎯 Strategy Win Rate
-              </button>
-              <button
-                onClick={() => handleChipClick('Which pupils in Room 4 need proactive sensory breaks?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                ⚠️ Sensory Breaks
-              </button>
-            </>
-          ) : isSenco ? (
-            <>
-              <button
-                onClick={() => handleChipClick('What is our whole-school EHCP vs SEN Support distribution?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📊 Provision Breakdown
-              </button>
-              <button
-                onClick={() => handleChipClick('Which pupils have statutory annual reviews due this term?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📅 Annual Reviews
-              </button>
-              <button
-                onClick={() => handleChipClick('Show total weekly high-needs TA support hours across the school.')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🤝 High-Needs Hours
-              </button>
-              <button
-                onClick={() => handleChipClick('Summarize Section 44 and statutory compliance for the trust report.')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📋 Statutory Compliance
-              </button>
-            </>
-          ) : child ? (
-            <>
-              <button
-                onClick={() => handleChipClick(`What was the latest morning handover status for ${pupilName}?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🌅 Morning Handover
-              </button>
-              <button
-                onClick={() => handleChipClick(`Who is the emergency contact and what are their details for ${pupilName}?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📞 Emergency Contact
-              </button>
-              <button
-                onClick={() => handleChipClick(`What proven de-escalation strategies work best for ${pupilName}?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🧘 Calming Strategies
-              </button>
-              <button
-                onClick={() => handleChipClick(`What are the statutory EHCP Section F agreed hours and provisions for ${pupilName}?`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📋 Section F Hours
-              </button>
-              <button
-                onClick={() => handleChipClick(`Log that ${pupilName} used noise defenders in class and it worked well`)}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/50 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-all cursor-pointer font-bold active:scale-95 shadow-2xs"
-              >
-                📝 Quick Note
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => handleChipClick('Show class provision overview')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                🏫 Class Overview
-              </button>
-              <button
-                onClick={() => handleChipClick('Which pupils have upcoming annual reviews?')}
-                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal hover:border-teal/40 border border-borderMain text-textMain transition-all cursor-pointer font-medium active:scale-95"
-              >
-                📅 Annual Reviews
-              </button>
-            </>
-          )}
         </div>
 
         {/* Message Thread (Scrollable) */}
@@ -624,12 +442,12 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
               {/* Suggested follow-up chips */}
               {msg.role === 'assistant' && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5 max-w-[95%]">
+                <div className="mt-2.5 flex flex-wrap gap-1.5 max-w-[95%]">
                   {msg.suggestedFollowups.map((followup, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleChipClick(followup)}
-                      className="flex items-center gap-1 text-[11px] text-teal hover:text-teal-medium bg-cardBg hover:bg-teal-50 dark:hover:bg-teal-950/60 border border-teal-200 dark:border-teal-800/80 rounded-xl px-2.5 py-1 font-medium transition-all cursor-pointer shadow-2xs active:scale-95 text-left"
+                      className="inline-flex items-center gap-1.5 text-[11px] text-teal-700 dark:text-teal-300 hover:text-teal bg-cardBg hover:bg-teal-50 dark:hover:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/80 rounded-full px-3 py-1 font-medium transition-all cursor-pointer shadow-2xs active:scale-95 text-left"
                     >
                       <span>{followup}</span>
                       <ArrowRight className="w-3 h-3 flex-shrink-0 text-teal/70" />
@@ -662,7 +480,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         </div>
 
         {/* Input Footer */}
-        <div className="p-3 sm:p-4 border-t border-borderMain bg-cardBg flex-shrink-0 space-y-2">
+        <div className="p-3 sm:p-3.5 border-t border-borderMain bg-cardBg flex-shrink-0 space-y-2">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -675,11 +493,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={
-                child
-                  ? `Ask NOYA about ${pupilName}'s handover, triggers, or EHCP...`
-                  : 'Ask NOYA anything about classroom provision or EHCP...'
-              }
+              placeholder="Ask NOYA anything..."
               disabled={loading}
               className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-borderMain bg-inputBg text-textMain placeholder-textDim focus:outline-none focus:border-teal transition-colors shadow-2xs"
             />
@@ -696,11 +510,11 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
           {/* Privacy & Zero-LLM PII Footnote */}
           <div className="flex items-center justify-between text-[10px] text-textDim px-1 pt-0.5">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 font-medium">
               <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-              Zero-LLM PII Protection
+              Zero-LLM PII Protected
             </span>
-            <span className="font-mono text-[9px]">Multi-Tenant Isolated</span>
+            <span className="font-mono text-[9px] text-textDim">St. Jude&apos;s · Multi-Tenant Isolated</span>
           </div>
         </div>
       </aside>
@@ -967,27 +781,69 @@ function renderActionCard(
   );
 }
 
-// Simple markdown formatter helper to bold **words** and preserve linebreaks
+// Clean markdown formatter helper: handles bold text, bulleted lists, and linebreaks cleanly
 function formatMarkdownText(raw: string): React.ReactNode {
   if (!raw) return null;
 
-  // Split by bold patterns **text**
   const lines = raw.split('\n');
-  return lines.map((line, lIdx) => {
-    const parts = line.split(/(\*\*.*?\*\*)/g);
-    return (
-      <p key={lIdx} className={lIdx > 0 ? 'mt-1.5' : ''}>
-        {parts.map((part, pIdx) => {
+  return (
+    <div className="space-y-1">
+      {lines.map((line, lIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lIdx} className="h-1" />;
+        }
+
+        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+        const isNumbered = /^\d+\.\s/.test(trimmed);
+        const content = isBullet ? trimmed.slice(2) : isNumbered ? trimmed.replace(/^\d+\.\s/, '') : line;
+
+        const parts = content.split(/(\*\*.*?\*\*|`.*?`)/g);
+
+        const renderedContent = parts.map((part, pIdx) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             return (
-              <strong key={pIdx} className="font-bold text-textHead">
+              <strong key={pIdx} className="font-semibold text-textHead">
                 {part.slice(2, -2)}
               </strong>
             );
           }
+          if (part.startsWith('`') && part.endsWith('`')) {
+            return (
+              <code key={pIdx} className="px-1 py-0.2 rounded bg-cardSubtle text-[11px] font-mono text-teal border border-borderMain">
+                {part.slice(1, -1)}
+              </code>
+            );
+          }
           return <span key={pIdx}>{part}</span>;
-        })}
-      </p>
-    );
-  });
+        });
+
+        if (isBullet) {
+          return (
+            <div key={lIdx} className="flex items-start gap-2 pl-0.5 text-xs text-textMain leading-relaxed">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal flex-shrink-0 mt-1.5" />
+              <div className="flex-1">{renderedContent}</div>
+            </div>
+          );
+        }
+
+        if (isNumbered) {
+          const match = trimmed.match(/^(\d+)\./);
+          const num = match ? match[1] : '•';
+          return (
+            <div key={lIdx} className="flex items-start gap-2 pl-0.5 text-xs text-textMain leading-relaxed">
+              <span className="text-[10px] font-bold text-teal flex-shrink-0 mt-0.5">{num}.</span>
+              <div className="flex-1">{renderedContent}</div>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lIdx} className="text-xs text-textMain leading-relaxed">
+            {renderedContent}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
