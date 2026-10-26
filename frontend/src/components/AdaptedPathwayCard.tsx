@@ -96,7 +96,7 @@ const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
     subject: 'English',
     year_group: 'Year 4',
     key_stage: 'KS2',
-    title: 'The Iron Man — Figurative Personification',
+    title: 'The Iron Man - Figurative Personification',
     strand: 'Reading Comprehension',
     default_objective: 'Identify and analyse powerful verbs, similes, and mechanical metaphors in poetry.',
     source: 'National Curriculum (Oak)',
@@ -127,7 +127,7 @@ const DEFAULT_CURRICULUM_UNITS: CurriculumUnit[] = [
     subject: 'English',
     year_group: 'Year 5',
     key_stage: 'KS2',
-    title: 'The Highwayman — Narrative Inference',
+    title: 'The Highwayman - Narrative Inference',
     strand: 'Reading Comprehension',
     default_objective: 'Infer character motives and atmospheric tension from figurative language and sensory imagery.',
     source: 'National Curriculum (Oak)',
@@ -265,7 +265,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [steps, setSteps] = useState<PathwayStep[]>([
     {
       number: 1,
-      title: '1. Real-world hook — the game level slope',
+      title: '1. Real-world hook - the game level slope',
       description: '"A game character moves up a slope. How steep is it?" Draw on paper first.',
       status: 'active',
       badge: '→ Step 1 (Start Here)',
@@ -273,7 +273,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     },
     {
       number: 2,
-      title: '2. Draw it — plot the slope visually',
+      title: '2. Draw it - plot the slope visually',
       description: 'Plot coordinates on visual grid. No algebra equation yet. Feel the slope geometry.',
       status: 'next',
       badge: 'Step 2',
@@ -281,7 +281,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     },
     {
       number: 3,
-      title: '3. Name the pattern — rise ÷ run',
+      title: '3. Name the pattern - rise ÷ run',
       description: 'Label the triangle. Rise = how high (6). Run = how far (2). Gradient = 6 ÷ 2 = 3.',
       status: 'locked',
       badge: 'Step 3',
@@ -289,7 +289,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     },
     {
       number: 4,
-      title: '4. The equation emerges — y = mx + c',
+      title: '4. The equation emerges - y = mx + c',
       description: 'Only once gradient is felt intuitively. Algebra labels what they already understand.',
       status: 'locked',
       badge: 'Step 4',
@@ -300,7 +300,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
   const [peerAdaptations, setPeerAdaptations] = useState<PeerAdaptation[]>([
     {
       initials: 'AW',
-      name: 'Archie Watson — Dyslexia & Processing',
+      name: 'Archie Watson - Dyslexia & Processing',
       need: 'Auditory step-by-step verbal walkthrough · minimal visual clutter',
       route: 'Verbal instruction strip',
       method: 'Auditory',
@@ -308,7 +308,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     },
     {
       initials: 'RP',
-      name: 'Riya Patel — ADHD & Anxiety',
+      name: 'Riya Patel - ADHD & Anxiety',
       need: 'Short 10-minute chunked tasks with scheduled movement break at step 2',
       route: 'Kinesthetic chunking',
       method: 'Kinesthetic',
@@ -316,7 +316,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
     },
     {
       initials: 'AM',
-      name: 'Aisha Musa — Autism & Selective Mutism',
+      name: 'Aisha Musa - Autism & Selective Mutism',
       need: 'Written prompt cards only · non-verbal partner pairing with Jake O\'Brien',
       route: 'Written & partner work',
       method: 'Written',
@@ -561,7 +561,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-xs font-bold text-navy dark:text-white">
-                📚 Adapted Session Pathways — This Lesson
+                📚 Adapted Session Pathways - This Lesson
               </h4>
               <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 border border-teal/20 px-2 py-0.5 rounded-md">
                 CoP 6.44 Scaffolding
@@ -798,7 +798,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
                   type="text"
                   value={customTopic}
                   onChange={(e) => setCustomTopic(e.target.value)}
-                  placeholder="e.g. Science — States of matter & particle arrangements"
+                  placeholder="e.g. Science - States of matter & particle arrangements"
                   className="flex-1 min-w-0 w-full text-xs px-3 py-2.5 rounded-xl bg-cardBg text-textMain dark:text-white border border-borderMain focus:outline-none focus:border-teal font-medium"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleGenerate(undefined, undefined, undefined, true);
@@ -832,7 +832,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">
-                Lesson Pathway — {currentTopic}
+                Lesson Pathway - {currentTopic}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -1048,7 +1048,7 @@ export const AdaptedPathwayCard: React.FC<AdaptedPathwayCardProps> = ({
           {/* Parallel Peer Adaptations in Room 4 */}
           <div className="pt-3 border-t border-borderMain space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400 block">
-              Other Room 4 Pupils — Parallel Adapted Routes
+              Other Room 4 Pupils - Parallel Adapted Routes
             </span>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">

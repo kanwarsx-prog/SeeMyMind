@@ -91,7 +91,7 @@ const DAY_IN_LIFE: JourneyStep[] = [
     time: '7:58 AM', actor: 'Dana · Parent', role: 'Home → School', title: 'A better start begins before the bell',
     story: 'Phoenix had a broken night and is worried about the loud assembly. Dana shares the useful context in one calm, 20-second handover.',
     action: 'Send the morning handover', outcome: 'Ms Johnson sees the context before Phoenix enters the classroom.', icon: HeartHandshake, color: '#B87A2A',
-    thinking: 'What small detail would change the way school meets Phoenix this morning?', need: 'Share the context that is useful—not a full report.', better: 'A 20-second note replaces a stressful gate conversation and gives the teacher a head start.',
+    thinking: 'What small detail would change the way school meets Phoenix this morning?', need: 'Share the context that is useful-not a full report.', better: 'A 20-second note replaces a stressful gate conversation and gives the teacher a head start.',
     items: [{ label: 'Sleep', value: 'Disturbed · woke at 4:30 AM' }, { label: 'Sensory flag', value: 'Assembly noise' }, { label: 'Packed support', value: 'Ear defenders' }],
   },
   {
@@ -112,14 +112,14 @@ const DAY_IN_LIFE: JourneyStep[] = [
     time: '12:35 PM', actor: 'Phoenix · Pupil', role: 'Pupil Voice', title: 'The child gets a voice in the record',
     story: 'Phoenix chooses an energy level and names what helped. The system captures pupil voice without asking them to complete a clinical form.',
     action: 'Complete the 10-second check-in', outcome: 'Adults see the child’s perspective alongside observations and outcomes.', icon: MessageCircle, color: '#E06A55',
-    thinking: 'How can I show adults what is happening when words feel like too much?', need: 'Choose a mood, energy level, and what helped.', better: 'Pupil voice sits beside adult observations—never underneath them.',
+    thinking: 'How can I show adults what is happening when words feel like too much?', need: 'Choose a mood, energy level, and what helped.', better: 'Pupil voice sits beside adult observations-never underneath them.',
     items: [{ label: 'Mood', value: 'OK' }, { label: 'Energy', value: '75% charged' }, { label: 'What helped', value: 'Quiet route' }],
   },
   {
     time: '3:15 PM', actor: 'See My Mind · Shared loop', role: 'Home-time', title: 'The day closes with a strength, not a deficit',
     story: 'The family receives a concise summary: what took effort, what worked, and one gentle decompression suggestion for home.',
-    action: 'Share the day’s win', outcome: 'Home and school finish with the same language—and Phoenix’s progress is visible.', icon: Sparkles, color: '#2A6B62',
-    thinking: 'What should home know tonight so the transition feels safe and positive?', need: 'Share one honest summary, one win, and one gentle next step.', better: 'The day ends with a useful handover and a strength to celebrate—not a list of problems.',
+    action: 'Share the day’s win', outcome: 'Home and school finish with the same language-and Phoenix’s progress is visible.', icon: Sparkles, color: '#2A6B62',
+    thinking: 'What should home know tonight so the transition feels safe and positive?', need: 'Share one honest summary, one win, and one gentle next step.', better: 'The day ends with a useful handover and a strength to celebrate-not a list of problems.',
     items: [{ label: 'Today’s win', value: 'Returned after the break' }, { label: 'Home suggestion', value: '20-minute quiet buffer' }, { label: 'Shared record', value: 'Timeline updated' }],
   },
 ];

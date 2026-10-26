@@ -544,7 +544,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-navy dark:text-white">
-                  {pupilName} {child?.last_name || ''} — Learning Pathways & Scaffolding
+                  {pupilName} {child?.last_name || ''} - Learning Pathways & Scaffolding
                 </h3>
                 <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal/20">
                   {child?.room_name || 'Room 4'} · {child?.year_group || 'Year 5'}

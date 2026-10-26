@@ -180,7 +180,7 @@ export const CurriculumProgressView: React.FC<CurriculumProgressViewProps> = ({
               </span>
             </div>
             <h2 className="text-base sm:text-lg font-bold text-navy dark:text-white print:text-black mt-1">
-              Curriculum Mastery & Coverage Report — {progressData.child_name}
+              Curriculum Mastery & Coverage Report - {progressData.child_name}
             </h2>
             <p className="text-xs text-textDim dark:text-slate-400 print:text-slate-700">
               Primary Need: <strong className="text-textMain dark:text-slate-200 print:text-black">{progressData.primary_need}</strong> &bull; Adapted Access via NOYA

@@ -17,7 +17,7 @@ export const ParentPlusView: React.FC<ParentPlusViewProps> = ({ child }) => {
       salary: '£24-30k entry · £38k median · £55k+ senior',
       routes: 'Level 3 BTEC Games Development, degree apprenticeship (games/software), or BA/BSc Game Design',
       day: 'Designing levels, mechanics and systems; prototyping in engines like Unity or Unreal; playtesting with artists and engineers.',
-      fit: 'Draws directly on spatial reasoning, systems thinking and hyperfocus — the exact combination Phoenix has demonstrated consistently.',
+      fit: 'Draws directly on spatial reasoning, systems thinking and hyperfocus - the exact combination Phoenix has demonstrated consistently.',
     },
     uxdesign: {
       title: '🖥️ UX / Product Designer',

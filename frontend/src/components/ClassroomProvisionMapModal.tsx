@@ -350,7 +350,7 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-serif font-black text-slate-900 dark:text-white print:text-black">
-                        {selectedPupil.name} — Graduated Response Evaluation
+                        {selectedPupil.name} - Graduated Response Evaluation
                       </h3>
                       <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                         {selectedPupil.support_tier}

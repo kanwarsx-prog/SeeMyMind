@@ -147,12 +147,12 @@ export const WorksheetModal: React.FC<WorksheetModalProps> = ({
               <span className="text-xl">📚</span>
               <h2 className="font-serif text-base sm:text-lg font-bold text-white">
                 {activeTab === 'dynamic' && pathwayData
-                  ? `${pathwayData.subject ? `${pathwayData.subject} — ` : ''}${pathwayData.topic}`
+                  ? `${pathwayData.subject ? `${pathwayData.subject} - ` : ''}${pathwayData.topic}`
                   : activeTab === 'graphs'
-                  ? 'Maths — Straight Line Graphs'
+                  ? 'Maths - Straight Line Graphs'
                   : activeTab === 'highwayman'
-                  ? 'English — The Highwayman Inference'
-                  : 'Maths — Fractions Visual Mastery'}
+                  ? 'English - The Highwayman Inference'
+                  : 'Maths - Fractions Visual Mastery'}
               </h2>
             </div>
             <p className="text-[11px] sm:text-xs text-white/70 mt-0.5">
@@ -642,7 +642,7 @@ export const WorksheetModal: React.FC<WorksheetModalProps> = ({
               <div className="p-4 bg-gray-900 text-white rounded-2xl space-y-2 font-serif italic text-sm">
                 <p>"The wind was a torrent of darkness among the gusty trees,</p>
                 <p>The moon was a ghostly galleon tossed upon cloudy seas..."</p>
-                <div className="text-[10px] text-white/50 font-sans not-italic pt-1">— Alfred Noyes, The Highwayman</div>
+                <div className="text-[10px] text-white/50 font-sans not-italic pt-1">- Alfred Noyes, The Highwayman</div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -660,7 +660,7 @@ export const WorksheetModal: React.FC<WorksheetModalProps> = ({
                     <strong>Question:</strong> What mood does the poet create?
                   </p>
                   <p className="text-xs text-teal font-medium bg-mint-pale/50 p-2.5 rounded-xl border border-mint/40">
-                    "Ominous, eerie, and restless — the clouds look like turbulent sea waves, making the scene feel dangerous before the highwayman arrives."
+                    "Ominous, eerie, and restless - the clouds look like turbulent sea waves, making the scene feel dangerous before the highwayman arrives."
                   </p>
                 </div>
               </div>

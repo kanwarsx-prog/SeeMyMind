@@ -158,7 +158,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
           </span>
         </div>
         <p className="text-xs text-white/90 leading-relaxed font-normal">
-          Phoenix: skipped breakfast at home, took methylphenidate at 8:30am. <strong className="text-mint">Position yourself near the classroom door for arrival at 8:55am</strong>. Offer noise defenders before he reaches the main corridor. Dip window is 10:00–10:30am — water and crackers need to be ready. Today's maths uses a game design hook for gradient slopes — he should engage strongly once it clicks.
+          Phoenix: skipped breakfast at home, took methylphenidate at 8:30am. <strong className="text-mint">Position yourself near the classroom door for arrival at 8:55am</strong>. Offer noise defenders before he reaches the main corridor. Dip window is 10:00–10:30am - water and crackers need to be ready. Today's maths uses a game design hook for gradient slopes - he should engage strongly once it clicks.
         </p>
       </div>
 
@@ -179,7 +179,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                 </span>
               </div>
               <p className="text-[11px] text-textDim dark:text-slate-400">
-                Trigger at the table between Step 2 modeling and Step 3 independent work — frees the classroom teacher from 1:1 screen management.
+                Trigger at the table between Step 2 modeling and Step 3 independent work - frees the classroom teacher from 1:1 screen management.
               </p>
             </div>
           </div>
@@ -257,7 +257,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                     PC
                   </div>
                   <div>
-                    <div className="font-bold text-navy dark:text-white">Phoenix Carter — High Priority</div>
+                    <div className="font-bold text-navy dark:text-white">Phoenix Carter - High Priority</div>
                     <div className="text-[11px] text-textSub dark:text-slate-300 mt-0.5 leading-snug">
                       Skipped breakfast · medication dip 10–10:30am · headphones at door · game design maths today
                     </div>
@@ -285,7 +285,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                     RP
                   </div>
                   <div>
-                    <div className="font-bold text-navy dark:text-white">Riya Patel — Watch</div>
+                    <div className="font-bold text-navy dark:text-white">Riya Patel - Watch</div>
                     <div className="text-[11px] text-textSub dark:text-slate-300 mt-0.5 leading-snug">
                       Movement break at step 2 of maths pathway · monitor lunch transition for masking
                     </div>
@@ -313,7 +313,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                     JO
                   </div>
                   <div>
-                    <div className="font-bold text-navy dark:text-white">Jake O'Brien — Stable</div>
+                    <div className="font-bold text-navy dark:text-white">Jake O'Brien - Stable</div>
                     <div className="text-[11px] text-textSub dark:text-slate-300 mt-0.5 leading-snug">
                       Buddy pairing with Phoenix in assembly · settled this week · 82% maths pathway progress
                     </div>
@@ -394,7 +394,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                 rows={2}
                 value={logNotes}
                 onChange={(e) => setLogNotes(e.target.value)}
-                placeholder="e.g. Phoenix drew gradient triangle independently at 10:45 — unprompted. Game design framing worked."
+                placeholder="e.g. Phoenix drew gradient triangle independently at 10:45 - unprompted. Game design framing worked."
                 className="w-full text-xs px-3 py-2 rounded-xl border border-borderMain bg-cardBg text-textMain focus:outline-none focus:border-teal placeholder:text-textDim"
               />
             </div>
@@ -437,13 +437,13 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
 
         {/* Right Column: High-Risk Schedule Flagged */}
         <div className="lg:col-span-6 space-y-5">
-          {/* Today's Schedule — High-Risk Moments Flagged (Prototype v2) */}
+          {/* Today's Schedule - High-Risk Moments Flagged (Prototype v2) */}
           <div id="ta-high-risk-schedule" className="card p-5 space-y-3 scroll-mt-6">
             <div className="flex items-center justify-between border-b border-borderMain pb-2">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-coral-dark dark:text-coral-light" />
                 <div>
-                  <h3 className="text-sm font-bold text-navy dark:text-white">Today's Schedule — High-Risk Moments</h3>
+                  <h3 className="text-sm font-bold text-navy dark:text-white">Today's Schedule - High-Risk Moments</h3>
                   <p className="text-[10px] text-textDim dark:text-slate-400">What to watch · When · What to do</p>
                 </div>
               </div>
@@ -475,7 +475,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                 <div>
                   <div className="font-bold text-navy dark:text-white">Assembly</div>
                   <p className="text-textSub dark:text-slate-300 mt-1 leading-relaxed text-[11px]">
-                    Stay close to Phoenix. Watch for covering ears, rocking. Exit route: quiet corridor, chair outside room 4. Jake O'Brien is his buddy — keep them seated together.
+                    Stay close to Phoenix. Watch for covering ears, rocking. Exit route: quiet corridor, chair outside room 4. Jake O'Brien is his buddy - keep them seated together.
                   </p>
                 </div>
               </div>
@@ -486,7 +486,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                 </span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <div className="font-bold text-navy dark:text-white">Maths — Adapted Visual Path Active</div>
+                    <div className="font-bold text-navy dark:text-white">Maths - Adapted Visual Path Active</div>
                     {onOpenWorksheet && (
                       <button
                         type="button"
@@ -543,7 +543,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                 <div>
                   <div className="font-bold text-navy dark:text-white">Lunch Transition</div>
                   <p className="text-textSub dark:text-slate-300 mt-1 leading-relaxed text-[11px]">
-                    Monitor Riya at transition — 2 incidents at lunch this week. Watch for masking in classroom vs distress at unstructured times.
+                    Monitor Riya at transition - 2 incidents at lunch this week. Watch for masking in classroom vs distress at unstructured times.
                   </p>
                 </div>
               </div>
@@ -617,7 +617,7 @@ export const TaView: React.FC<TaViewProps> = ({ child, timeline, onOpenObservati
                     <span>⚠️ Direct Verbal Demands / Questioning</span>
                     <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-200/80 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 font-bold">33%</span>
                   </div>
-                  <p className="text-[10px] text-rose-700 dark:text-rose-400">Can cause distress when overwhelmed — use visual cards instead</p>
+                  <p className="text-[10px] text-rose-700 dark:text-rose-400">Can cause distress when overwhelmed - use visual cards instead</p>
                 </div>
                 <span className="text-[10px] font-bold text-rose-800 dark:text-rose-300">Avoid</span>
               </div>

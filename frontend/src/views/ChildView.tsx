@@ -57,7 +57,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
           How are you feeling right now, {child.preferred_name || 'Phoenix'}?
         </div>
         <p className="text-xs text-textDim dark:text-white/70 mb-4 sm:mb-5 max-w-md mx-auto">
-          Tap the face that feels right today. Nobody judges — this is just for you.
+          Tap the face that feels right today. Nobody judges - this is just for you.
         </p>
 
         {/* Emoji Selector Row */}
@@ -150,7 +150,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
                 <span>✦ Noya says:</span>
               </div>
               <p className="text-xs text-white/90 leading-relaxed font-normal">
-                You drew a gradient triangle in maths today — completely on your own! Ms Johnson noticed. You know how a game character moves up a slope? That is literally what gradient means. You just did real game design maths without even knowing it! 🎮
+                You drew a gradient triangle in maths today - completely on your own! Ms Johnson noticed. You know how a game character moves up a slope? That is literally what gradient means. You just did real game design maths without even knowing it! 🎮
               </p>
             </div>
 
@@ -159,7 +159,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
                 <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
                   ✓
                 </span>
-                <span className="text-navy dark:text-white font-medium">Used headphones in assembly — and it worked brilliantly!</span>
+                <span className="text-navy dark:text-white font-medium">Used headphones in assembly - and it worked brilliantly!</span>
               </div>
               <div className="p-2.5 bg-cardSubtle rounded-xl flex items-center gap-2.5 border border-borderMain">
                 <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
@@ -177,7 +177,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
                 <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-[10px]">
                   ✓
                 </span>
-                <span className="text-navy dark:text-white font-medium">Rated your day honestly — that's strong self-awareness</span>
+                <span className="text-navy dark:text-white font-medium">Rated your day honestly - that's strong self-awareness</span>
               </div>
             </div>
           </div>
@@ -188,7 +188,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
               <Compass className="w-4 h-4 text-teal" />
               <h3 className="text-sm font-bold text-navy dark:text-white">My Toolkit Today</h3>
             </div>
-            <p className="text-[11px] text-textDim dark:text-slate-400">Things that help — ready whenever you need them</p>
+            <p className="text-[11px] text-textDim dark:text-slate-400">Things that help - ready whenever you need them</p>
 
             <div className="space-y-2 text-xs">
               <div className="p-2.5 bg-cardSubtle rounded-xl flex items-center gap-3 border border-borderMain">
@@ -233,7 +233,7 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
             {/* Maths Worksheet Card */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-teal to-[#1A3A4A] dark:from-teal-800 dark:to-[#102030] text-white space-y-2.5 relative overflow-hidden shadow-xs">
               <div className="absolute right-3 top-2 text-5xl opacity-10 select-none">📐</div>
-              <div className="font-serif text-sm font-bold">Maths — Straight Line Graphs</div>
+              <div className="font-serif text-sm font-bold">Maths - Straight Line Graphs</div>
               <p className="text-[11px] text-white/70">
                 Draw first. Understand second. The algebra equation comes last.
               </p>
@@ -270,9 +270,9 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
             {/* English Worksheet Card */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-dark to-[#1A3A4A] dark:from-purple-900 dark:to-[#102030] text-white space-y-2.5 relative overflow-hidden shadow-xs">
               <div className="absolute right-3 top-2 text-5xl opacity-10 select-none">📖</div>
-              <div className="font-serif text-sm font-bold">English — The Highwayman</div>
+              <div className="font-serif text-sm font-bold">English - The Highwayman</div>
               <p className="text-[11px] text-white/70">
-                The detective method — find the clue, draw it, write what it means.
+                The detective method - find the clue, draw it, write what it means.
               </p>
 
               <div className="flex flex-wrap gap-1.5 py-1">
@@ -304,9 +304,9 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
             {/* Fractions Card */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-dark to-[#1A3A4A] dark:from-amber-900 dark:to-[#102030] text-white space-y-2.5 relative overflow-hidden shadow-xs">
               <div className="absolute right-3 top-2 text-5xl opacity-10 select-none">🍕</div>
-              <div className="font-serif text-sm font-bold">Maths — Fractions Visual Mastery</div>
+              <div className="font-serif text-sm font-bold">Maths - Fractions Visual Mastery</div>
               <p className="text-[11px] text-white/70">
-                Home practice with Mum · Pizzas, cakes, bars — draw every answer.
+                Home practice with Mum · Pizzas, cakes, bars - draw every answer.
               </p>
 
               <div className="flex items-center justify-between pt-1">
@@ -324,11 +324,11 @@ export const ChildView: React.FC<ChildViewProps> = ({ child, onCheckIn, onOpenWo
             </div>
           </div>
 
-          {/* My Path — Game Designer */}
+          {/* My Path - Game Designer */}
           <div className="card p-5 space-y-3">
             <div className="flex items-center gap-2 border-b border-borderMain pb-2">
               <span className="text-base">🎮</span>
-              <h3 className="text-sm font-bold text-navy dark:text-white">My Path — Game Designer</h3>
+              <h3 className="text-sm font-bold text-navy dark:text-white">My Path - Game Designer</h3>
             </div>
 
             <div className="p-3 bg-gold-light/60 dark:bg-amber-950/30 rounded-xl border border-gold/40 dark:border-amber-800/40 text-xs">

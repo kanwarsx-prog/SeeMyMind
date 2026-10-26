@@ -89,7 +89,7 @@ export const VisualDeskStripModal: React.FC<VisualDeskStripModalProps> = ({
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black font-serif text-slate-900 dark:text-white print:text-black mt-1">
-                Visual Task Strip — {pathway.topic}
+                Visual Task Strip - {pathway.topic}
               </h1>
               <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-700 font-medium">
                 Pupil: <strong>{fullPupilName}</strong> ({child?.year_group || 'Year 5'}) &bull; Subject: <strong>{pathway.subject}</strong>
