@@ -607,19 +607,19 @@ def test_noya_parent_how_was_child_day_today(client):
     assert resp.status_code == 200
     data = resp.json()
 
-    # 1. Answer text check: warm, bulleted summary
+    # 1. Answer text check: before checkin, honestly reports checkin not submitted yet
     assert "Phoenix" in data["answer_markdown"]
     assert "Battery" in data["answer_markdown"] or "battery" in data["answer_markdown"].lower()
-    assert "Win" in data["answer_markdown"] or "breakthrough" in data["answer_markdown"].lower() or "engagement" in data["answer_markdown"].lower()
+    assert "not been submitted yet" in data["answer_markdown"]
     assert "Calming" in data["answer_markdown"] or "buffer" in data["answer_markdown"].lower() or "decompression" in data["answer_markdown"].lower()
 
-    # 2. Action Card verification: day_summary_card
+    # 2. Action Card verification: day_summary_card shows baseline status
     assert data["action_card"] is not None
     assert data["action_card"]["card_type"] == "day_summary_card"
     details = data["action_card"]["details"]
     assert details["pupil_name"] == "Phoenix"
     assert "battery_percentage" in details
-    assert "decompression_protocol" in details
+    assert details["has_today_checkin"] is False
     assert len(details["decompression_protocol"]) >= 1
 
     # 3. Tool dispatch & explainability
@@ -627,6 +627,47 @@ def test_noya_parent_how_was_child_day_today(client):
     assert len(data["execution_steps"]) >= 1
     assert "Decompression Bridge" in data["execution_steps"][0]["title"]
     assert any("How was Phoenix's day today?" in f for f in data["suggested_followups"])
+
+    # 4. Now parent logs today's morning handover and teacher logs a win
+    client.post(
+        f"/api/v1/transitions/morning-handover/{phoenix_id}",
+        json={
+            "transition_type": "Morning Handover (Home)",
+            "sleep_quality": "Restful (8 hours)",
+            "morning_mood": "Calm & Ready",
+            "breakfast_eaten": True,
+            "medication_given": True,
+        },
+    )
+    client.post(
+        "/api/v1/timeline/events",
+        json={
+            "child_id": phoenix_id,
+            "event_type": "Observation",
+            "reporter_type": "Teacher",
+            "title": "Fractions & Visual Arrays Breakthrough",
+            "summary": "Phoenix excelled using physical grid blocks, completing the task independently.",
+            "significance": "Notable Win",
+        },
+    )
+
+    # 5. Ask NOYA again: now reflects today's real handover and today's win!
+    resp2 = client.post(
+        "/api/v1/noya/copilot/chat",
+        json={
+            "child_id": phoenix_id,
+            "active_view": "parent_hub",
+            "message": "How was Phoenix's day today?",
+            "history": [],
+        },
+        headers={"x-user-role": "parent"},
+    )
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    assert "Fractions" in data2["answer_markdown"] or "Breakthrough" in data2["answer_markdown"]
+    assert "calm" in data2["answer_markdown"].lower()
+    assert data2["action_card"]["details"]["is_win_today"] is True
+    assert data2["action_card"]["details"]["has_today_checkin"] is True
 
 
 

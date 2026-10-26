@@ -505,28 +505,94 @@ def execute_get_child_day_summary(db: Session, child_id: UUID, current_user: Use
         else "Good (Regulated)"
     )
 
-    # Morning context
-    morning_event = (
+    today = datetime.now(timezone.utc).date()
+    today_start = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
+
+    # 1. Morning Check-in for TODAY
+    today_morning_event = (
         db.query(ChildEvent)
-        .filter(ChildEvent.child_id == child_id, ChildEvent.event_type == "Transition")
+        .filter(
+            ChildEvent.child_id == child_id,
+            ChildEvent.event_type == "Transition",
+            ChildEvent.event_time >= today_start,
+        )
         .order_by(ChildEvent.event_time.desc())
         .first()
     )
-    morning_mood = (
-        morning_event.transition_log.morning_mood
-        if morning_event and morning_event.transition_log and morning_event.transition_log.morning_mood
-        else "Anxious"
+
+    has_today_checkin = False
+    if today_morning_event and today_morning_event.transition_log:
+        has_today_checkin = True
+        tl = today_morning_event.transition_log
+        morning_mood = tl.morning_mood or "Calm"
+        sleep_qual = tl.sleep_quality or "Restful"
+        morning_note = tl.special_notes_for_day
+        morning_time = today_morning_event.event_time.strftime("%H:%M")
+        morning_summary = f"Arrived {morning_mood.lower()} following {sleep_qual.lower()} (logged today at {morning_time})."
+    else:
+        # Check previous handover for honest context
+        prev_morning_event = (
+            db.query(ChildEvent)
+            .filter(
+                ChildEvent.child_id == child_id,
+                ChildEvent.event_type == "Transition",
+            )
+            .order_by(ChildEvent.event_time.desc())
+            .first()
+        )
+        morning_mood = "Check-in due"
+        sleep_qual = "Pending today"
+        morning_note = None
+        if prev_morning_event and prev_morning_event.transition_log:
+            prev_date = "yesterday" if prev_morning_event.event_time.date() == (today - timedelta(days=1)) else prev_morning_event.event_time.strftime("%d %b")
+            prev_mood = (prev_morning_event.transition_log.morning_mood or "calm").lower()
+            morning_summary = f"Today's morning check-in has not been submitted yet (last note from {prev_date} noted {prev_mood})."
+        else:
+            morning_summary = "Today's morning check-in has not been submitted yet."
+
+    # 2. Classroom Observations / Wins for TODAY
+    today_observations = (
+        db.query(ChildEvent)
+        .filter(
+            ChildEvent.child_id == child_id,
+            ChildEvent.event_type == "Observation",
+            ChildEvent.event_time >= today_start,
+        )
+        .order_by(ChildEvent.event_time.desc())
+        .all()
     )
-    sleep_qual = (
-        morning_event.transition_log.sleep_quality
-        if morning_event and morning_event.transition_log and morning_event.transition_log.sleep_quality
-        else "Restless sleep (woke at 4am)"
-    )
-    morning_note = (
-        morning_event.transition_log.special_notes_for_day
-        if morning_event and morning_event.transition_log
-        else None
-    )
+
+    is_win_today = False
+    if today_observations:
+        is_win_today = True
+        positives = [e for e in today_observations if (e.observation and e.observation.strategy_worked is not False) or e.significance in ["Notable Win", "Positive Observation"]]
+        top_event = positives[0] if positives else today_observations[0]
+        win_title = top_event.title
+        win_summary = top_event.summary
+        win_category = getattr(top_event.observation, "strategy_used", None) or "Classroom Win"
+        win_summary_text = f"⭐ **{win_title}** — {win_summary}"
+    else:
+        # Check recent historical breakthrough
+        recent_win_event = (
+            db.query(ChildEvent)
+            .filter(
+                ChildEvent.child_id == child_id,
+                ChildEvent.event_type == "Observation",
+            )
+            .order_by(ChildEvent.event_time.desc())
+            .first()
+        )
+        if recent_win_event:
+            recent_date = "yesterday" if recent_win_event.event_time.date() == (today - timedelta(days=1)) else recent_win_event.event_time.strftime("%d %b")
+            win_title = f"{recent_win_event.title} ({recent_date.capitalize()})"
+            win_summary = recent_win_event.summary
+            win_category = "Recent Classroom Breakthrough"
+            win_summary_text = f"No new notes logged for today yet. Most recent breakthrough ({recent_date}): ⭐ **{recent_win_event.title}** — {recent_win_event.summary}"
+        else:
+            win_title = "In Progress"
+            win_summary = "Classroom staff have not recorded any observations for today yet."
+            win_category = "Classroom Progress"
+            win_summary_text = "Classroom staff have not recorded any observations for today yet. School is in session with baseline provisions."
 
     decompression_protocol = [
         f"{step.title}: {step.description}" for step in (bridge.decompression_recipe or [])
@@ -548,12 +614,14 @@ def execute_get_child_day_summary(db: Session, child_id: UUID, current_user: Use
         "card_type": "day_summary_card",
         "type": "day_summary_card",
         "title": f"{pupil_name}'s Day at a Glance",
-        "subtitle": f"{pupil_name}'s School Day & Home-Time Energy",
+        "subtitle": f"{pupil_name}'s School Day & Home-Time Energy" if (has_today_checkin or is_win_today) else f"{pupil_name}'s Home-Time Energy (Baseline)",
         "details": {
             "pupil_name": pupil_name,
             "battery_percentage": battery,
             "burnout_risk": risk,
             "energy_status": status_label,
+            "has_today_checkin": has_today_checkin,
+            "is_win_today": is_win_today,
             "morning_mood": morning_mood,
             "sleep_quality": sleep_qual,
             "classroom_win_title": win_title,
@@ -569,8 +637,8 @@ def execute_get_child_day_summary(db: Session, child_id: UUID, current_user: Use
     llm_summary = (
         f"School Day Summary for {pupil_name}:\n"
         f"- Social Battery at 3:15 PM: {battery}% ({status_label}). {afternoon_note}\n"
-        f"- Morning Arrival: Arrived {morning_mood.lower()} following {sleep_qual.lower()}.\n"
-        f"- Celebrated Classroom Win: {win_title} - {win_summary}\n"
+        f"- Morning Arrival: {morning_summary}\n"
+        f"- Classroom Update: {win_summary_text}\n"
         f"- Top Decompression Step for Tonight: {decompression_protocol[0]}"
     )
 
@@ -581,8 +649,12 @@ def execute_get_child_day_summary(db: Session, child_id: UUID, current_user: Use
             "battery": battery,
             "burnout_risk": risk,
             "status_label": status_label,
+            "has_today_checkin": has_today_checkin,
+            "is_win_today": is_win_today,
             "win_title": win_title,
             "win_summary": win_summary,
+            "win_summary_text": win_summary_text,
+            "morning_summary": morning_summary,
             "morning_mood": morning_mood,
             "sleep_qual": sleep_qual,
             "morning_note": morning_note,

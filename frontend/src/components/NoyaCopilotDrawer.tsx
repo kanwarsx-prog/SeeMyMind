@@ -790,7 +790,7 @@ function renderActionCard(
           <div className="p-2 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 space-y-0.5">
             <div className="flex items-center gap-1 text-[11px] font-bold text-amber-900 dark:text-amber-200">
               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
-              <span>Celebrated Win:</span>
+              <span>{d.is_win_today ? "Today's Win:" : "Recent Breakthrough:"}</span>
               <span className="truncate">{winTitle}</span>
             </div>
             <p className="text-[10.5px] text-amber-800/90 dark:text-amber-300/90 leading-tight">

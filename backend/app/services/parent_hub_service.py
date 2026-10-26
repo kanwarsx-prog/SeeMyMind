@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -78,12 +78,16 @@ class ParentHubService:
         recharging_factors: list[str] = []
         adult_clues: list[AdultClue] = []
 
-        # Analyze morning handover from parent
+        today = datetime.now(timezone.utc).date()
+        today_events = [e for e in events if e.event_time.date() == today]
+
+        # Analyze morning handover from parent ONLY if submitted TODAY
         latest_transition_event = next(
-            (e for e in events if e.event_type == "Transition" and e.transition_log), None
+            (e for e in today_events if e.event_type == "Transition" and e.transition_log), None
         )
         if latest_transition_event and latest_transition_event.transition_log:
             tl = latest_transition_event.transition_log
+            time_str = latest_transition_event.event_time.strftime("%I:%M %p").lstrip("0")
             if tl.sleep_quality and ("restless" in tl.sleep_quality.lower() or "poor" in tl.sleep_quality.lower()):
                 battery -= 25
                 draining_factors.append(f"Disrupted sleep: {tl.sleep_quality}")
@@ -91,7 +95,7 @@ class ParentHubService:
                     AdultClue(
                         source=latest_transition_event.reporter_name or guardian_name,
                         role="Parent Morning Check-In",
-                        time="07:45 AM",
+                        time=time_str,
                         observation=f"Sleep logged as {tl.sleep_quality}; waking early created morning fatigue baseline.",
                         significance="Low sensory reserve starting out",
                         marker_type="Sleep/Baseline",
@@ -106,8 +110,9 @@ class ParentHubService:
                 battery -= 10
                 draining_factors.append(f"Morning anxiety: {tl.morning_mood}")
 
-        # Analyze teacher and TA observations
-        for event in events:
+        # Analyze teacher and TA observations for TODAY
+        for event in today_events:
+            time_str = event.event_time.strftime("%I:%M %p").lstrip("0")
             if event.event_type == "Observation" and event.observation:
                 obs = event.observation
                 if obs.strategy_worked is True:
@@ -119,7 +124,7 @@ class ParentHubService:
                         AdultClue(
                             source=event.reporter_name or teacher_name,
                             role=event.reporter_type,
-                            time="10:45 AM",
+                            time=time_str,
                             observation=f"{event.title}: {event.summary}",
                             significance="Regulated with visual scaffolding",
                             marker_type="Regulation Success",
@@ -135,48 +140,51 @@ class ParentHubService:
                     AdultClue(
                         source=event.reporter_name or "Staff",
                         role=event.reporter_type,
-                        time="01:15 PM",
+                        time=time_str,
                         observation=f"Incident recorded: {event.incident.behaviour}",
                         significance="Major nervous system surge",
                         marker_type="Escalation",
                     )
                 )
 
-        # Default contextual adult clues if minimal records exist today
+        # Contextual adult clues if minimal records exist today
         fname = child.first_name or "Your child"
         if len(adult_clues) < 2:
-            adult_clues.append(
-                AdultClue(
-                    source=teacher_name,
-                    role="Class Teacher",
-                    time="09:10 AM",
-                    observation=f"{fname} wore noise defenders during assembly and sat near the aisle exit.",
-                    significance="High cognitive effort to stay calm in large group",
-                    marker_type="Masking Marker",
+            past_events = [e for e in events if e.event_time.date() < today]
+            if past_events:
+                pe = past_events[0]
+                pe_date = "Yesterday" if pe.event_time.date() == (today - timedelta(days=1)) else pe.event_time.strftime("%d %b")
+                adult_clues.append(
+                    AdultClue(
+                        source=pe.reporter_name or teacher_name,
+                        role=f"{pe.reporter_type} ({pe_date})",
+                        time=pe.event_time.strftime("%I:%M %p").lstrip("0"),
+                        observation=f"{pe.title}: {pe.summary}",
+                        significance="Recent longitudinal baseline",
+                        marker_type="Historical Context",
+                    )
                 )
-            )
-            adult_clues.append(
-                AdultClue(
-                    source=ta_name,
-                    role="1:1 Teaching Assistant",
-                    time="01:45 PM",
-                    observation="Pencil tapping increased during noisy corridor movement; accepted 5-min quiet corner break.",
-                    significance="Sensory overwhelm successfully averted with break",
-                    marker_type="Early Warning",
+            if len(adult_clues) < 2:
+                adult_clues.append(
+                    AdultClue(
+                        source=teacher_name,
+                        role="Classroom Baseline",
+                        time="Today",
+                        observation=f"Standard sensory adjustments active for {fname}. No escalations logged today.",
+                        significance="Regulated baseline",
+                        marker_type="Baseline Observation",
+                    )
                 )
-            )
 
         if not draining_factors:
             draining_factors = [
-                "Whole-school acoustic echo during assembly",
-                "Cognitive fatigue from sustained visual math tasks",
-                "Corridor transition noise between periods",
+                "Acoustic load during period transitions",
+                "Cognitive fatigue from sustained visual focus",
             ]
         if not recharging_factors:
             recharging_factors = [
-                "Noise-cancelling headphones utilized in Room 4",
-                "Quiet reading break in the library corner",
-                "Positive peer praise during science density experiment",
+                "Sensory accommodations maintained in class",
+                "Quiet reading breaks available in Room 4",
             ]
 
         # Clamp battery percentage between 15% and 95%
@@ -205,9 +213,15 @@ class ParentHubService:
             battery_status = "Resilient & Stable (Green Zone)"
             battery_color = "emerald"
             masking_level = "Low Masking / Open Expression"
-            masking_explanation = (
-                f"{fname} experienced consistent regulation, positive peer engagement, and manageable sensory conditions."
-            )
+            if len(today_events) == 0 and not latest_transition_event:
+                masking_explanation = (
+                    f"No negative sensory incidents or fatigue markers have been recorded for {fname} today. "
+                    "Social battery is estimated at a healthy baseline."
+                )
+            else:
+                masking_explanation = (
+                    f"{fname} experienced consistent regulation, positive peer engagement, and manageable sensory conditions."
+                )
 
         # Build tonight's home arrival decompression recipe
         recipe = [
@@ -422,12 +436,57 @@ class ParentHubService:
             raise ValueError(f"Child with ID {child_id} not found")
 
         fname = child.first_name or "Child"
+        today = datetime.now(timezone.utc).date()
+
+        # Query real observations from database
+        obs_events = (
+            db.query(ChildEvent)
+            .filter(
+                ChildEvent.child_id == child_id,
+                ChildEvent.event_type == "Observation",
+            )
+            .order_by(ChildEvent.event_time.desc())
+            .limit(6)
+            .all()
+        )
+
+        wins: list[ParentWinsGalleryItem] = []
+        for idx, ev in enumerate(obs_events):
+            ev_date = ev.event_time.date()
+            if ev_date == today:
+                date_label = f"Today, {ev.event_time.strftime('%I:%M %p').lstrip('0')}"
+            elif ev_date == (today - timedelta(days=1)):
+                date_label = f"Yesterday, {ev.event_time.strftime('%I:%M %p').lstrip('0')}"
+            else:
+                date_label = ev.event_time.strftime("%d %B, %I:%M %p").lstrip("0")
+
+            strategy = getattr(ev.observation, "strategy_used", None) if ev.observation else None
+            wins.append(
+                ParentWinsGalleryItem(
+                    id=f"win-db-{ev.id}",
+                    child_id=child.id,
+                    title=ev.title,
+                    date=date_label,
+                    category=strategy or "STEM & Logic",
+                    description=ev.summary,
+                    teacher_quote=f"Observed in class: {ev.summary}",
+                    celebration_badge="🏆 STEM Innovator" if "math" in ev.title.lower() or "graph" in ev.title.lower() else "🤝 Kindness Champion",
+                    tags=[strategy or "Visual Learning", "Classroom Success"],
+                )
+            )
+
+        if wins:
+            return wins
+
+        # Curated fallbacks with relative date calculations
+        yesterday_str = f"Yesterday, 10:45 AM"
+        two_days_ago_str = (today - timedelta(days=2)).strftime("%d %B, 02:15 PM")
         return [
             ParentWinsGalleryItem(
                 id="win-1",
                 child_id=child.id,
                 title="Gradient Slope Video Game Maths Breakthrough",
-                date="Today, 10:45 AM",
+                date=yesterday_str,
                 category="STEM & Logic",
                 description=f"{fname} independently connected mathematical gradient vectors to collision angles in video game physics, sketching a complete 3-step proof on the whiteboard.",
                 teacher_quote="He explained water displacement and gradient vectors so intuitively that three other students asked him for help. Pure joy in his eyes!",
@@ -438,33 +497,11 @@ class ParentHubService:
                 id="win-2",
                 child_id=child.id,
                 title="Empathetic Peer Support in Library Corner",
-                date="Yesterday, 02:15 PM",
+                date=two_days_ago_str,
                 category="Peer Connection",
                 description=f"When Leo was upset about losing his bookmark, {fname} quietly fetched his own spare galaxy bookmark and handed it to him without demanding attention.",
                 teacher_quote="A moment of extraordinary spontaneous empathy and kindness. The whole classroom felt warmer.",
                 celebration_badge="🤝 Kindness Champion",
                 tags=["Empathy", "Peer Friendship", "Quiet Leadership"],
-            ),
-            ParentWinsGalleryItem(
-                id="win-3",
-                child_id=child.id,
-                title="Self-Advocacy with Noise Defenders",
-                date="20 October, 09:10 AM",
-                category="Self-Advocacy",
-                description=f"Recognizing that the hall echo was rising before assembly began, {fname} reached into his bag, put on his noise defenders, and signaled thumbs-up to TA Melissa.",
-                teacher_quote="Huge milestone in interoception! He advocated for his sensory needs before rising to amber agitation.",
-                celebration_badge="🛡️ Self-Advocacy Star",
-                tags=["Interoception", "Sensory Regulation", "Independence"],
-            ),
-            ParentWinsGalleryItem(
-                id="win-4",
-                child_id=child.id,
-                title="Creative Storyboarding: Mission to Europa",
-                date="16 October, 11:30 AM",
-                category="Art & Creativity",
-                description="Designed an 8-panel comic detailing thermal venting on Jupiter's moon Europa with astonishing technical and scientific accuracy.",
-                teacher_quote=f"{fname}'s depth of knowledge and illustrative talent blew everyone away in topic work.",
-                celebration_badge="🚀 Cosmic Storyteller",
-                tags=["Creativity", "Space Science", "Visual Storytelling"],
             ),
         ]

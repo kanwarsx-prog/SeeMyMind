@@ -718,11 +718,14 @@ class NoyaRAGService:
                     protocols = d.get("decompression_protocol", ["Quiet 15-20 min transition buffer"])
                     first_calm = protocols[0] if protocols else "Quiet 15-20 min transition buffer"
 
+                    morning_summary = d.get("morning_summary") or f"Arrived {morning_mood.lower()} following {sleep_qual.lower()}."
+                    win_summary_text = d.get("win_summary_text") or f"⭐ **{win_title}** — {win_summary}"
+
                     answer = (
                         f"Here is a summary of **{child_name}'s** day:\n\n"
                         f"• **Home-Time Social Battery:** Estimated at **{battery}%** ({status_label}). {afternoon_note}\n"
-                        f"• **Classroom Win:** ⭐ **{win_title}** — {win_summary}\n"
-                        f"• **Morning Transition:** Arrived {morning_mood.lower()} following {sleep_qual.lower()}.\n"
+                        f"• **Classroom Update:** {win_summary_text}\n"
+                        f"• **Morning Transition:** {morning_summary}\n"
                         f"• **Recommended Evening Calming Step:** {first_calm}."
                     )
                     execution_steps.append(_build_execution_step(
@@ -965,11 +968,14 @@ class NoyaRAGService:
                 protocols = d.get("decompression_protocol", ["Quiet 15-20 min transition buffer"])
                 first_calm = protocols[0] if protocols else "Quiet 15-20 min transition buffer"
 
+                morning_summary = d.get("morning_summary") or f"Logged as {morning_mood.lower()} following {sleep_qual.lower()}."
+                win_summary_text = d.get("win_summary_text") or f"⭐ **{win_title}** — {win_summary}"
+
                 answer = (
                     f"**{child_name}'s Day Summary:**\n\n"
                     f"• **Social Battery at 3:15 PM:** Estimated at **{battery}%** ({status_label}). {afternoon_note}\n"
-                    f"• **Classroom Win:** ⭐ **{win_title}** — {win_summary}\n"
-                    f"• **Morning Arrival:** Logged as {morning_mood.lower()} following {sleep_qual.lower()}.\n"
+                    f"• **Classroom Update:** {win_summary_text}\n"
+                    f"• **Morning Arrival:** {morning_summary}\n"
                     f"• **Evening Decompression Advice:** {first_calm}."
                 )
                 execution_steps.append(_build_execution_step(
