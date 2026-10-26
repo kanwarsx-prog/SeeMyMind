@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCheck, Menu, ShieldCheck, Sparkles } from 'lucide-react';
+import { UserCheck, Menu, Sparkles } from 'lucide-react';
 import { Child } from '../types';
 
 interface TopBarProps {
@@ -10,7 +10,6 @@ interface TopBarProps {
     onClick: () => void;
     icon?: React.ReactNode;
   };
-  onOpenAIAudit?: () => void;
   onToggleCopilot?: () => void;
   isCopilotOpen?: boolean;
   pupils?: Child[];
@@ -24,7 +23,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   title,
   subtitle,
   actionButton,
-  onOpenAIAudit,
   onToggleCopilot,
   isCopilotOpen,
   pupils,
@@ -96,19 +94,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             >
               <Sparkles className={`w-4 h-4 ${isCopilotOpen ? 'text-amber-300' : 'text-teal animate-pulse'}`} />
               <span>✨ Ask NOYA</span>
-            </button>
-          )}
-
-          {onOpenAIAudit && (
-            <button
-              onClick={onOpenAIAudit}
-              type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Inspect NOYA AI Transparency & API Audit Logs"
-            >
-              <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <span className="hidden md:inline font-bold">🛡️ AI Audit Log</span>
-              <span className="md:hidden font-bold">AI Logs</span>
             </button>
           )}
 

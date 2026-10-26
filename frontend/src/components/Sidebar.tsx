@@ -52,6 +52,7 @@ interface SidebarProps {
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
   onOpenTour?: () => void;
+  onOpenAIAudit?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -67,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onCloseMobile,
   onOpenTour,
+  onOpenAIAudit,
 }) => {
   const scrollTo = (id: string) => {
     setTimeout(() => {
@@ -490,6 +492,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             )}
           </div>
+
+          {onOpenAIAudit && (
+            <button
+              onClick={() => {
+                onOpenAIAudit();
+                onCloseMobile?.();
+              }}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-cardSubtle hover:bg-purple-50 dark:hover:bg-purple-950/40 text-textDim hover:text-purple-700 dark:hover:text-purple-300 text-xs font-semibold transition-all cursor-pointer border border-borderMain hover:border-purple-200 dark:hover:border-purple-800/50 shadow-2xs active:scale-95"
+              title="Inspect NOYA AI Transparency & API Audit Logs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+              <span>AI Audit Log</span>
+            </button>
+          )}
 
           <button
             onClick={() => {

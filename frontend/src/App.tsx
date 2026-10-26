@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   RoleView,
   TeacherSubView,
@@ -581,6 +581,18 @@ const AppContent: React.FC = () => {
     },
   }[activeView];
 
+  // Filter pupils by teacher's classroom (Room 4 / Year 5) to match classroom hub
+  const teacherRoom = child?.room_name || 'Room 4';
+  const visiblePupils = useMemo(() => {
+    if (activeView === 'teacher') {
+      const roomPupils = pupils.filter(
+        (p) => (p.room_name && p.room_name === teacherRoom) || p.year_group === 'Year 5'
+      );
+      return roomPupils.length > 0 ? roomPupils : pupils;
+    }
+    return pupils;
+  }, [pupils, activeView, child?.room_name, teacherRoom]);
+
   return (
     <div className="min-h-screen bg-[#F7FAFB] dark:bg-[#0B132B] text-[#1A3A4A] dark:text-[#E2E8F0] flex font-sans transition-colors duration-200">
       <Sidebar
@@ -596,6 +608,7 @@ const AppContent: React.FC = () => {
         isMobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
         onOpenTour={() => setIsTourModalOpen(true)}
+        onOpenAIAudit={() => setIsAITransparencyOpen(true)}
       />
 
       <main className="ml-0 lg:ml-64 min-h-screen flex flex-col flex-1 w-full overflow-x-hidden bg-canvas text-textMain transition-colors duration-200">
@@ -608,12 +621,12 @@ const AppContent: React.FC = () => {
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
           actionButton={topBarConfig.actionButton}
-          pupils={currentUser.role === 'parent' || currentUser.role === 'senco' || currentUser.role === 'teacher' ? pupils : undefined}
+          pupils={currentUser.role === 'parent' || currentUser.role === 'senco' || currentUser.role === 'teacher' ? visiblePupils : undefined}
           overviewLabel={
             activeView === 'teacher'
-              ? `🏫 ${child?.room_name || 'Room 4'} Classroom Hub (All Pupils)`
+              ? '👥 All Pupils'
               : activeView === 'senco'
-              ? '🏫 Whole-School Provision Register'
+              ? '👥 Whole-School Register'
               : undefined
           }
           selectedChildId={
@@ -623,7 +636,6 @@ const AppContent: React.FC = () => {
               : child?.id
           }
           onSelectChild={handleChildSelect}
-          onOpenAIAudit={() => setIsAITransparencyOpen(true)}
           onToggleCopilot={() => setIsCopilotOpen((prev) => !prev)}
           isCopilotOpen={isCopilotOpen}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
