@@ -20,8 +20,6 @@ import {
   ClipboardCheck,
   Check,
   Loader2,
-  ChevronDown,
-  ChevronUp,
   Zap,
 } from 'lucide-react';
 import {
@@ -280,14 +278,14 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-textHead tracking-tight">NOYA</h2>
+                <h2 className="text-sm font-bold text-textHead tracking-tight font-sans">NOYA</h2>
                 {child && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 font-medium truncate">
                     Focused: {pupilName}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-textDim truncate">
+              <p className="text-[11px] text-textDim truncate font-sans">
                 {isParent ? (
                   <span>Family Partner · St. Jude&apos;s</span>
                 ) : isSenco ? (
@@ -323,62 +321,37 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
         {/* Message Thread (Scrollable) */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-appBg/30">
-          {messages.map((msg) => (
+          {messages.map((msg, msgIdx) => (
             <div
               key={msg.id}
               className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in duration-200`}
             >
               {/* Message Capsule */}
               <div
-                className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs ${
+                className={`max-w-[88%] sm:max-w-[82%] rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed shadow-xs ${
                   msg.role === 'user'
-                    ? 'bg-teal text-white rounded-tr-xs'
+                    ? 'bg-teal-700 dark:bg-teal-600 text-white rounded-tr-xs font-medium'
                     : 'bg-cardBg border border-borderMain text-textMain rounded-tl-xs'
                 }`}
               >
-                {/* Assistant header tag */}
-                {msg.role === 'assistant' && (
-                  <div className="flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-borderMain/50 text-[10px] text-textDim">
-                    <div className="flex items-center gap-1.5 font-bold text-teal">
-                      <Sparkles className="w-3 h-3 text-teal" />
-                      <span>NOYA</span>
-                      {(!msg.executionSteps || msg.executionSteps.length === 0) && msg.toolCalled && (
-                        <span className="px-1.5 py-0.2 rounded-full bg-mint/20 text-teal text-[9px] font-mono border border-teal/20">
-                          tool:{msg.toolCalled}
-                        </span>
-                      )}
-                    </div>
-                    {msg.latencyMs !== undefined && (
-                      <span className="text-[9px] font-mono text-textDim">{msg.latencyMs}ms</span>
-                    )}
-                  </div>
-                )}
-
                 {/* Explainable Execution Steps (Reasoning Trace) */}
                 {msg.role === 'assistant' && msg.executionSteps && msg.executionSteps.length > 0 && (
-                  <div className="mb-2 pb-2 border-b border-borderMain/50">
+                  <div className="mb-2.5 pb-2 border-b border-borderMain/50">
                     <button
                       type="button"
                       onClick={() => toggleSteps(msg.id)}
-                      className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 border border-teal-200/60 dark:border-teal-800/60 text-teal text-[11px] font-medium transition-all cursor-pointer group shadow-2xs"
+                      className="inline-flex items-center gap-1.5 text-xs text-teal hover:text-teal-dark dark:hover:text-teal-light font-medium transition-colors cursor-pointer group"
                     >
-                      <div className="flex items-center gap-1.5">
-                        <Zap className="w-3.5 h-3.5 text-teal flex-shrink-0" />
-                        <span className="font-semibold text-teal-dark dark:text-teal-light">
-                          {msg.executionSteps.length} {msg.executionSteps.length === 1 ? 'step taken' : 'steps taken'}
-                        </span>
-                        {msg.latencyMs !== undefined && (
-                          <span className="text-[10px] text-teal/70 font-mono">({msg.latencyMs}ms)</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] text-teal/80 group-hover:text-teal font-medium">
-                        <span>{expandedSteps[msg.id] ? 'Hide steps' : 'View steps'}</span>
-                        {expandedSteps[msg.id] ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </div>
+                      <Zap className="w-3.5 h-3.5 text-teal" />
+                      <span className="font-semibold">
+                        {msg.executionSteps.length} {msg.executionSteps.length === 1 ? 'step verified' : 'steps verified'}
+                      </span>
+                      {msg.latencyMs !== undefined && (
+                        <span className="text-[10px] text-textDim font-mono">({msg.latencyMs}ms)</span>
+                      )}
+                      <span className="text-[10px] text-textDim group-hover:text-teal underline underline-offset-2 ml-1">
+                        {expandedSteps[msg.id] ? 'Hide trace' : 'View trace'}
+                      </span>
                     </button>
 
                     {/* Expanded Stepper Card */}
@@ -426,7 +399,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
                 {/* Formatted Text Content */}
                 <div className="whitespace-pre-line font-normal">
-                  {formatMarkdownText(msg.content)}
+                  {formatMarkdownText(msg.content, msg.role === 'user')}
                 </div>
 
                 {/* Interactive Action Card (Zero-LLM PII hydrated directly) */}
@@ -438,16 +411,16 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               </div>
 
               {/* Timestamp */}
-              <span className="text-[9px] text-textDim mt-1 px-1 font-mono">{msg.timestamp}</span>
+              <span className="text-[10px] text-textDim mt-1 px-1 font-mono">{msg.timestamp}</span>
 
-              {/* Suggested follow-up chips */}
-              {msg.role === 'assistant' && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
-                <div className="mt-2.5 flex flex-wrap gap-1.5 max-w-[95%]">
+              {/* Suggested follow-up chips (Only shown on latest assistant message) */}
+              {msg.role === 'assistant' && msgIdx === messages.length - 1 && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2 max-w-[95%]">
                   {msg.suggestedFollowups.map((followup, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleChipClick(followup)}
-                      className="inline-flex items-center gap-1.5 text-[11px] text-teal-700 dark:text-teal-300 hover:text-teal bg-cardBg hover:bg-teal-50 dark:hover:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/80 rounded-full px-3 py-1 font-medium transition-all cursor-pointer shadow-2xs active:scale-95 text-left"
+                      className="inline-flex items-center gap-1.5 text-xs text-textMain hover:text-teal bg-cardBg hover:bg-cardSubtle border border-borderMain hover:border-teal/50 rounded-full px-3 py-1.5 font-medium transition-all cursor-pointer shadow-2xs active:scale-95 text-left"
                     >
                       <span>{followup}</span>
                       <ArrowRight className="w-3 h-3 flex-shrink-0 text-teal/70" />
@@ -495,7 +468,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask NOYA anything..."
               disabled={loading}
-              className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-borderMain bg-inputBg text-textMain placeholder-textDim focus:outline-none focus:border-teal transition-colors shadow-2xs"
+              className="flex-1 text-sm px-3.5 py-2.5 rounded-xl border border-borderMain bg-inputBg text-textMain placeholder-textDim focus:outline-none focus:border-teal transition-colors shadow-2xs"
             />
             <button
               type="submit"
@@ -782,12 +755,12 @@ function renderActionCard(
 }
 
 // Clean markdown formatter helper: handles bold text, bulleted lists, and linebreaks cleanly
-function formatMarkdownText(raw: string): React.ReactNode {
+function formatMarkdownText(raw: string, isUser: boolean = false): React.ReactNode {
   if (!raw) return null;
 
   const lines = raw.split('\n');
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {lines.map((line, lIdx) => {
         const trimmed = line.trim();
         if (!trimmed) {
@@ -803,14 +776,21 @@ function formatMarkdownText(raw: string): React.ReactNode {
         const renderedContent = parts.map((part, pIdx) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             return (
-              <strong key={pIdx} className="font-semibold text-textHead">
+              <strong key={pIdx} className={isUser ? 'font-bold text-white' : 'font-semibold text-textHead'}>
                 {part.slice(2, -2)}
               </strong>
             );
           }
           if (part.startsWith('`') && part.endsWith('`')) {
             return (
-              <code key={pIdx} className="px-1 py-0.2 rounded bg-cardSubtle text-[11px] font-mono text-teal border border-borderMain">
+              <code
+                key={pIdx}
+                className={
+                  isUser
+                    ? 'px-1.5 py-0.5 rounded bg-white/20 text-[12px] font-mono text-white'
+                    : 'px-1.5 py-0.5 rounded bg-cardSubtle text-[12px] font-mono text-teal border border-borderMain'
+                }
+              >
                 {part.slice(1, -1)}
               </code>
             );
@@ -820,8 +800,8 @@ function formatMarkdownText(raw: string): React.ReactNode {
 
         if (isBullet) {
           return (
-            <div key={lIdx} className="flex items-start gap-2 pl-0.5 text-xs text-textMain leading-relaxed">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal flex-shrink-0 mt-1.5" />
+            <div key={lIdx} className={`flex items-start gap-2 pl-0.5 text-[13.5px] leading-relaxed ${isUser ? 'text-white font-medium' : 'text-textMain'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2 ${isUser ? 'bg-white' : 'bg-teal'}`} />
               <div className="flex-1">{renderedContent}</div>
             </div>
           );
@@ -831,15 +811,15 @@ function formatMarkdownText(raw: string): React.ReactNode {
           const match = trimmed.match(/^(\d+)\./);
           const num = match ? match[1] : '•';
           return (
-            <div key={lIdx} className="flex items-start gap-2 pl-0.5 text-xs text-textMain leading-relaxed">
-              <span className="text-[10px] font-bold text-teal flex-shrink-0 mt-0.5">{num}.</span>
+            <div key={lIdx} className={`flex items-start gap-2 pl-0.5 text-[13.5px] leading-relaxed ${isUser ? 'text-white font-medium' : 'text-textMain'}`}>
+              <span className={`text-[11px] font-bold flex-shrink-0 mt-0.5 ${isUser ? 'text-white/90' : 'text-teal'}`}>{num}.</span>
               <div className="flex-1">{renderedContent}</div>
             </div>
           );
         }
 
         return (
-          <p key={lIdx} className="text-xs text-textMain leading-relaxed">
+          <p key={lIdx} className={`text-[13.5px] leading-relaxed ${isUser ? 'text-white font-medium' : 'text-textMain'}`}>
             {renderedContent}
           </p>
         );
