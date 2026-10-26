@@ -29,6 +29,7 @@ import {
   Calendar,
   FileText,
   Moon,
+  Sun,
 } from 'lucide-react';
 
 interface ParentViewProps {
@@ -117,6 +118,15 @@ export const ParentView: React.FC<ParentViewProps> = ({
   // Fallback to timeline if latestHandover prop is null
   const timelineHandover = timeline.find((e) => e.event_type === 'Transition')?.transition_log;
   const effectiveHandover = latestHandover || timelineHandover;
+
+  const handoverDateRaw = effectiveHandover?.event_time || effectiveHandover?.created_at;
+  const handoverDate = handoverDateRaw ? new Date(handoverDateRaw) : null;
+  const isHandoverToday = handoverDate
+    ? handoverDate.toDateString() === new Date().toDateString()
+    : false;
+  const formattedHandoverDay = handoverDate
+    ? handoverDate.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })
+    : null;
 
   const childName = child.first_name || 'Phoenix';
 
@@ -315,8 +325,14 @@ export const ParentView: React.FC<ParentViewProps> = ({
         >
           <Clock className={`w-4 h-4 ${activeTab === 'handover' ? 'text-white' : 'text-amber-600 dark:text-amber-400'}`} />
           <span>Morning Check-In</span>
-          {effectiveHandover?.acknowledged_by_staff && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          {isHandoverToday && effectiveHandover?.acknowledged_by_staff ? (
+            <span className="w-2 h-2 rounded-full bg-emerald-400" title="Handover read by teacher" />
+          ) : isHandoverToday && effectiveHandover ? (
+            <span className="w-2 h-2 rounded-full bg-amber-400" title="Handover sent, awaiting teacher read" />
+          ) : (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 font-bold">
+              Due
+            </span>
           )}
         </button>
 
@@ -377,8 +393,8 @@ export const ParentView: React.FC<ParentViewProps> = ({
       {/* ======================================================== */}
       {activeTab === 'handover' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Read Receipt Banner */}
-          {effectiveHandover?.acknowledged_by_staff ? (
+          {/* Read Receipt / Status Banner */}
+          {isHandoverToday && effectiveHandover?.acknowledged_by_staff ? (
             <div className="card p-5 bg-gradient-to-r from-emerald-50 via-cardBg to-emerald-50/30 dark:from-emerald-950/30 dark:via-cardBg dark:to-teal-950/20 border-l-4 border-l-emerald-600 shadow-xs">
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-700 dark:text-emerald-300 flex-shrink-0 mt-0.5">
@@ -387,19 +403,19 @@ export const ParentView: React.FC<ParentViewProps> = ({
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-sm font-bold text-navy dark:text-white">
-                      Handover Read by Ms Johnson at {ackTime}
+                      Today&apos;s Handover Read by Ms Johnson at {ackTime}
                     </h3>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300">
-                      ✓ Phoenix Welcomed in Room 4
+                      ✓ {childName} Welcomed in Room 4
                     </span>
                   </div>
                   <p className="text-xs text-textSub dark:text-slate-300 mt-1 leading-relaxed">
-                    Ms Johnson has acknowledged your morning notes. Noise defenders are on {childName}'s desk for the 9:05am assembly, and TA Melissa Grant has crackers and water ready for his 10:00am medication window.
+                    Ms Johnson has acknowledged your morning notes. Noise defenders are on {childName}&apos;s desk for the 9:05am assembly, and TA Melissa Grant has crackers and water ready for his 10:00am medication window.
                   </p>
                 </div>
               </div>
             </div>
-          ) : effectiveHandover ? (
+          ) : isHandoverToday && effectiveHandover ? (
             <div className="card p-5 bg-gradient-to-r from-amber-50 via-cardBg to-amber-50/30 dark:from-amber-950/30 dark:via-cardBg dark:to-amber-950/20 border-l-4 border-l-amber-dark shadow-xs">
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 rounded-2xl bg-amber-light dark:bg-amber-900/40 flex items-center justify-center text-amber-dark dark:text-amber-300 flex-shrink-0 mt-0.5">
@@ -408,19 +424,51 @@ export const ParentView: React.FC<ParentViewProps> = ({
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-sm font-bold text-navy dark:text-white">
-                      Handover Sent · Awaiting Teacher Registration Check-In
+                      Today&apos;s Handover Sent · Awaiting Teacher Registration Check-In
                     </h3>
                     <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
                       Transmitted to School
                     </span>
                   </div>
                   <p className="text-xs text-textSub dark:text-slate-300 mt-1 leading-relaxed">
-                    Your notes about sleep, breakfast, and assembly noise have been delivered to Room 4. You will see an instant confirmation receipt here the second Ms Johnson opens her morning briefing.
+                    Your notes about sleep, breakfast, and morning mood have been delivered to Room 4. You will see an instant confirmation receipt here the second Ms Johnson opens her morning briefing.
                   </p>
                 </div>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="card p-5 bg-gradient-to-r from-amber-50/50 via-cardBg to-teal-50/30 dark:from-amber-950/20 dark:via-cardBg dark:to-teal-950/20 border-l-4 border-l-amber-500 shadow-xs">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5">
+                  <Sun className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-sm font-bold text-navy dark:text-white">
+                      Today&apos;s Morning Check-In is Due
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
+                      ⏳ Awaiting Today&apos;s Update
+                    </span>
+                  </div>
+                  <p className="text-xs text-textSub dark:text-slate-300 mt-1 leading-relaxed">
+                    No morning handover has been submitted yet for today. Use the quick form below to let Ms Johnson and TA Melissa know how {childName} slept and their morning mood before registration.
+                  </p>
+                  {effectiveHandover && formattedHandoverDay && (
+                    <div className="mt-2 text-[11px] text-textDim flex flex-wrap items-center gap-2 bg-cardSubtle px-2.5 py-1 rounded-lg border border-borderMain/60 w-fit">
+                      <span>Last recorded note ({formattedHandoverDay}):</span>
+                      <span className="font-semibold text-textMain capitalize">Mood: {effectiveHandover.morning_mood || 'Calm'}</span>
+                      <span>·</span>
+                      <span className="font-semibold text-textMain capitalize">Sleep: {effectiveHandover.sleep_quality || 'Good'}</span>
+                      {effectiveHandover.acknowledged_by_staff && (
+                        <span className="text-emerald-700 dark:text-emerald-300 font-medium">✓ Read by staff</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 4-Stage Mood Arc */}
           <div className="p-5 rounded-2xl overflow-hidden relative shadow-sm border border-borderMain bg-gradient-to-br from-indigo-50/50 via-cardBg to-teal-50/40 dark:from-[#142234] dark:via-[#1B2F44] dark:to-[#142234] text-textMain dark:text-white">

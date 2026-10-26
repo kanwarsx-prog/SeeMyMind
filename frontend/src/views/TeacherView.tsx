@@ -115,6 +115,18 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   const timelineHandover = timeline.find((e) => e.event_type === 'Transition')?.transition_log;
   const effectiveHandover = latestHandover || timelineHandover;
 
+  const handoverDateRaw = effectiveHandover?.event_time || effectiveHandover?.created_at;
+  const handoverDate = handoverDateRaw ? new Date(handoverDateRaw) : null;
+  const isHandoverToday = handoverDate
+    ? handoverDate.toDateString() === new Date().toDateString()
+    : false;
+  const formattedHandoverDay = handoverDate
+    ? handoverDate.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })
+    : null;
+  const handoverTimeFormatted = handoverDate
+    ? handoverDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
+
   const handleAcknowledge = async () => {
     if (!effectiveHandover || !onAcknowledgeHandover) return;
     setAcknowledging(true);
@@ -300,7 +312,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
       {/* ⭐ PRE-FLIGHT MORNING HANDOVER & OPERATIONAL RISK CARD */}
       <div id="preflight-handover" className={`card p-5 border-l-4 transition-all scroll-mt-6 ${
-        !effectiveHandover
+        !effectiveHandover || !isHandoverToday
           ? 'border-l-slate-300 bg-cardSubtle'
           : effectiveHandover.acknowledged_by_staff
             ? 'border-l-emerald-600 bg-cardBg'
@@ -309,7 +321,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-borderMain">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              !effectiveHandover
+              !effectiveHandover || !isHandoverToday
                 ? 'bg-cardSubtle text-textDim'
                 : effectiveHandover.acknowledged_by_staff
                   ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
@@ -322,9 +334,9 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 <h3 className="text-sm font-bold text-navy dark:text-white">
                   Morning Check-In · {child?.last_name === 'Carter' || !child?.last_name ? 'Dana Carter (Mum)' : `${child?.preferred_name || child?.first_name || 'Pupil'}'s Home Note`}
                 </h3>
-                {!effectiveHandover ? (
+                {!effectiveHandover || !isHandoverToday ? (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cardSubtle text-textDim border border-borderMain">
-                    ⏳ Awaiting Home Note
+                    ⏳ Awaiting Today&apos;s Home Note
                   </span>
                 ) : effectiveHandover.acknowledged_by_staff ? (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
@@ -337,17 +349,19 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-textDim dark:text-slate-400">
-                {effectiveHandover
-                  ? 'Submitted at 8:47am · Direct home-to-classroom loop'
+                {effectiveHandover && isHandoverToday
+                  ? `Submitted at ${handoverTimeFormatted || '8:47am'} · Direct home-to-classroom loop`
+                  : effectiveHandover && formattedHandoverDay
+                  ? `No home note received yet today (${formattedHandoverDay} note recorded) · Standing classroom baselines active`
                   : 'No home note received yet today · Standing classroom baselines active'}
               </p>
             </div>
           </div>
 
-          {!effectiveHandover ? (
+          {!effectiveHandover || !isHandoverToday ? (
             <div className="w-full sm:w-auto text-xs font-semibold text-textDim bg-cardSubtle px-3 py-2 sm:py-1.5 rounded-xl border border-borderMain flex items-center justify-center sm:justify-start gap-1.5 flex-shrink-0">
               <Clock className="w-4 h-4 text-textDim" />
-              <span>Awaiting Parent Log</span>
+              <span>Awaiting Today&apos;s Parent Log</span>
             </div>
           ) : !effectiveHandover.acknowledged_by_staff ? (
             <button
