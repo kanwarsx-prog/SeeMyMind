@@ -581,6 +581,55 @@ def test_noya_persona_grounded_dynamic_pupil_resolution(client):
     assert "Leo" in data["answer_markdown"]
 
 
+def test_noya_parent_how_was_child_day_today(client):
+    """Verify parents can ask natural day summary questions ('How was Phoenix's day today?') and receive a warm, grounded summary with day_summary_card."""
+    phoenix_id = client.post(
+        "/api/v1/pupils/",
+        json={
+            "first_name": "Phoenix",
+            "last_name": "Carter",
+            "date_of_birth": "2015-04-12",
+            "primary_need": "Autism Spectrum Condition",
+        },
+    ).json()["id"]
+
+    # Ask NOYA: "How was Phoenix's day today?"
+    resp = client.post(
+        "/api/v1/noya/copilot/chat",
+        json={
+            "child_id": phoenix_id,
+            "active_view": "parent_hub",
+            "message": "How was Phoenix's day today?",
+            "history": [],
+        },
+        headers={"x-user-role": "parent"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+
+    # 1. Answer text check: warm, bulleted summary
+    assert "Phoenix" in data["answer_markdown"]
+    assert "Battery" in data["answer_markdown"] or "battery" in data["answer_markdown"].lower()
+    assert "Win" in data["answer_markdown"] or "breakthrough" in data["answer_markdown"].lower() or "engagement" in data["answer_markdown"].lower()
+    assert "Calming" in data["answer_markdown"] or "buffer" in data["answer_markdown"].lower() or "decompression" in data["answer_markdown"].lower()
+
+    # 2. Action Card verification: day_summary_card
+    assert data["action_card"] is not None
+    assert data["action_card"]["card_type"] == "day_summary_card"
+    details = data["action_card"]["details"]
+    assert details["pupil_name"] == "Phoenix"
+    assert "battery_percentage" in details
+    assert "decompression_protocol" in details
+    assert len(details["decompression_protocol"]) >= 1
+
+    # 3. Tool dispatch & explainability
+    assert data["tool_called"] == "get_child_day_summary"
+    assert len(data["execution_steps"]) >= 1
+    assert "Decompression Bridge" in data["execution_steps"][0]["title"]
+    assert any("How was Phoenix's day today?" in f for f in data["suggested_followups"])
+
+
+
 
 
 

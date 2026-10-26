@@ -109,7 +109,7 @@ export interface NoyaChatMessage {
 }
 
 export interface NoyaActionCard {
-  card_type: 'contact_card' | 'handover_card' | 'de_escalation_card' | 'proposed_action' | string;
+  card_type: 'contact_card' | 'handover_card' | 'de_escalation_card' | 'proposed_action' | 'day_summary_card' | string;
   type?: string;
   title: string;
   subtitle?: string;

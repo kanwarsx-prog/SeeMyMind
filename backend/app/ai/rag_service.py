@@ -487,6 +487,7 @@ class NoyaRAGService:
                         model_used="security-guardrail",
                         latency_ms=1,
                     )
+                child = c_attempt
 
         if child:
             child_name = child.preferred_name or child.first_name
@@ -699,7 +700,50 @@ class NoyaRAGService:
         if not answer:
             q_lower = request.message.lower()
             if is_parent and child:
-                if any(k in q_lower for k in ["settle", "evening", "home", "calm down", "after school", "bedtime", "routine"]):
+                if any(k in q_lower for k in [
+                    "how was", "how did", "how's", "child's day", "day today", "school today",
+                    "his day", "her day", "their day", "about today", "what happened today", "day go", "today go"
+                ]):
+                    tool_output = dispatch_tool_call(db, current_user, "get_child_day_summary", {"child_id": str(child.id)})
+                    tool_called = "get_child_day_summary"
+                    action_card = tool_output.get("action_card")
+                    d = tool_output.get("day_data", {})
+                    battery = d.get("battery", 75)
+                    status_label = d.get("status_label", "Moderate Energy")
+                    win_title = d.get("win_title", "Classroom breakthrough")
+                    win_summary = d.get("win_summary", "Great engagement across activities today.")
+                    morning_mood = d.get("morning_mood", "Calm")
+                    sleep_qual = d.get("sleep_qual", "Good sleep")
+                    afternoon_note = d.get("afternoon_energy_note") or "Needs a quiet buffer to decompress."
+                    protocols = d.get("decompression_protocol", ["Quiet 15-20 min transition buffer"])
+                    first_calm = protocols[0] if protocols else "Quiet 15-20 min transition buffer"
+
+                    answer = (
+                        f"Here is a summary of **{child_name}'s** day:\n\n"
+                        f"• **Home-Time Social Battery:** Estimated at **{battery}%** ({status_label}). {afternoon_note}\n"
+                        f"• **Classroom Win:** ⭐ **{win_title}** — {win_summary}\n"
+                        f"• **Morning Transition:** Arrived {morning_mood.lower()} following {sleep_qual.lower()}.\n"
+                        f"• **Recommended Evening Calming Step:** {first_calm}."
+                    )
+                    execution_steps.append(_build_execution_step(
+                        step_number=1,
+                        tool_name="get_child_day_summary",
+                        tool_args={"child_id": str(child.id)},
+                        tool_output=tool_output,
+                        child_name=child_name,
+                        custom_title="Queried 3:15 PM Decompression Bridge & School Timeline",
+                        custom_detail=f"Retrieved arrival handover, celebrated wins, and home-time battery for {child_name}.",
+                        custom_findings=f"Battery: {battery}% ({status_label}), Win: {win_title}",
+                    ))
+                    execution_steps.append(_build_execution_step(
+                        step_number=2,
+                        tool_name=None,
+                        child_name=child_name,
+                        custom_title="Synthesized Strengths-Based Day Summary",
+                        custom_detail=f"Formulated warm, jargon-free day review and evening settling steps for {child_name}.",
+                        custom_findings="Ready for parent review",
+                    ))
+                elif any(k in q_lower for k in ["settle", "evening", "home", "calm down", "after school", "bedtime", "routine"]):
                     from app.services.parent_hub_service import ParentHubService
                     bridge_obj = None
                     try:
@@ -904,6 +948,48 @@ class NoyaRAGService:
                     custom_detail=f"Queried statutory register totals and review dates for {school_name}.",
                     custom_findings=f"{stats.total_pupils} pupils on register, {review_count} annual reviews due in next 90 days",
                 ))
+            elif child and any(k in q_lower for k in [
+                "how was", "how did", "day today", "school today", "day summary", "how's their day", "how's his day", "how's her day", "day go", "today go"
+            ]):
+                t_out = dispatch_tool_call(db, current_user, "get_child_day_summary", {"child_id": str(child.id)})
+                action_card = t_out.get("action_card")
+                tool_called = "get_child_day_summary"
+                d = t_out.get("day_data", {})
+                battery = d.get("battery", 75)
+                status_label = d.get("status_label", "Moderate Energy")
+                win_title = d.get("win_title", "Classroom Engagement")
+                win_summary = d.get("win_summary", "Participated positively across activities.")
+                morning_mood = d.get("morning_mood", "Calm")
+                sleep_qual = d.get("sleep_qual", "Good sleep")
+                afternoon_note = d.get("afternoon_energy_note") or "Needs a quiet transition buffer."
+                protocols = d.get("decompression_protocol", ["Quiet 15-20 min transition buffer"])
+                first_calm = protocols[0] if protocols else "Quiet 15-20 min transition buffer"
+
+                answer = (
+                    f"**{child_name}'s Day Summary:**\n\n"
+                    f"• **Social Battery at 3:15 PM:** Estimated at **{battery}%** ({status_label}). {afternoon_note}\n"
+                    f"• **Classroom Win:** ⭐ **{win_title}** — {win_summary}\n"
+                    f"• **Morning Arrival:** Logged as {morning_mood.lower()} following {sleep_qual.lower()}.\n"
+                    f"• **Evening Decompression Advice:** {first_calm}."
+                )
+                execution_steps.append(_build_execution_step(
+                    step_number=1,
+                    tool_name="get_child_day_summary",
+                    tool_args={"child_id": str(child.id)},
+                    tool_output=t_out,
+                    child_name=child_name,
+                    custom_title="Queried 3:15 PM Decompression Bridge & School Timeline",
+                    custom_detail=f"Retrieved arrival handover, celebrated wins, and home-time battery for {child_name}.",
+                    custom_findings=f"Battery: {battery}% ({status_label}), Win: {win_title}",
+                ))
+                execution_steps.append(_build_execution_step(
+                    step_number=2,
+                    tool_name=None,
+                    child_name=child_name,
+                    custom_title="Synthesized Day Summary",
+                    custom_detail=f"Formulated day review and decompression steps for {child_name}.",
+                    custom_findings="Ready for educator review",
+                ))
             elif child and any(k in q_lower for k in ["contact", "phone", "email", "mum", "dad", "parent details", "emergency", "call"]):
                 t_out = dispatch_tool_call(db, current_user, "get_guardian_contacts", {"child_id": str(child.id)})
                 action_card = t_out.get("action_card")
@@ -1024,9 +1110,9 @@ class NoyaRAGService:
         # Generate clean, concise follow-up chips
         if is_parent:
             suggested_followups = [
+                f"How was {child_name}'s day today?",
                 f"Help {child_name} settle arriving home tonight",
                 f"Has {child_name}'s morning check-in been seen?",
-                f"Celebrate {child_name}'s strengths in class",
             ]
         elif is_classroom_view:
             scope = cohort.scope_label if cohort else "Room 4"

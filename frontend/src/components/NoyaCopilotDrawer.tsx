@@ -21,6 +21,7 @@ import {
   Check,
   Loader2,
   Zap,
+  Star,
 } from 'lucide-react';
 import {
   Child,
@@ -109,9 +110,9 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
     if (isParent) {
       greetingContent = `Hello ${parentFirstName}! I'm **NOYA**, your family inclusion partner. I keep you directly connected with your children's classroom team, home-time energy updates, and practical calming routines.\n\nHow can I help you today?`;
       followups = [
+        `How was ${pupilName}'s day today?`,
         "Tonight's calming steps",
         "Has morning check-in been seen?",
-        "Classroom wins",
       ];
     } else if (isSenco) {
       greetingContent = `Hello! I'm **NOYA**, your school inclusion and statutory governance partner. I track whole-school provision mapping, High-Needs Band allocations, annual review cycles, and Local Authority compliance.\n\nWhat inclusion leadership insights can I provide today?`;
@@ -190,7 +191,9 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
 
     // Status hint based on question intent
     const lower = userText.toLowerCase();
-    if (lower.includes('contact') || lower.includes('phone') || lower.includes('parent') || lower.includes('mum') || lower.includes('dad')) {
+    if (lower.includes('how was') || lower.includes('day today') || lower.includes('school today') || lower.includes('how did') || lower.includes('day go')) {
+      setStatusMessage('Reviewing afternoon battery, classroom wins & decompression steps...');
+    } else if (lower.includes('contact') || lower.includes('phone') || lower.includes('parent') || lower.includes('mum') || lower.includes('dad')) {
       setStatusMessage('Validating guardian records & RBAC permissions...');
     } else if (lower.includes('handover') || lower.includes('sleep') || lower.includes('mood') || lower.includes('morning')) {
       setStatusMessage('Retrieving verified morning transition capsule...');
@@ -741,6 +744,80 @@ function renderActionCard(
         <p className="text-[9px] text-purple-700 dark:text-purple-400/80 italic pt-0.5">
           🛡️ Human-in-the-Loop: This note is never saved to the database until you confirm.
         </p>
+      </div>
+    );
+  }
+
+  // 5. Day Summary & Decompression Card
+  if (card.card_type === 'day_summary_card' || card.type === 'day_summary_card') {
+    const d = card.details || {};
+    const battery = Number(d.battery_percentage ?? 75);
+    const winTitle = d.classroom_win_title || 'Classroom Engagement';
+    const winDesc = d.classroom_win_desc || 'Worked well with classroom peers and stayed engaged.';
+    const decompProt: string[] = (d.decompression_protocol as string[]) || [];
+
+    const batteryColor = battery < 40 
+      ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800' 
+      : battery < 70 
+      ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800'
+      : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800';
+
+    return (
+      <div className="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/70 space-y-2.5">
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1.5 font-bold text-xs text-teal-900 dark:text-teal-200">
+            <Zap className="w-3.5 h-3.5 text-teal" />
+            <span>{card.title || `${d.pupil_name || 'Pupil'}'s Day at a Glance`}</span>
+          </div>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${batteryColor}`}>
+            🔋 {battery}% Energy
+          </span>
+        </div>
+
+        {/* 3:15 PM Battery & Status Note */}
+        <div className="p-2 rounded-lg bg-white/80 dark:bg-cardBg/80 border border-teal-100 dark:border-teal-900/60 text-[11px] space-y-1">
+          <div className="flex items-center justify-between font-semibold text-textHead text-[10px]">
+            <span>3:15 PM Home-Time Battery</span>
+            <span className="text-teal font-bold">{d.energy_status || 'Moderate Energy'}</span>
+          </div>
+          <p className="text-[11px] text-textDim leading-snug">
+            {d.afternoon_note || 'Needs a gentle, low-demand buffer upon arrival home.'}
+          </p>
+        </div>
+
+        {/* Celebrated Classroom Win */}
+        {winTitle && (
+          <div className="p-2 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 space-y-0.5">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-900 dark:text-amber-200">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+              <span>Celebrated Win:</span>
+              <span className="truncate">{winTitle}</span>
+            </div>
+            <p className="text-[10.5px] text-amber-800/90 dark:text-amber-300/90 leading-tight">
+              {winDesc}
+            </p>
+          </div>
+        )}
+
+        {/* Top Evening Calming Steps */}
+        {decompProt.length > 0 && (
+          <div className="space-y-1 pt-0.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300">
+              Recommended Evening Steps:
+            </div>
+            <div className="space-y-1">
+              {decompProt.slice(0, 2).map((step, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-1.5 text-[11px] text-textMain bg-white/60 dark:bg-cardBg/60 p-1.5 rounded-md border border-teal-100 dark:border-teal-900/40"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-teal flex-shrink-0 mt-0.5" />
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

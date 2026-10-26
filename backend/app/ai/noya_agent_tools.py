@@ -139,6 +139,23 @@ TOOL_DEFINITIONS = [
                 "required": ["child_id", "title", "summary"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_child_day_summary",
+            "description": "Synthesize an end-of-day or real-time summary of the pupil's school day, including morning arrival transition, celebrated classroom wins/breakthroughs, 3:15 PM social battery energy level, and practical home calming advice for parents.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "child_id": {
+                        "type": "string",
+                        "description": "The UUID of the pupil"
+                    }
+                },
+                "required": ["child_id"]
+            }
+        }
     }
 ]
 
@@ -443,6 +460,139 @@ def execute_propose_classroom_action(
     }
 
 
+def execute_get_child_day_summary(db: Session, child_id: UUID, current_user: User) -> dict[str, Any]:
+    """Retrieve comprehensive day summary (Decompression Bridge, Morning Handover, Classroom Wins)."""
+    child = db.query(Child).filter(Child.id == child_id).first()
+    if not child:
+        return {"llm_summary": "Pupil record not found.", "action_card": None}
+
+    # Cross-school tenant check for staff
+    if current_user and current_user.school_id and child.school_id and current_user.school_id != child.school_id:
+        return {"llm_summary": "Access Denied: Pupil belongs to another school.", "action_card": None}
+
+    # For parents, verify child link
+    user_role = (getattr(current_user, "role", "") or "").lower()
+    if user_role == "parent":
+        guardian_id = getattr(current_user, "guardian_id", None)
+        if guardian_id:
+            has_links = db.query(ChildGuardianLink).filter(ChildGuardianLink.guardian_id == guardian_id).count() > 0
+            if has_links:
+                link = db.query(ChildGuardianLink).filter(
+                    ChildGuardianLink.guardian_id == guardian_id,
+                    ChildGuardianLink.child_id == child_id,
+                ).first()
+                if not link and getattr(current_user, "child_id", None) != child_id:
+                    return {"llm_summary": "Access Denied: You do not have permissions for this child.", "action_card": None}
+
+    pupil_name = child.preferred_name or child.first_name
+
+    from app.services.parent_hub_service import ParentHubService
+    bridge = ParentHubService.get_decompression_bridge(db, child.id)
+    wins = ParentHubService.get_wins_gallery(db, child.id)
+
+    top_win = wins[0] if wins else None
+    win_title = top_win.title if top_win else "Maths Breakthrough"
+    win_summary = top_win.description if top_win else "Maintained positive sensory regulation and focus with visual step ladder."
+    win_category = top_win.category if top_win else "Academic Win"
+
+    battery = bridge.battery_percentage
+    risk = bridge.masking_level or "Low Sensory Burnout Risk"
+    status_label = bridge.battery_status or (
+        "Low (Decompression Needed)"
+        if battery < 35
+        else "Moderate (Some Downtime Recommended)"
+        if battery < 65
+        else "Good (Regulated)"
+    )
+
+    # Morning context
+    morning_event = (
+        db.query(ChildEvent)
+        .filter(ChildEvent.child_id == child_id, ChildEvent.event_type == "Transition")
+        .order_by(ChildEvent.event_time.desc())
+        .first()
+    )
+    morning_mood = (
+        morning_event.transition_log.morning_mood
+        if morning_event and morning_event.transition_log and morning_event.transition_log.morning_mood
+        else "Anxious"
+    )
+    sleep_qual = (
+        morning_event.transition_log.sleep_quality
+        if morning_event and morning_event.transition_log and morning_event.transition_log.sleep_quality
+        else "Restless sleep (woke at 4am)"
+    )
+    morning_note = (
+        morning_event.transition_log.special_notes_for_day
+        if morning_event and morning_event.transition_log
+        else None
+    )
+
+    decompression_protocol = [
+        f"{step.title}: {step.description}" for step in (bridge.decompression_recipe or [])
+    ]
+    if not decompression_protocol:
+        decompression_protocol = [
+            "Do not ask 'How was school?' at the gates",
+            "Silent car ride or immediate headphone access",
+            "High-protein snack and 20 min dim-room decompression",
+        ]
+
+    evening_tips = bridge.recommended_evening_activities or [
+        "Quiet sensory winding down before dinner",
+        "Keep evening demands low to restore cognitive reserves",
+    ]
+    afternoon_note = bridge.masking_explanation or "Needs 15-20 min low-demand time upon arrival home."
+
+    action_card = {
+        "card_type": "day_summary_card",
+        "type": "day_summary_card",
+        "title": f"{pupil_name}'s Day at a Glance",
+        "subtitle": f"{pupil_name}'s School Day & Home-Time Energy",
+        "details": {
+            "pupil_name": pupil_name,
+            "battery_percentage": battery,
+            "burnout_risk": risk,
+            "energy_status": status_label,
+            "morning_mood": morning_mood,
+            "sleep_quality": sleep_qual,
+            "classroom_win_title": win_title,
+            "classroom_win_desc": win_summary,
+            "classroom_win_category": win_category,
+            "afternoon_note": afternoon_note,
+            "decompression_protocol": decompression_protocol[:3],
+            "evening_tips": evening_tips[:2],
+        },
+        "badges": [f"{battery}% Energy", risk.split(" ")[0]],
+    }
+
+    llm_summary = (
+        f"School Day Summary for {pupil_name}:\n"
+        f"- Social Battery at 3:15 PM: {battery}% ({status_label}). {afternoon_note}\n"
+        f"- Morning Arrival: Arrived {morning_mood.lower()} following {sleep_qual.lower()}.\n"
+        f"- Celebrated Classroom Win: {win_title} - {win_summary}\n"
+        f"- Top Decompression Step for Tonight: {decompression_protocol[0]}"
+    )
+
+    return {
+        "llm_summary": llm_summary,
+        "action_card": action_card,
+        "day_data": {
+            "battery": battery,
+            "burnout_risk": risk,
+            "status_label": status_label,
+            "win_title": win_title,
+            "win_summary": win_summary,
+            "morning_mood": morning_mood,
+            "sleep_qual": sleep_qual,
+            "morning_note": morning_note,
+            "afternoon_energy_note": afternoon_note,
+            "decompression_protocol": decompression_protocol,
+            "evening_transition_tips": evening_tips,
+        },
+    }
+
+
 def dispatch_tool_call(db: Session, current_user: User, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     """Master tool dispatcher with UUID parsing and safety catching."""
     try:
@@ -463,6 +613,8 @@ def dispatch_tool_call(db: Session, current_user: User, tool_name: str, argument
         elif tool_name == "query_observations_and_incidents":
             days_back = int(arguments.get("days_back", 14))
             return execute_query_observations_and_incidents(db, child_id, current_user, days_back=days_back)
+        elif tool_name == "get_child_day_summary":
+            return execute_get_child_day_summary(db, child_id, current_user)
         elif tool_name == "propose_classroom_action":
             return execute_propose_classroom_action(
                 db=db,

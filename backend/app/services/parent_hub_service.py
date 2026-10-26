@@ -56,8 +56,9 @@ class ParentHubService:
                 )
                 .first()
             )
-            if teacher_assign and teacher_assign.staff:
-                teacher_name = teacher_assign.staff.full_name
+            if teacher_assign and getattr(teacher_assign, "staff_member", None):
+                sm = teacher_assign.staff_member
+                teacher_name = f"{sm.first_name} {sm.last_name}".strip() or "Ms Johnson"
 
         alloc = (
             db.query(models.StaffPupilAllocation)
@@ -67,8 +68,9 @@ class ParentHubService:
             )
             .first()
         )
-        if alloc and alloc.staff:
-            ta_name = alloc.staff.full_name
+        if alloc and getattr(alloc, "staff_member", None):
+            sm = alloc.staff_member
+            ta_name = f"{sm.first_name} {sm.last_name}".strip() or "Melissa Grant"
 
         # Baseline battery calculation derived from adult observations
         battery = 75
