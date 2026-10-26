@@ -23,6 +23,9 @@ import {
   Target,
   ArrowRight,
   Info,
+  Play,
+  RotateCcw,
+  MessageCircle,
 } from 'lucide-react';
 
 export interface PersonaTourModalProps {
@@ -66,6 +69,52 @@ interface RoleTourConfig {
   mission: string;
   steps: TourStep[];
 }
+
+interface JourneyStep {
+  time: string;
+  actor: string;
+  role: string;
+  title: string;
+  story: string;
+  action: string;
+  outcome: string;
+  icon: any;
+  color: string;
+  items: { label: string; value: string }[];
+}
+
+const DAY_IN_LIFE: JourneyStep[] = [
+  {
+    time: '7:58 AM', actor: 'Dana · Parent', role: 'Home → School', title: 'A better start begins before the bell',
+    story: 'Phoenix had a broken night and is worried about the loud assembly. Dana shares the useful context in one calm, 20-second handover.',
+    action: 'Send the morning handover', outcome: 'Ms Johnson sees the context before Phoenix enters the classroom.', icon: HeartHandshake, color: '#B87A2A',
+    items: [{ label: 'Sleep', value: 'Disturbed · woke at 4:30 AM' }, { label: 'Sensory flag', value: 'Assembly noise' }, { label: 'Packed support', value: 'Ear defenders' }],
+  },
+  {
+    time: '8:42 AM', actor: 'Ms Johnson · Teacher', role: 'Classroom Overview', title: 'Context arrives where it matters',
+    story: 'Phoenix appears in the Room 4 readiness view with the home context attached. The teacher can adjust the first transition before dysregulation starts.',
+    action: 'Acknowledge and prepare', outcome: 'The parent receives a read receipt; the classroom is ready before registration.', icon: GraduationCap, color: '#5E4D9A',
+    items: [{ label: 'Readiness', value: 'Gentle start recommended' }, { label: 'Preparation', value: 'Quiet seat ready' }, { label: 'Connection', value: 'Parent notified' }],
+  },
+  {
+    time: '10:16 AM', actor: 'Melissa · TA', role: 'Support Hub', title: 'Support becomes an action, not a guess',
+    story: 'A fire-drill vibration catches Phoenix off guard. The TA sees the personalised strategy, chooses the smallest useful intervention, and records what happened.',
+    action: 'Use the visual timer + quiet route', outcome: 'Phoenix returns to learning in four minutes and the strategy is available next time.', icon: Users, color: '#059669',
+    items: [{ label: 'Trigger', value: 'Unexpected bell vibration' }, { label: 'Strategy', value: 'Noise defenders + break' }, { label: 'Result', value: 'Regulated · returned' }],
+  },
+  {
+    time: '12:35 PM', actor: 'Phoenix · Pupil', role: 'Pupil Voice', title: 'The child gets a voice in the record',
+    story: 'Phoenix chooses an energy level and names what helped. The system captures pupil voice without asking them to complete a clinical form.',
+    action: 'Complete the 10-second check-in', outcome: 'Adults see the child’s perspective alongside observations and outcomes.', icon: MessageCircle, color: '#E06A55',
+    items: [{ label: 'Mood', value: 'OK' }, { label: 'Energy', value: '75% charged' }, { label: 'What helped', value: 'Quiet route' }],
+  },
+  {
+    time: '3:15 PM', actor: 'See My Mind · Shared loop', role: 'Home-time', title: 'The day closes with a strength, not a deficit',
+    story: 'The family receives a concise summary: what took effort, what worked, and one gentle decompression suggestion for home.',
+    action: 'Share the day’s win', outcome: 'Home and school finish with the same language—and Phoenix’s progress is visible.', icon: Sparkles, color: '#2A6B62',
+    items: [{ label: 'Today’s win', value: 'Returned after the break' }, { label: 'Home suggestion', value: '20-minute quiet buffer' }, { label: 'Shared record', value: 'Timeline updated' }],
+  },
+];
 
 const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
   teacher: {
@@ -664,6 +713,124 @@ function getTourStepAction(role: RoleView, stepLabel: string): string {
   return 'Use the left navigation to open the matching governance workspace and explore the live records.';
 }
 
+const DayInLifeTour: React.FC<{
+  onClose: () => void;
+  onExploreRole: () => void;
+  userName?: string;
+  schoolName?: string;
+}> = ({ onClose, onExploreRole, userName, schoolName }) => {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [choiceMade, setChoiceMade] = useState(false);
+  const step = DAY_IN_LIFE[stepIndex];
+  const StepIcon = step.icon;
+  const isLast = stepIndex === DAY_IN_LIFE.length - 1;
+
+  const advance = () => {
+    if (isLast) return;
+    setStepIndex((current) => current + 1);
+    setChoiceMade(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+      <div className="bg-white dark:bg-slate-950 rounded-[2rem] max-w-6xl w-full shadow-2xl border border-white/10 overflow-hidden flex flex-col max-h-[94vh]">
+        <div className="px-5 sm:px-7 py-4 bg-gradient-to-r from-[#112533] via-[#1A3A4A] to-[#2A6B62] text-white flex items-center justify-between gap-4 flex-shrink-0">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-mint font-bold">
+              <Sparkles className="w-3.5 h-3.5" />
+              A shared day, seen together
+            </div>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mt-1">Meet Phoenix&apos;s day</h2>
+            <p className="text-xs text-white/70 mt-1 truncate">{userName || 'Your workspace'}{schoolName ? ` · ${schoolName}` : ''}</p>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors" title="Close day journey" aria-label="Close day journey">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="px-5 sm:px-7 py-3 border-b border-borderMain bg-cardSubtle flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {DAY_IN_LIFE.map((journeyStep, idx) => {
+            const Icon = journeyStep.icon;
+            const active = idx === stepIndex;
+            const complete = idx < stepIndex;
+            return (
+              <button key={journeyStep.time} type="button" onClick={() => { setStepIndex(idx); setChoiceMade(false); }} className="flex items-center gap-2 min-w-max group">
+                <span className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${active ? 'text-white shadow-md scale-105' : complete ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-cardBg text-textDim border border-borderMain'}`} style={active ? { backgroundColor: journeyStep.color } : undefined}>
+                  {complete ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                </span>
+                {idx < DAY_IN_LIFE.length - 1 && <span className={`hidden sm:block w-8 h-px ${complete ? 'bg-emerald-400' : 'bg-borderMain'}`} />}
+              </button>
+            );
+          })}
+          <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-textDim whitespace-nowrap">{stepIndex + 1} / {DAY_IN_LIFE.length}</span>
+        </div>
+
+        <div key={stepIndex} className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5 p-5 sm:p-7 overflow-y-auto animate-tour-panel">
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: step.color }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: step.color }} />
+              {step.time} · {step.role}
+            </div>
+            <div className="flex items-center gap-3 mt-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: step.color }}>
+                <StepIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-textDim">{step.actor}</div>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-textHead leading-tight">{step.title}</h3>
+              </div>
+            </div>
+            <p className="text-sm text-textSub leading-relaxed mt-5 max-w-xl">{step.story}</p>
+            <div className="mt-5 p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-teal-800 dark:text-teal-300">The connective tissue</div>
+              <p className="text-sm font-semibold text-teal-950 dark:text-teal-100 mt-1">{step.outcome}</p>
+            </div>
+          </div>
+
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-slate-900 via-[#142B3C] to-[#0B132B] p-4 sm:p-5 text-white shadow-xl border border-white/10 self-center">
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-mint font-bold">Shared timeline</div>
+                <div className="text-sm font-serif font-bold mt-1">{step.action}</div>
+              </div>
+              <span className="text-[10px] font-mono text-white/50">LIVE STORY</span>
+            </div>
+            <div className="grid gap-2 mt-4">
+              {step.items.map((item, idx) => (
+                <div key={item.label} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/[0.06] border border-white/[0.08] animate-tour-item" style={{ animationDelay: `${idx * 80}ms` }}>
+                  <span className="text-xs text-white/50">{item.label}</span>
+                  <span className="text-xs font-semibold text-right">{item.value}</span>
+                </div>
+              ))}
+            </div>
+            {!choiceMade ? (
+              <button type="button" onClick={() => setChoiceMade(true)} className="w-full mt-4 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-teal hover:bg-teal-medium text-white text-xs font-bold transition-all active:scale-[.98]">
+                <Play className="w-3.5 h-3.5 fill-current" />
+                {step.action}
+              </button>
+            ) : (
+              <div className="mt-4 p-3 rounded-xl bg-emerald-400/15 border border-emerald-300/30 text-emerald-100 animate-in fade-in">
+                <div className="flex items-center gap-2 text-xs font-bold"><CheckCircle2 className="w-4 h-4 text-emerald-300" /> Action connected to the shared timeline</div>
+                <p className="text-[11px] text-white/60 mt-1">That small action gives the next person better context.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="px-5 sm:px-7 py-3 border-t border-borderMain bg-cardSubtle flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+          <div className="text-xs text-textDim text-center sm:text-left">One child · one shared language · no context lost</div>
+          <div className="flex items-center gap-2">
+            {isLast && <button type="button" onClick={() => { setStepIndex(0); setChoiceMade(false); }} className="px-3 py-2 rounded-xl text-xs font-semibold text-textDim hover:text-textMain hover:bg-cardBg transition-colors inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Replay</button>}
+            <button type="button" onClick={isLast ? onExploreRole : advance} disabled={!choiceMade && !isLast} className="px-4 py-2 rounded-xl bg-teal text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1.5 transition-all active:scale-95">
+              {isLast ? 'Explore my role' : 'Continue the day'} <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   isOpen,
   onClose,
@@ -673,17 +840,29 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 }) => {
   // Current active step within this role's tour
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [tourMode, setTourMode] = useState<'journey' | 'role'>('journey');
 
   // Reset step index when modal opens or userRole changes
   useEffect(() => {
     if (isOpen) {
       setActiveStepIndex(0);
+      setTourMode('journey');
     }
   }, [isOpen, userRole]);
 
   if (!isOpen) return null;
 
   const currentTour = ROLE_TOURS[userRole] || ROLE_TOURS.teacher;
+  if (tourMode === 'journey') {
+    return (
+      <DayInLifeTour
+        onClose={onClose}
+        onExploreRole={() => setTourMode('role')}
+        userName={userName}
+        schoolName={schoolName}
+      />
+    );
+  }
   const totalSteps = currentTour.steps.length;
   const currentStep = currentTour.steps[activeStepIndex] || currentTour.steps[0];
   const isFirstStep = activeStepIndex === 0;
