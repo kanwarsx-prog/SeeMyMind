@@ -81,7 +81,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
     steps: [
       {
         stepNumber: 1,
-        stepLabel: 'Classroom Hub',
+        stepLabel: 'Room 4 Overview',
         title: '8:45 AM Classroom Hub & Readiness Check',
         subtitle: 'Whole-class visibility across all SEND learners before registration begins',
         icon: Sun,
@@ -122,8 +122,8 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 3,
-        stepLabel: '1:1 Pupil Focus',
-        title: 'Universal 1:1 Pupil Focus & In-the-Moment Calming Tools',
+        stepLabel: 'Pupil Profile',
+        title: 'Pupil Profile & In-the-Moment Support',
         subtitle: 'Individual sensory timelines, triggers to avoid, and step-by-step calming strategies',
         icon: Target,
         visualPreview: {
@@ -142,7 +142,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 4,
-        stepLabel: 'Subject Adaptations',
+        stepLabel: 'Adapted Lesson Pathways',
         title: 'Live Subject Adaptations & Visual Task Cards',
         subtitle: 'Filtering lesson differentiation across Maths, English, and Science side-by-side',
         icon: BookOpen,
@@ -175,7 +175,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
     steps: [
       {
         stepNumber: 1,
-        stepLabel: 'Provision Register',
+        stepLabel: 'Inclusion & Caseload',
         title: 'Whole-School Provision Register & Live Metrics',
         subtitle: 'Dynamic caseload tracking across Statutory EHCP, SEN Support, and Monitoring tiers',
         icon: Layers,
@@ -196,7 +196,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 2,
-        stepLabel: 'Statutory Reviews',
+        stepLabel: 'Statutory EHCP Plans',
         title: '30-Day Statutory EHCP Review Countdown & Evidence',
         subtitle: 'Automated deadline tracking and one-click Local Authority evidence compilation',
         icon: Clock,
@@ -216,7 +216,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 3,
-        stepLabel: 'Pupil Registration',
+        stepLabel: 'Register SEND Pupil',
         title: 'Universal Pupil Onboarding & 72-Hour Parent Invites',
         subtitle: '4-step child registration wizard and secure family portal onboarding tokens',
         icon: User,
@@ -237,7 +237,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 4,
-        stepLabel: 'Staff Deployment',
+        stepLabel: 'Staff & Team Directory',
         title: 'Staff Directory & TA Allocation Tracking',
         subtitle: 'Transparent weekly 1:1 hours, classroom allocations, and supply teacher briefing',
         icon: Users,
@@ -290,7 +290,7 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
       },
       {
         stepNumber: 2,
-        stepLabel: 'Read-Receipts',
+        stepLabel: 'School Acknowledgement',
         title: 'Real-Time Classroom Read-Receipts',
         subtitle: 'Instant reassurance that your child’s teacher has your note',
         icon: CheckCircle2,
@@ -647,15 +647,15 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
 function getTourStepAction(role: RoleView, stepLabel: string): string {
   const label = stepLabel.toLowerCase();
   if (role === 'teacher') {
-    if (label.includes('classroom hub')) return 'Open Room 4 Classroom Overview from the teacher sidebar to scan the whole cohort.';
+    if (label.includes('overview')) return 'Open Room 4 Classroom Overview from the teacher sidebar to scan the whole cohort.';
     if (label.includes('handover')) return 'Open Morning Briefings and select a pupil to review or acknowledge the latest handover.';
-    if (label.includes('pupil focus')) return 'Select any pupil card to open their profile and see their personalised support strategies.';
+    if (label.includes('pupil profile')) return 'Select any pupil card to open their profile and see their personalised support strategies.';
     return 'Open Adapted Lesson Pathways to see the current subject-specific differentiation.';
   }
   if (role === 'senco') {
-    if (label.includes('provision')) return 'Start in Inclusion & Caseload to review live support tiers and provision coverage.';
+    if (label.includes('caseload')) return 'Start in Inclusion & Caseload to review live support tiers and provision coverage.';
     if (label.includes('statutory')) return 'Open Statutory EHCP Plans to review upcoming deadlines and evidence.';
-    if (label.includes('registration')) return 'Use Register SEND Pupil to begin a guided onboarding workflow.';
+    if (label.includes('register')) return 'Use Register SEND Pupil to begin a guided onboarding workflow.';
     return 'Open Staff & Team Directory to review allocation and deployment coverage.';
   }
   if (role === 'parent' || role === 'parentplus') return 'Use the left navigation to open the matching family or strengths pathway screen.';
@@ -689,6 +689,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   const isFirstStep = activeStepIndex === 0;
   const isLastStep = activeStepIndex === totalSteps - 1;
   const stepAction = getTourStepAction(currentTour.role, currentStep.stepLabel);
+  const previewBadge = currentStep.visualPreview.badge.replace('Focus Mode', 'Pupil Profile');
 
   const handleNext = () => {
     if (isLastStep) {
@@ -810,7 +811,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
                 </div>
               </div>
             </nav>
-            <div className="space-y-3 min-w-0">
+            <div key={currentStep.stepNumber} className="space-y-3 min-w-0 animate-tour-panel">
           <div className="flex items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
             <span>Getting started with {currentTour.personaName}</span>
             <span>{Math.round(((activeStepIndex + 1) / totalSteps) * 100)}% complete</span>
@@ -850,7 +851,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
           <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-navy to-slate-900 text-white border border-slate-700/80 shadow-md space-y-2">
             <div className="flex items-center justify-between pb-1.5 border-b border-slate-700/60">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${currentStep.visualPreview.badgeColor}`}>
-                {currentStep.visualPreview.badge}
+                {previewBadge}
               </span>
               <span className="text-[10px] text-slate-400 font-mono">Live Interactive Mock</span>
             </div>
