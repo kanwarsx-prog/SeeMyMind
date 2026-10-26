@@ -619,6 +619,7 @@ const AppContent: React.FC = () => {
         isMobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
         isSidebarHidden={isSidebarHidden}
+        onToggleSidebar={() => setIsSidebarHidden((prev) => !prev)}
         onOpenTour={() => setIsTourModalOpen(true)}
         onOpenAIAudit={() => setIsAITransparencyOpen(true)}
       />
@@ -651,11 +652,6 @@ const AppContent: React.FC = () => {
           onToggleCopilot={() => setIsCopilotOpen((prev) => !prev)}
           isCopilotOpen={isCopilotOpen}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
-          isSidebarHidden={isSidebarHidden}
-          onToggleSidebar={() => {
-            setIsSidebarHidden((prev) => !prev);
-            setMobileMenuOpen(false);
-          }}
         />
 
         <div className="p-3.5 sm:p-5 lg:p-7 max-w-7xl w-full mx-auto flex-1 animate-in fade-in duration-200">

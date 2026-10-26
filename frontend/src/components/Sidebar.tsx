@@ -22,6 +22,8 @@ import {
   BarChart3,
   Target,
   Printer,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -54,6 +56,7 @@ interface SidebarProps {
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
   isSidebarHidden?: boolean;
+  onToggleSidebar?: () => void;
   onOpenTour?: () => void;
   onOpenAIAudit?: () => void;
 }
@@ -71,6 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onCloseMobile,
   isSidebarHidden = false,
+  onToggleSidebar,
   onOpenTour,
   onOpenAIAudit,
 }) => {
@@ -557,6 +561,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       </aside>
+      {onToggleSidebar && (
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className={`hidden lg:flex fixed top-1/2 -translate-y-1/2 z-[60] w-7 h-14 items-center justify-center bg-sidebarBg text-sidebarPrimary border border-sidebarBorder shadow-lg transition-[left,border-radius] duration-300 hover:bg-sidebarHover focus:outline-none focus-visible:ring-2 focus-visible:ring-teal ${
+            isSidebarHidden ? 'left-0 rounded-r-xl' : 'left-64 -translate-x-1/2 rounded-xl'
+          }`}
+          title={isSidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
+          aria-label={isSidebarHidden ? 'Show sidebar' : 'Hide sidebar'}
+          aria-pressed={isSidebarHidden}
+        >
+          {isSidebarHidden ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+      )}
     </>
   );
 };
