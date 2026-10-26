@@ -120,6 +120,7 @@ class SeederService:
                 "weekly_ta_hours": 15.0,
                 "ta_role": "1:1 Key Worker TA",
                 "funding": "High-Needs Band 3 EHCP",
+                "annual_review_due": date(2026, 11, 5),
             },
             {
                 "first_name": "Archie",
@@ -136,6 +137,7 @@ class SeederService:
                 "weekly_ta_hours": 10.0,
                 "ta_role": "1:1 Dedicated TA",
                 "funding": "High-Needs Band 2 EHCP",
+                "annual_review_due": date(2026, 12, 12),
             },
             {
                 "first_name": "Riya",
@@ -217,6 +219,7 @@ class SeederService:
                     secondary_need=p_spec["secondary_need"],
                     sensory_profile=p_spec.get("sensory_profile"),
                     has_ehcp=p_spec["has_ehcp"],
+                    annual_review_due=p_spec.get("annual_review_due"),
                     summary=p_spec["summary"],
                     active=True,
                 )
@@ -227,6 +230,7 @@ class SeederService:
                 prof.secondary_need = p_spec["secondary_need"]
                 prof.sensory_profile = p_spec.get("sensory_profile")
                 prof.has_ehcp = p_spec["has_ehcp"]
+                prof.annual_review_due = p_spec.get("annual_review_due")
                 prof.summary = p_spec["summary"]
                 db.flush()
 

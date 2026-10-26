@@ -58,6 +58,7 @@ class NoyaChatMessage(BaseModel):
 class NoyaCopilotChatRequest(BaseModel):
     child_id: UUID | None = None
     active_view: str | None = None
+    room_name: str | None = None
     message: str
     history: list[NoyaChatMessage] = []
 

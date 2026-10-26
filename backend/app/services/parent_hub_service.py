@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app import models
 from app.models.pupil import Child
 from app.models.timeline import ChildEvent, TransitionLog
 from app.schemas.parent_hub import (
@@ -37,6 +38,38 @@ class ParentHubService:
             .all()
         )
 
+        # Resolve dynamic staff & guardian names
+        guardian_name = "Parent"
+        if child.guardian_links:
+            g = child.guardian_links[0].guardian
+            if g:
+                guardian_name = f"{g.first_name} {g.last_name}".strip() or "Parent"
+
+        teacher_name = "Ms Johnson"
+        ta_name = "Melissa Grant"
+        if child.school_id:
+            teacher_assign = (
+                db.query(models.StaffSchoolAssignment)
+                .filter(
+                    models.StaffSchoolAssignment.school_id == child.school_id,
+                    models.StaffSchoolAssignment.role.in_(["Teacher", "Class Teacher", "teacher"]),
+                )
+                .first()
+            )
+            if teacher_assign and teacher_assign.staff:
+                teacher_name = teacher_assign.staff.full_name
+
+        alloc = (
+            db.query(models.StaffPupilAllocation)
+            .filter(
+                models.StaffPupilAllocation.child_id == child.id,
+                models.StaffPupilAllocation.active.is_(True),
+            )
+            .first()
+        )
+        if alloc and alloc.staff:
+            ta_name = alloc.staff.full_name
+
         # Baseline battery calculation derived from adult observations
         battery = 75
         draining_factors: list[str] = []
@@ -54,7 +87,7 @@ class ParentHubService:
                 draining_factors.append(f"Disrupted sleep: {tl.sleep_quality}")
                 adult_clues.append(
                     AdultClue(
-                        source=latest_transition_event.reporter_name or "Dana Carter",
+                        source=latest_transition_event.reporter_name or guardian_name,
                         role="Parent Morning Check-In",
                         time="07:45 AM",
                         observation=f"Sleep logged as {tl.sleep_quality}; waking early created morning fatigue baseline.",
@@ -82,7 +115,7 @@ class ParentHubService:
                     )
                     adult_clues.append(
                         AdultClue(
-                            source=event.reporter_name or "Ms Johnson",
+                            source=event.reporter_name or teacher_name,
                             role=event.reporter_type,
                             time="10:45 AM",
                             observation=f"{event.title}: {event.summary}",
@@ -108,20 +141,21 @@ class ParentHubService:
                 )
 
         # Default contextual adult clues if minimal records exist today
+        fname = child.first_name or "Your child"
         if len(adult_clues) < 2:
             adult_clues.append(
                 AdultClue(
-                    source="Ms Johnson",
+                    source=teacher_name,
                     role="Class Teacher",
                     time="09:10 AM",
-                    observation="Phoenix wore noise defenders during assembly and sat near the aisle exit.",
+                    observation=f"{fname} wore noise defenders during assembly and sat near the aisle exit.",
                     significance="High cognitive effort to stay calm in large group",
                     marker_type="Masking Marker",
                 )
             )
             adult_clues.append(
                 AdultClue(
-                    source="Melissa Grant",
+                    source=ta_name,
                     role="1:1 Teaching Assistant",
                     time="01:45 PM",
                     observation="Pencil tapping increased during noisy corridor movement; accepted 5-min quiet corner break.",
@@ -152,9 +186,9 @@ class ParentHubService:
             battery_color = "rose"
             masking_level = "High Masking Detected"
             masking_explanation = (
-                "Adult observations show Phoenix exerted intense internal control to meet classroom "
-                "demands today despite broken sleep. At school he looked compliant, but his sensory "
-                "tank is empty. The 'after-school restraint collapse' often occurs the moment he enters "
+                f"Adult observations show {fname} exerted intense internal control to meet classroom "
+                "demands today despite broken sleep. At school they looked compliant, but their sensory "
+                "tank is empty. The 'after-school restraint collapse' often occurs the moment they enter "
                 "the safety of home."
             )
         elif battery < 65:
@@ -162,7 +196,7 @@ class ParentHubService:
             battery_color = "amber"
             masking_level = "Moderate Masking"
             masking_explanation = (
-                "Phoenix managed well through scheduled sensory breaks, but social and acoustic demands "
+                f"{fname} managed well through scheduled sensory breaks, but social and acoustic demands "
                 "have drained significant reserves. Gentle quiet time upon arrival is strongly recommended."
             )
         else:
@@ -170,7 +204,7 @@ class ParentHubService:
             battery_color = "emerald"
             masking_level = "Low Masking / Open Expression"
             masking_explanation = (
-                "Phoenix experienced consistent regulation, positive peer engagement, and manageable sensory conditions."
+                f"{fname} experienced consistent regulation, positive peer engagement, and manageable sensory conditions."
             )
 
         # Build tonight's home arrival decompression recipe
@@ -308,6 +342,14 @@ class ParentHubService:
         if not child:
             raise ValueError(f"Child with ID {child_id} not found")
 
+        fname = child.first_name or "Child"
+        child_full_name = child.full_name or f"{child.first_name} {child.last_name}".strip() or "Child"
+
+        med_name = "Equasym XL (10mg Extended Release)"
+        if child.medication_regimens:
+            primary_med = child.medication_regimens[0]
+            med_name = f"{primary_med.medication_name} ({primary_med.dosage})"
+
         insights = [
             CorrelationInsightItem(
                 factor="Breakfast Eaten + Medication at 07:45 AM",
@@ -333,7 +375,7 @@ class ParentHubService:
             CorrelationInsightItem(
                 factor="Visual Task Strip + Proactive Movement Break",
                 incident_rate="0% Dysregulation (18 consecutive sessions)",
-                effect="Prevents task avoidance; Phoenix independently completed 100% of differentiated science sheets.",
+                effect=f"Prevents task avoidance; {fname} independently completed 100% of differentiated science sheets.",
                 confidence="99% Clinical Grade",
                 status="positive",
             ),
@@ -342,9 +384,9 @@ class ParentHubService:
         child_school = child.school.school_name if child and child.school else "School"
         summary_text = (
             "CLINICAL SUMMARY FOR CAMHS / CONSULTANT PEDIATRICIAN:\n"
-            f"Patient: {child.full_name} | DOB: {child.date_of_birth or '12/04/2015'} | Diagnosis: ASC & Sensory Sensitivity\n"
+            f"Patient: {child_full_name} | DOB: {child.date_of_birth or '12/04/2015'} | Diagnosis: ASC & Sensory Sensitivity\n"
             f"Observation Period: 30 School Days | Data Source: Multi-Agency Real-Time Log ({child_school} & Home Handover)\n\n"
-            "1. Medication Bioavailability: Equasym XL demonstrates high efficacy when co-administered with caloric food (protein/carbohydrate).\n"
+            f"1. Medication Bioavailability: {med_name} demonstrates high efficacy when co-administered with caloric food (protein/carbohydrate).\n"
             "2. Mid-Morning Vulnerability: When breakfast is missed, autonomic arousal markers spike between 10:15 - 10:45 AM.\n"
             "3. Masking & Decompression: Disrupted sleep strongly correlates with masked compliance at school followed by post-school emotional collapse.\n"
             "4. Recommendation: Maintain current dosage; formalize 10:00 AM complex carb snack protocol in Section F of EHCP."
@@ -352,8 +394,8 @@ class ParentHubService:
 
         return MedicationCorrelationResponse(
             child_id=child.id,
-            child_name=child.full_name or "Phoenix Carter",
-            medication_name="Equasym XL (10mg Extended Release)",
+            child_name=child_full_name,
+            medication_name=med_name,
             morning_window="07:30 - 08:00 AM",
             dip_window="10:15 - 10:45 AM",
             total_days_analyzed=30,
@@ -377,6 +419,7 @@ class ParentHubService:
         if not child:
             raise ValueError(f"Child with ID {child_id} not found")
 
+        fname = child.first_name or "Child"
         return [
             ParentWinsGalleryItem(
                 id="win-1",
@@ -384,7 +427,7 @@ class ParentHubService:
                 title="Gradient Slope Video Game Maths Breakthrough",
                 date="Today, 10:45 AM",
                 category="STEM & Logic",
-                description="Phoenix independently connected mathematical gradient vectors to collision angles in video game physics, sketching a complete 3-step proof on the whiteboard.",
+                description=f"{fname} independently connected mathematical gradient vectors to collision angles in video game physics, sketching a complete 3-step proof on the whiteboard.",
                 teacher_quote="He explained water displacement and gradient vectors so intuitively that three other students asked him for help. Pure joy in his eyes!",
                 celebration_badge="🏆 STEM Innovator",
                 tags=["Visual Learning", "Game Physics", "Maths Mastery"],
@@ -395,7 +438,7 @@ class ParentHubService:
                 title="Empathetic Peer Support in Library Corner",
                 date="Yesterday, 02:15 PM",
                 category="Peer Connection",
-                description="When Leo was upset about losing his bookmark, Phoenix quietly fetched his own spare galaxy bookmark and handed it to him without demanding attention.",
+                description=f"When Leo was upset about losing his bookmark, {fname} quietly fetched his own spare galaxy bookmark and handed it to him without demanding attention.",
                 teacher_quote="A moment of extraordinary spontaneous empathy and kindness. The whole classroom felt warmer.",
                 celebration_badge="🤝 Kindness Champion",
                 tags=["Empathy", "Peer Friendship", "Quiet Leadership"],
@@ -406,7 +449,7 @@ class ParentHubService:
                 title="Self-Advocacy with Noise Defenders",
                 date="20 October, 09:10 AM",
                 category="Self-Advocacy",
-                description="Recognizing that the hall echo was rising before assembly began, Phoenix reached into his bag, put on his noise defenders, and signaled thumbs-up to TA Melissa.",
+                description=f"Recognizing that the hall echo was rising before assembly began, {fname} reached into his bag, put on his noise defenders, and signaled thumbs-up to TA Melissa.",
                 teacher_quote="Huge milestone in interoception! He advocated for his sensory needs before rising to amber agitation.",
                 celebration_badge="🛡️ Self-Advocacy Star",
                 tags=["Interoception", "Sensory Regulation", "Independence"],
@@ -418,7 +461,7 @@ class ParentHubService:
                 date="16 October, 11:30 AM",
                 category="Art & Creativity",
                 description="Designed an 8-panel comic detailing thermal venting on Jupiter's moon Europa with astonishing technical and scientific accuracy.",
-                teacher_quote="Phoenix's depth of knowledge and illustrative talent blew everyone away in topic work.",
+                teacher_quote=f"{fname}'s depth of knowledge and illustrative talent blew everyone away in topic work.",
                 celebration_badge="🚀 Cosmic Storyteller",
                 tags=["Creativity", "Space Science", "Visual Storytelling"],
             ),

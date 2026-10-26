@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -24,6 +24,7 @@ class ChildSupportProfile(TimestampedUUIDModel):
     sensory_profile = Column(Text, nullable=True)
     strengths_interests = Column(Text, nullable=True)
     has_ehcp = Column(Boolean, default=False, nullable=False)
+    annual_review_due = Column(Date, nullable=True)  # next statutory annual review (EHCP pupils)
     active = Column(Boolean, default=True, nullable=False)
 
     child = relationship("Child", back_populates="support_profile")

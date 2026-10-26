@@ -365,6 +365,7 @@ class NoyaRAGService:
 
         is_classroom_view = (
             not request.child_id
+            and getattr(current_user, "role", "") != "parent"
             and (
                 request.active_view in ["classroom_matrix", "room4-matrix", "matrix", "classroom"]
                 or getattr(current_user, "role", "") in ["teacher", "ta"]
@@ -372,12 +373,25 @@ class NoyaRAGService:
         )
         is_senco_overview = (
             not request.child_id
+            and getattr(current_user, "role", "") != "parent"
             and (
                 request.active_view in ["senco_overview", "provision_map", "staff_team"]
                 or getattr(current_user, "role", "") == "senco"
             )
         )
         is_parent = getattr(current_user, "role", "") == "parent" or request.active_view == "parent_hub"
+
+        # Live, school-scoped figures for classroom / SENCO views (never hardcoded)
+        cohort = None
+        if (is_classroom_view or is_senco_overview) and not is_parent:
+            from app.services.cohort_stats_service import CohortStatsService
+
+            user_school_id = getattr(current_user, "school_id", None)
+            if is_classroom_view:
+                room = CohortStatsService.resolve_room(db, user_school_id, request.room_name, request.message)
+                cohort = CohortStatsService.compute(db, user_school_id, room_name=room, school_label=school_name)
+            else:
+                cohort = CohortStatsService.compute(db, user_school_id, school_label=school_name)
 
         if is_parent and child:
             system_prompt = (
@@ -391,15 +405,17 @@ class NoyaRAGService:
             system_prompt = (
                 f"You are NOYA, an advisory classroom inclusion copilot for educators on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
-                f"Active Scope: Room 4 Classroom Hub (All 4 Pupils).\n"
-                f"Rules: Summarize class sensory accommodations, TA hours, and strategy win rates across the whole cohort."
+                f"Active Scope: {cohort.scope_label} ({cohort.total_pupils} pupils).\n"
+                f"Rules: Summarize class sensory accommodations, TA hours, and strategy success rates across the whole cohort. "
+                f"Only quote figures you have been given; never invent numbers."
             )
         elif is_senco_overview:
             system_prompt = (
-                f"You are NOYA, a statutory SENCO governance copilot on SeeMyMind.\n"
+                f"You are NOYA, a SENCO governance copilot on SeeMyMind.\n"
                 f"Current User: {staff_name} ({staff_role}) at {school_name}.\n"
-                f"Active Scope: Whole-School SEND Provision Map & Statutory Register.\n"
-                f"Rules: Focus on Code of Practice 6.44 compliance, EHCP vs SEN Support distribution, and high-needs TA support hours."
+                f"Active Scope: Whole-school SEND register ({cohort.total_pupils} pupils).\n"
+                f"Rules: Focus on EHCP vs SEN Support distribution, annual review dates and high-needs TA support hours. "
+                f"Only quote figures you have been given; never claim compliance you cannot evidence."
             )
         else:
             system_prompt = (
@@ -530,74 +546,104 @@ class NoyaRAGService:
                         f"check if the teacher has seen your morning note, or review today's home-time energy levels."
                     )
             elif is_classroom_view:
+                stats = cohort
+                label = stats.scope_label
                 action_card = {
                     "type": "cohort_accommodations",
-                    "title": "Room 4 Cohort Accommodations",
+                    "title": f"{label} Cohort Accommodations",
                     "details": {
-                        "cohort_size": 4,
-                        "ehcp_count": 2,
-                        "sen_support_count": 2,
-                        "weekly_ta_hours": 32.5,
-                        "primary_strategies": [
-                            "10:00 AM snack (counters mid-morning medication dip)",
-                            "Visual step ladders for numeracy",
-                            "Noise-cancelling ear defenders during transitions",
-                            "Low-arousal sensory regulation station",
-                        ],
+                        "cohort_size": stats.total_pupils,
+                        "ehcp_count": stats.ehcp_count,
+                        "sen_support_count": stats.sen_support_count,
+                        "weekly_ta_hours": stats.weekly_ta_hours,
+                        "calming_success_rate": stats.win_rate,
+                        "top_strategies": stats.top_strategies,
                     },
                 }
-                if any(k in q_lower for k in ["sensory", "accommodat", "environment", "room 4", "class", "quiet", "break"]):
-                    answer = (
-                        "Room 4 classroom accommodations include proactive 10:00 AM snack breaks (countering medication dips), "
-                        "visual learning ladders for numeracy, noise-cancelling ear defenders during loud halls, and a calm regulation corner. "
-                        "All 4 pupils have individual environmental adjustments active."
-                    )
+                if stats.total_pupils == 0:
+                    answer = f"There are no active pupils recorded in {label} yet, so I have no figures to share."
+                elif any(k in q_lower for k in ["sensory", "accommodat", "environment", "class", "quiet", "break"]):
+                    if stats.top_strategies:
+                        answer = (
+                            f"{label} sensory accommodations & support ({stats.total_pupils} pupils): "
+                            f"The sensory accommodations and calming strategies that have helped most often so far are: {', '.join(stats.top_strategies)}."
+                        )
+                    else:
+                        answer = (
+                            f"{label} has {stats.total_pupils} pupils with SEND support, but no sensory accommodations "
+                            "or calming strategies have been recorded yet. Log a quick classroom note after a strategy and I will start tracking what helps."
+                        )
                 elif any(k in q_lower for k in ["ta hours", "teaching assistant", "staff allocation", "support hours"]):
                     answer = (
-                        "Room 4 has 32.5 weekly allocated TA hours across the 4 SEND cohort pupils, primarily focused on morning arrival routines, "
-                        "visual learning support in maths, and lunchtime calm spaces."
+                        f"{label} has {stats.weekly_ta_hours:g} weekly TA hours allocated across its "
+                        f"{stats.total_pupils} pupils."
                     )
                 elif any(k in q_lower for k in ["win", "rate", "success", "strateg"]):
-                    answer = (
-                        "Classroom calming success rate in Room 4 is currently 91% (10 out of 11 recorded calming strategies helped pupils settle within 4 minutes). "
-                        "Top performing tool is hands-on visual tasks followed by quiet ear defenders."
-                    )
+                    if stats.win_rate is None:
+                        answer = f"No calming strategies have been recorded in {label} yet, so there is no success rate to report."
+                    else:
+                        answer = (
+                            f"Calming strategies in {label} helped in {stats.win_rate:g}% of cases "
+                            f"({stats.strategy_wins} of {stats.strategy_observations} recorded)."
+                        )
                 else:
                     answer = (
-                        "You are viewing the Room 4 Classroom Hub. Across all 4 pupils, 2 have statutory EHCPs and 2 receive targeted SEN Support. "
-                        "Ask me about class sensory accommodations, weekly TA hours, or strategy win rates."
+                        f"You are viewing {label}: {stats.total_pupils} pupils, {stats.ehcp_count} with an EHCP and "
+                        f"{stats.sen_support_count} on SEN Support. "
+                        "Ask me about sensory accommodations, weekly TA hours, or how well calming strategies are working."
                     )
             elif is_senco_overview:
+                stats = cohort
+                review_count = len(stats.reviews_due)
                 action_card = {
                     "type": "whole_school_stats",
-                    "title": f"{school_name} SEND Register & Statutory Overview",
+                    "title": f"{school_name} SEND Register Overview",
                     "details": {
-                        "total_on_register": 4,
-                        "ehcp_count": 2,
-                        "sen_support_count": 2,
-                        "annual_reviews_due": 1,
-                        "weekly_high_needs_ta_hours": 32.5,
-                        "statutory_compliance": "100% Code of Practice 6.44 Compliant",
+                        "total_on_register": stats.total_pupils,
+                        "ehcp_count": stats.ehcp_count,
+                        "sen_support_count": stats.sen_support_count,
+                        "annual_reviews_due": review_count,
+                        "annual_reviews_overdue": len(stats.reviews_overdue),
+                        "ehcp_missing_review_date": stats.ehcp_without_review_date,
+                        "weekly_ta_hours": stats.weekly_ta_hours,
                     },
                 }
-                if any(k in q_lower for k in ["distribution", "ehcp", "sen support", "register", "breakdown"]):
+                if stats.total_pupils == 0:
+                    answer = f"There are no active pupils on the register for {school_name} yet."
+                elif any(k in q_lower for k in ["distribution", "ehcp", "sen support", "register", "breakdown"]):
+                    needs = f" Most common needs: {', '.join(stats.top_needs)}." if stats.top_needs else ""
                     answer = (
-                        f"Whole-School SEND Register for {school_name}: Total pupils on register: 4 in evaluated cohort (50% EHCP Band E/F, 50% SEN Support Band K). "
-                        "Primary identified needs include Autism Spectrum Condition (ASC), SLCN, and Auditory Processing."
+                        f"{school_name} has {stats.total_pupils} pupils on the register: "
+                        f"{stats.ehcp_count} with an EHCP and {stats.sen_support_count} on SEN Support.{needs}"
                     )
                 elif any(k in q_lower for k in ["annual", "review", "due", "schedule", "term"]):
-                    answer = (
-                        "Statutory Annual Reviews: 1 statutory review due this term (Phoenix Carter - Term 2 annual review cycle). "
-                        "All statutory evidence dossiers and doctor review notes are prepared."
-                    )
+                    parts = []
+                    if stats.reviews_overdue:
+                        parts.append(
+                            "Overdue: " + ", ".join(f"{r.pupil_name} ({r.due:%d %b %Y})" for r in stats.reviews_overdue) + "."
+                        )
+                    if stats.reviews_due:
+                        parts.append(
+                            "Due in the next 90 days: "
+                            + ", ".join(f"{r.pupil_name} ({r.due:%d %b %Y}, {r.days_until} days)" for r in stats.reviews_due)
+                            + "."
+                        )
+                    if stats.ehcp_without_review_date:
+                        parts.append(
+                            f"{stats.ehcp_without_review_date} EHCP pupil(s) have no review date recorded, so I cannot check them."
+                        )
+                    answer = " ".join(parts) if parts else "No EHCP annual reviews are due in the next 90 days."
                 elif any(k in q_lower for k in ["ta hours", "teaching assistant", "high-needs", "ta allocation", "weekly ta"]):
                     answer = (
-                        "School High-Needs TA Allocation: 32.5 weekly hours dedicated to high-needs bands, fully compliant with statutory Section F declarations."
+                        f"{school_name} has {stats.weekly_ta_hours:g} weekly TA hours allocated across "
+                        f"{stats.total_pupils} pupils on the register."
                     )
                 else:
                     answer = (
-                        f"SENCO Governance Hub for {school_name}: 100% compliant with Section 44 statutory framework. "
-                        "Ask me about whole-school EHCP distribution, annual review schedules, or statutory TA allocations."
+                        f"{school_name}: {stats.total_pupils} pupils on the register "
+                        f"({stats.ehcp_count} EHCP, {stats.sen_support_count} SEN Support), "
+                        f"{review_count} annual review(s) due in the next 90 days. "
+                        "Ask me about the register breakdown, annual review dates, or TA hours."
                     )
             elif child and any(k in q_lower for k in ["contact", "phone", "email", "mum", "dad", "parent details", "emergency", "call"]):
                 t_out = dispatch_tool_call(db, current_user, "get_guardian_contacts", {"child_id": str(child.id)})
@@ -642,10 +688,11 @@ class NoyaRAGService:
                 f"What are {child_name}'s proven strengths in class?",
             ]
         elif is_classroom_view:
+            scope = cohort.scope_label if cohort else "the class"
             suggested_followups = [
-                "Summarize Room 4 sensory accommodations",
-                "What are the weekly TA hours across Room 4?",
-                "What is our class strategy win rate this week?",
+                f"Summarize {scope} sensory accommodations",
+                f"What are the weekly TA hours across {scope}?",
+                "How well are calming strategies working in our class?",
             ]
         elif is_senco_overview:
             suggested_followups = [

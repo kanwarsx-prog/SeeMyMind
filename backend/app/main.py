@@ -73,6 +73,11 @@ async def lifespan(app: FastAPI):
                         "ALTER TABLE ai_runs ADD COLUMN IF NOT EXISTS output_text TEXT;"
                     )
                 )
+                conn.execute(
+                    text(
+                        "ALTER TABLE child_support_profiles ADD COLUMN IF NOT EXISTS annual_review_due DATE;"
+                    )
+                )
         except Exception as e:
             print(f"Schema migration startup note: {e}")
     yield
