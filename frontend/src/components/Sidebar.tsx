@@ -53,6 +53,7 @@ interface SidebarProps {
   onOpenObservationModal?: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
+  isFocusMode?: boolean;
   onOpenTour?: () => void;
   onOpenAIAudit?: () => void;
 }
@@ -69,6 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenObservationModal,
   isMobileOpen = false,
   onCloseMobile,
+  isFocusMode = false,
   onOpenTour,
   onOpenAIAudit,
 }) => {
@@ -401,7 +403,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-[min(20rem,calc(100vw-1.5rem))] lg:w-64 bg-sidebarBg text-sidebarPrimary h-screen max-h-screen flex flex-col justify-between border-r border-sidebarBorder rounded-r-3xl lg:rounded-none shadow-2xl select-none transform transition-transform duration-300 ease-out lg:translate-x-0 lg:z-30 pb-[env(safe-area-inset-bottom)] ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          isMobileOpen ? 'translate-x-0' : isFocusMode ? 'lg:-translate-x-full -translate-x-full' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand header - pinned at top */}

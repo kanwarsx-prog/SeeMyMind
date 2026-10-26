@@ -81,6 +81,7 @@ const AppContent: React.FC = () => {
   const [onboardingToken, setOnboardingToken] = useState<string | null>(null);
   const [latestInvitation, setLatestInvitation] = useState<EmailPreview | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   // Check existing session token on startup
   // Check existing session token or onboarding link on startup
@@ -126,6 +127,7 @@ const AppContent: React.FC = () => {
   // Sync API role when active view changes
   const handleViewChange = (view: RoleView) => {
     setActiveView(view);
+    if (view !== 'teacher') setIsFocusMode(false);
     const backendRole = view === 'parentplus' ? 'parent' : view;
     setApiRole(backendRole);
     if (view === 'teacher') {
@@ -275,6 +277,7 @@ const AppContent: React.FC = () => {
     api.logout();
     setCurrentUser(null);
     setChild(null);
+    setIsFocusMode(false);
   };
 
   const handleChildRegistered = async (newChildId: string) => {
@@ -616,11 +619,12 @@ const AppContent: React.FC = () => {
         onOpenObservationModal={() => setIsObsModalOpen(true)}
         isMobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
+        isFocusMode={isFocusMode}
         onOpenTour={() => setIsTourModalOpen(true)}
         onOpenAIAudit={() => setIsAITransparencyOpen(true)}
       />
 
-      <main className="ml-0 lg:ml-64 min-h-screen flex flex-col flex-1 w-full overflow-x-hidden bg-canvas text-textMain transition-colors duration-200">
+      <main className={`ml-0 ${isFocusMode ? 'lg:ml-0' : 'lg:ml-64'} min-h-screen flex flex-col flex-1 w-full overflow-x-hidden bg-canvas text-textMain transition-[margin] duration-300`}>
         <InvitationNotificationBanner
           onOpenInvitation={handleOpenParentOnboarding}
           latestInvitation={latestInvitation}
@@ -648,6 +652,11 @@ const AppContent: React.FC = () => {
           onToggleCopilot={() => setIsCopilotOpen((prev) => !prev)}
           isCopilotOpen={isCopilotOpen}
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
+          isFocusMode={activeView === 'teacher' && isFocusMode}
+          onToggleFocusMode={() => {
+            setIsFocusMode((prev) => !prev);
+            setMobileMenuOpen(false);
+          }}
         />
 
         <div className="p-3.5 sm:p-5 lg:p-7 max-w-7xl w-full mx-auto flex-1 animate-in fade-in duration-200">
