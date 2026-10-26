@@ -4,7 +4,6 @@ import { Sparkles, AlertTriangle, CheckCircle2, ChevronDown, Plus, Clock, BookOp
 import { AdaptedPathwayCard } from '../components/AdaptedPathwayCard';
 import { DeEscalationPalette } from '../components/DeEscalationPalette';
 import { ClassSendMatrix } from '../components/ClassSendMatrix';
-import { DailySupportLoopStrip } from '../components/DailySupportLoopStrip';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
 import { AbcTooltip } from '../components/AbcTooltip';
 import { api } from '../api';
@@ -211,231 +210,132 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
       {activeTab === 'focused' && (
         <>
-          {/* Today's Daily Loop Ribbon */}
-          <DailySupportLoopStrip
-            child={child}
-            latestHandover={effectiveHandover}
-            bridge={bridge}
-            currentUserRole="teacher"
-            onAcknowledgeHandover={() => (effectiveHandover?.id ? handleAcknowledge() : Promise.resolve())}
-            onOpenMorningCheckIn={() => {
-              const el = document.getElementById('preflight-handover');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onOpenHomeTimeNote={() => setShowHomeTimeModal(true)}
-          />
-
-          {/* KPI Stats Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="stat-card border border-gray-100 border-l-4 border-l-rose-500">
-          <div className="font-serif text-2xl font-bold text-rose-700">
-            {effectiveHandover?.morning_mood || 'Anxious'}
-          </div>
-          <div className="text-[11px] text-gray-600 mt-0.5 leading-snug">
-            Sleep: {effectiveHandover?.sleep_quality || 'Restless (woke at 4am)'}
-          </div>
-        </div>
-
-        <div className="stat-card border border-gray-100 border-l-4 border-l-amber-500">
-          <div className="font-serif text-2xl font-bold text-amber-800">3</div>
-          <div className="text-[11px] text-gray-600 mt-0.5 leading-snug">
-            Active alerts needing attention today
-          </div>
-        </div>
-
-        <div className="stat-card border border-gray-100 border-l-4 border-l-emerald-600">
-          <div className="font-serif text-2xl font-bold text-emerald-800">92%</div>
-          <div className="text-[11px] text-gray-600 mt-0.5 leading-snug">
-            Strategy effectiveness this week
-          </div>
-        </div>
-
-        <div className="stat-card border border-gray-100 border-l-4 border-l-teal">
-          <div className="font-serif text-2xl font-bold text-teal-800">{child?.year_group || "Year 5"}</div>
-          <div className="text-[11px] text-gray-600 mt-0.5 leading-snug">
-            {child?.room_name || "Room 4"} · Differentiated Cohort
-          </div>
-        </div>
-      </div>
-
-      {/* Pupil Profile Banner */}
-      <div className="card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-purple-600">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl shadow-inner flex-shrink-0">
-            🧒
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-serif font-bold text-navy">{child?.full_name || (child ? `${child.first_name || 'Phoenix'} ${child.last_name || 'Carter'}` : 'SEND Pupil')}</h2>
-              <span className="bg-purple-100 text-purple-800 border border-purple-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                EHCP Active
-              </span>
-            </div>
-            <p className="text-xs text-gray-700 mt-0.5 font-medium">
-              Year {child?.year_group || '5'} · {child?.support_profile?.primary_need || 'Autism Spectrum Condition'} · Communication: Visual Task Cards
-            </p>
-            <p className="text-[11px] text-gray-500 mt-0.5">
-              Emergency Contact: {child?.last_name === 'Carter' || !child?.last_name ? 'Mum (Dana Carter) · 07700 900123' : `Parent/Guardian · ${child?.first_name || 'Pupil'}'s Contact`}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
-            ⚡ Assembly Alert 9:05am
-          </span>
-          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200">
-            🎧 Noise Defenders
-          </span>
-          <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${
-            effectiveHandover?.breakfast_eaten === false
-              ? 'bg-rose-50 text-rose-800 border border-rose-200'
-              : 'bg-amber-50 text-amber-900 border border-amber-200'
-          }`}>
-            {effectiveHandover?.breakfast_eaten === false ? '🍽 Skipped Breakfast' : '🥣 Breakfast Eaten'}
-          </span>
-          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200">
-            💊 Meds Taken (Week 1)
-          </span>
-          <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">
-            🎮 Goal: Game Designer
-          </span>
-          <button
-            onClick={onOpenObservationModal}
-            className="flex items-center gap-1.5 ml-2 bg-teal hover:bg-teal-medium text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Quick Observation</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ⭐ PRE-FLIGHT MORNING HANDOVER & OPERATIONAL RISK CARD */}
-      <div id="preflight-handover" className={`card p-5 border-l-4 transition-all scroll-mt-6 ${
-        !effectiveHandover || !isHandoverToday
-          ? 'border-l-slate-300 bg-cardSubtle'
-          : effectiveHandover.acknowledged_by_staff
-            ? 'border-l-emerald-600 bg-cardBg'
-            : 'border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40'
-      }`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-borderMain">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              !effectiveHandover || !isHandoverToday
-                ? 'bg-cardSubtle text-textDim'
-                : effectiveHandover.acknowledged_by_staff
-                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                  : 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300'
-            }`}>
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-navy dark:text-white">
-                  Morning Check-In · {child?.last_name === 'Carter' || !child?.last_name ? 'Dana Carter (Mum)' : `${child?.preferred_name || child?.first_name || 'Pupil'}'s Home Note`}
-                </h3>
-                {!effectiveHandover || !isHandoverToday ? (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cardSubtle text-textDim border border-borderMain">
-                    ⏳ Awaiting Today&apos;s Home Note
-                  </span>
-                ) : effectiveHandover.acknowledged_by_staff ? (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
-                    ✓ Seen by Staff · Parent Reassured
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800/50 shadow-2xs">
-                    🔔 Needs Teacher Check
-                  </span>
-                )}
+          {/* ⭐ 30-SECOND MORNING READINESS COCKPIT */}
+          <div id="preflight-handover" className="card p-5 sm:p-6 bg-gradient-to-r from-cardBg via-cardBg to-amber-50/20 dark:to-teal-950/20 border-l-4 border-l-teal shadow-xs scroll-mt-6 space-y-4">
+            {/* Top Row: Pupil Identity + 1-Click Action */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-borderMain">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-teal/10 dark:bg-teal-950/60 border border-teal/20 flex items-center justify-center text-2xl shadow-inner flex-shrink-0">
+                  🧒
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-serif font-bold text-navy dark:text-white">
+                      {child?.full_name || (child ? `${child.first_name || 'Phoenix'} ${child.last_name || 'Carter'}` : 'SEND Pupil')}
+                    </h2>
+                    <span className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/50 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      EHCP Active
+                    </span>
+                    <span className="text-[11px] font-medium text-textDim dark:text-slate-400">
+                      Year {child?.year_group || '5'} · {child?.room_name || 'Room 4'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
+                    Primary Need: <strong className="text-textSub dark:text-slate-200">{child?.support_profile?.primary_need || 'Autism Spectrum Condition (ASC)'}</strong> · Visual Task Cards
+                  </p>
+                </div>
               </div>
-              <p className="text-[11px] text-textDim dark:text-slate-400">
-                {effectiveHandover && isHandoverToday
-                  ? `Submitted at ${handoverTimeFormatted || '8:47am'} · Direct home-to-classroom loop`
-                  : effectiveHandover && formattedHandoverDay
-                  ? `No home note received yet today (${formattedHandoverDay} note recorded) · Standing classroom baselines active`
-                  : 'No home note received yet today · Standing classroom baselines active'}
-              </p>
-            </div>
-          </div>
 
-          {!effectiveHandover || !isHandoverToday ? (
-            <div className="w-full sm:w-auto text-xs font-semibold text-textDim bg-cardSubtle px-3 py-2 sm:py-1.5 rounded-xl border border-borderMain flex items-center justify-center sm:justify-start gap-1.5 flex-shrink-0">
-              <Clock className="w-4 h-4 text-textDim" />
-              <span>Awaiting Today&apos;s Parent Log</span>
-            </div>
-          ) : !effectiveHandover.acknowledged_by_staff ? (
-            <button
-              onClick={handleAcknowledge}
-              disabled={acknowledging}
-              className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-teal hover:bg-teal-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 flex-shrink-0"
-            >
-              <CheckCircle2 className="w-4 h-4 text-mint" />
-              <span>{acknowledging ? 'Acknowledging...' : '✓ Acknowledge Handover — Notify Home'}</span>
-            </button>
-          ) : (
-            <div className="w-full sm:w-auto text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 sm:py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center sm:justify-start gap-1.5 flex-shrink-0">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Acknowledged by Ms Johnson at {ackTimeFormatted}</span>
-            </div>
-          )}
-        </div>
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
+                {!effectiveHandover || !isHandoverToday ? (
+                  <div className="text-xs font-semibold text-textDim bg-cardSubtle px-3 py-2 rounded-xl border border-borderMain flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-textDim" />
+                    <span>
+                      {effectiveHandover && formattedHandoverDay
+                        ? `Awaiting Today's Note (${formattedHandoverDay})`
+                        : "Awaiting Today's Home Check-In"}
+                    </span>
+                  </div>
+                ) : !effectiveHandover.acknowledged_by_staff ? (
+                  <button
+                    onClick={handleAcknowledge}
+                    disabled={acknowledging}
+                    className="px-4 py-2 bg-teal hover:bg-teal-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                    title={handoverTimeFormatted ? `Submitted by home at ${handoverTimeFormatted}` : 'Acknowledge home note and send instant read receipt to parent'}
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-mint" />
+                    <span>{acknowledging ? 'Acknowledging...' : '✓ Acknowledge Handover'}</span>
+                  </button>
+                ) : (
+                  <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Acknowledged at {ackTimeFormatted}</span>
+                  </div>
+                )}
 
-        {/* Handover Data Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 border-b border-borderMain">
-          <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Sleep Quality</div>
-            <div className="text-xs font-bold text-navy dark:text-white mt-0.5">
-              {effectiveHandover?.sleep_quality || 'Restless (woke at 4am)'}
-            </div>
-          </div>
-          <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Morning Mood</div>
-            <div className="text-xs font-bold text-navy dark:text-white mt-0.5">
-              {effectiveHandover?.morning_mood || 'Anxious / Apprehensive'}
-            </div>
-          </div>
-          <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Breakfast Status</div>
-            <div className={`text-xs font-bold mt-0.5 ${
-              effectiveHandover?.breakfast_eaten === false ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'
-            }`}>
-              {effectiveHandover?.breakfast_eaten === false ? '⚠️ Skipped (Dip Risk)' : '🥣 Breakfast Eaten'}
-            </div>
-          </div>
-          <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Medication</div>
-            <div className={`text-xs font-bold mt-0.5 ${
-              effectiveHandover?.medication_given ? 'text-teal dark:text-teal-300' : 'text-amber-800 dark:text-amber-300'
-            }`}>
-              {effectiveHandover?.medication_given ? '💊 Taken at 8:30am' : '⚠️ Not Taken'}
-            </div>
-          </div>
-        </div>
+                <button
+                  onClick={() => setShowHomeTimeModal(true)}
+                  className="flex items-center gap-1.5 bg-cardSubtle hover:bg-borderMain/30 text-textDim hover:text-textMain border border-borderMain px-3 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+                  title="Preview what parents see at 3:15 PM pick-up"
+                >
+                  <span>🎒 3:15 Preview</span>
+                </button>
 
-        {/* Parent Notes & Status Note */}
-        <div className="pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-          <div className="text-textSub dark:text-slate-300">
-            <span className="font-bold text-navy dark:text-white">{child?.last_name === 'Carter' || !child?.last_name ? "Mum's Note: " : "Home Note: "}</span>
-            <span className="italic">
-              "{effectiveHandover?.special_notes_for_day || (child?.last_name === 'Carter' || !child?.last_name ? 'Worried about assembly noise. Noise defenders packed in his bag.' : 'Please ensure sensory toolkit is available during transition.')}"
-            </span>
-          </div>
+                <button
+                  onClick={onOpenObservationModal}
+                  className="flex items-center gap-1.5 bg-teal hover:bg-teal-dark text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Log Note</span>
+                </button>
+              </div>
+            </div>
 
-          {!effectiveHandover ? (
-            <div className="text-[11px] text-textDim bg-cardSubtle px-2.5 py-1 rounded-lg border border-borderMain flex-shrink-0">
-              Standing instruction: Offer sensory movement break at 10:00am
+            {/* Middle Row: Today's Morning Readiness Signals */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Sleep Quality</div>
+                <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
+                  {effectiveHandover?.sleep_quality || 'Restless (woke at 4am)'}
+                </div>
+              </div>
+
+              <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Morning Mood</div>
+                <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
+                  {effectiveHandover?.morning_mood || 'Anxious / Apprehensive'}
+                </div>
+              </div>
+
+              <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Breakfast</div>
+                <div className={`text-xs font-bold mt-0.5 ${
+                  effectiveHandover?.breakfast_eaten === false ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'
+                }`}>
+                  {effectiveHandover?.breakfast_eaten === false ? '⚠️ Skipped (Dip Risk)' : '🥣 Eaten'}
+                </div>
+              </div>
+
+              <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Medication</div>
+                <div className={`text-xs font-bold mt-0.5 ${
+                  effectiveHandover?.medication_given ? 'text-teal dark:text-teal-300' : 'text-amber-800 dark:text-amber-300'
+                }`}>
+                  {effectiveHandover?.medication_given ? '💊 Taken at 8:30am' : '⚠️ Not Taken'}
+                </div>
+              </div>
             </div>
-          ) : !effectiveHandover.acknowledged_by_staff ? (
-            <div className="text-[11px] text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/40 flex-shrink-0 font-medium">
-              💡 {child?.last_name === 'Carter' || !child?.last_name ? "Dana's" : "Parent's"} app will update with a read receipt instantly when acknowledged
+
+            {/* Bottom Row: Parent Handover Quote & Key Protocol */}
+            <div className="pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="text-textSub dark:text-slate-300">
+                <span className="font-bold text-navy dark:text-white">{child?.last_name === 'Carter' || !child?.last_name ? "Mum's Note: " : "Home Note: "}</span>
+                <span className="italic">
+                  &quot;{effectiveHandover?.special_notes_for_day || (child?.last_name === 'Carter' || !child?.last_name ? 'Worried about assembly noise. Noise defenders packed in his bag.' : 'Please ensure sensory toolkit is available.')}&quot;
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-teal/10 text-teal-800 dark:text-teal-300 border border-teal/20">
+                  🎧 Noise Defenders in Bag
+                </span>
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
+                  ⚡ Assembly 9:05am
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold flex-shrink-0">
-              ✓ {child?.last_name === 'Carter' || !child?.last_name ? "Dana's" : "Parent's"} app shows: "Read by Ms Johnson at {ackTimeFormatted}"
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
