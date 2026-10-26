@@ -21,6 +21,8 @@ import {
   BookOpen,
   Zap,
   Target,
+  ArrowRight,
+  Info,
 } from 'lucide-react';
 
 export interface PersonaTourModalProps {
@@ -642,6 +644,26 @@ const ROLE_TOURS: Record<RoleView, RoleTourConfig> = {
   },
 };
 
+function getTourStepAction(role: RoleView, stepLabel: string): string {
+  const label = stepLabel.toLowerCase();
+  if (role === 'teacher') {
+    if (label.includes('classroom hub')) return 'Open Room 4 Classroom Overview from the teacher sidebar to scan the whole cohort.';
+    if (label.includes('handover')) return 'Open Morning Briefings and select a pupil to review or acknowledge the latest handover.';
+    if (label.includes('pupil focus')) return 'Select any pupil card to open their profile and see their personalised support strategies.';
+    return 'Open Adapted Lesson Pathways to see the current subject-specific differentiation.';
+  }
+  if (role === 'senco') {
+    if (label.includes('provision')) return 'Start in Inclusion & Caseload to review live support tiers and provision coverage.';
+    if (label.includes('statutory')) return 'Open Statutory EHCP Plans to review upcoming deadlines and evidence.';
+    if (label.includes('registration')) return 'Use Register SEND Pupil to begin a guided onboarding workflow.';
+    return 'Open Staff & Team Directory to review allocation and deployment coverage.';
+  }
+  if (role === 'parent' || role === 'parentplus') return 'Use the left navigation to open the matching family or strengths pathway screen.';
+  if (role === 'ta') return 'Use the TA Hub to open the pupil support tools and record a quick classroom note.';
+  if (role === 'child') return 'Open My Check-In to share your mood, energy, and what would help today.';
+  return 'Use the left navigation to open the matching governance workspace and explore the live records.';
+}
+
 export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   isOpen,
   onClose,
@@ -666,6 +688,7 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
   const currentStep = currentTour.steps[activeStepIndex] || currentTour.steps[0];
   const isFirstStep = activeStepIndex === 0;
   const isLastStep = activeStepIndex === totalSteps - 1;
+  const stepAction = getTourStepAction(currentTour.role, currentStep.stepLabel);
 
   const handleNext = () => {
     if (isLastStep) {
@@ -751,6 +774,16 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
 
         {/* Modal Main Content Area - Compact to eliminate vertical scroll */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-1 bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between gap-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+            <span>Getting started with {currentTour.personaName}</span>
+            <span>{Math.round(((activeStepIndex + 1) / totalSteps) * 100)}% complete</span>
+          </div>
+          <div className="h-1 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-teal to-emerald-500 transition-all duration-300"
+              style={{ width: `${((activeStepIndex + 1) / totalSteps) * 100}%` }}
+            />
+          </div>
           {/* Step Title Header */}
           <div>
             <div className="flex items-center gap-2 text-teal font-bold text-[10px] uppercase tracking-wider mb-0.5">
@@ -763,6 +796,17 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
             <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
               {currentStep.subtitle}
             </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60">
+            <div className="w-8 h-8 rounded-xl bg-teal text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-teal-800 dark:text-teal-300">Try this next</div>
+              <p className="text-xs text-teal-950 dark:text-teal-100 font-medium leading-snug">{stepAction}</p>
+            </div>
+            <span className="text-[10px] font-semibold text-teal-700 dark:text-teal-300 whitespace-nowrap">In the live app →</span>
           </div>
 
           {/* ⭐ High-Fidelity UI Visual Preview Card (2-Column Compact Layout) ⭐ */}
@@ -798,6 +842,10 @@ export const PersonaTourModal: React.FC<PersonaTourModalProps> = ({
             <div className="text-[11px] text-mint/90 flex items-center gap-1.5 pt-0.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-mint flex-shrink-0" />
               <span>{currentStep.visualPreview.highlightText}</span>
+            </div>
+            <div className="flex items-start gap-1.5 text-[10px] text-slate-400 border-t border-slate-700/60 pt-2">
+              <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+              <span>Illustrative preview: live pupil records and permissions apply in your dashboard.</span>
             </div>
           </div>
 
