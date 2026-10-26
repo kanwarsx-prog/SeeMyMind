@@ -78,6 +78,9 @@ interface JourneyStep {
   story: string;
   action: string;
   outcome: string;
+  thinking: string;
+  need: string;
+  better: string;
   icon: any;
   color: string;
   items: { label: string; value: string }[];
@@ -88,30 +91,35 @@ const DAY_IN_LIFE: JourneyStep[] = [
     time: '7:58 AM', actor: 'Dana · Parent', role: 'Home → School', title: 'A better start begins before the bell',
     story: 'Phoenix had a broken night and is worried about the loud assembly. Dana shares the useful context in one calm, 20-second handover.',
     action: 'Send the morning handover', outcome: 'Ms Johnson sees the context before Phoenix enters the classroom.', icon: HeartHandshake, color: '#B87A2A',
+    thinking: 'What small detail would change the way school meets Phoenix this morning?', need: 'Share the context that is useful—not a full report.', better: 'A 20-second note replaces a stressful gate conversation and gives the teacher a head start.',
     items: [{ label: 'Sleep', value: 'Disturbed · woke at 4:30 AM' }, { label: 'Sensory flag', value: 'Assembly noise' }, { label: 'Packed support', value: 'Ear defenders' }],
   },
   {
     time: '8:42 AM', actor: 'Ms Johnson · Teacher', role: 'Classroom Overview', title: 'Context arrives where it matters',
     story: 'Phoenix appears in the Room 4 readiness view with the home context attached. The teacher can adjust the first transition before dysregulation starts.',
     action: 'Acknowledge and prepare', outcome: 'The parent receives a read receipt; the classroom is ready before registration.', icon: GraduationCap, color: '#5E4D9A',
+    thinking: 'What can I adjust before Phoenix has to ask for help?', need: 'Acknowledge the handover and prepare the first transition.', better: 'The right support is ready before a difficult moment becomes visible.',
     items: [{ label: 'Readiness', value: 'Gentle start recommended' }, { label: 'Preparation', value: 'Quiet seat ready' }, { label: 'Connection', value: 'Parent notified' }],
   },
   {
     time: '10:16 AM', actor: 'Melissa · TA', role: 'Support Hub', title: 'Support becomes an action, not a guess',
     story: 'A fire-drill vibration catches Phoenix off guard. The TA sees the personalised strategy, chooses the smallest useful intervention, and records what happened.',
     action: 'Use the visual timer + quiet route', outcome: 'Phoenix returns to learning in four minutes and the strategy is available next time.', icon: Users, color: '#059669',
+    thinking: 'Which low-demand strategy will help Phoenix recover without adding pressure?', need: 'Choose one proven tool, observe the result, and record the outcome.', better: 'A useful response becomes shared knowledge instead of living only in one adult’s memory.',
     items: [{ label: 'Trigger', value: 'Unexpected bell vibration' }, { label: 'Strategy', value: 'Noise defenders + break' }, { label: 'Result', value: 'Regulated · returned' }],
   },
   {
     time: '12:35 PM', actor: 'Phoenix · Pupil', role: 'Pupil Voice', title: 'The child gets a voice in the record',
     story: 'Phoenix chooses an energy level and names what helped. The system captures pupil voice without asking them to complete a clinical form.',
     action: 'Complete the 10-second check-in', outcome: 'Adults see the child’s perspective alongside observations and outcomes.', icon: MessageCircle, color: '#E06A55',
+    thinking: 'How can I show adults what is happening when words feel like too much?', need: 'Choose a mood, energy level, and what helped.', better: 'Pupil voice sits beside adult observations—never underneath them.',
     items: [{ label: 'Mood', value: 'OK' }, { label: 'Energy', value: '75% charged' }, { label: 'What helped', value: 'Quiet route' }],
   },
   {
     time: '3:15 PM', actor: 'See My Mind · Shared loop', role: 'Home-time', title: 'The day closes with a strength, not a deficit',
     story: 'The family receives a concise summary: what took effort, what worked, and one gentle decompression suggestion for home.',
     action: 'Share the day’s win', outcome: 'Home and school finish with the same language—and Phoenix’s progress is visible.', icon: Sparkles, color: '#2A6B62',
+    thinking: 'What should home know tonight so the transition feels safe and positive?', need: 'Share one honest summary, one win, and one gentle next step.', better: 'The day ends with a useful handover and a strength to celebrate—not a list of problems.',
     items: [{ label: 'Today’s win', value: 'Returned after the break' }, { label: 'Home suggestion', value: '20-minute quiet buffer' }, { label: 'Shared record', value: 'Timeline updated' }],
   },
 ];
@@ -848,20 +856,20 @@ const DayInLifeTour: React.FC<{
             <div className="grid sm:grid-cols-2 gap-2 mt-5">
               <div className="p-3 rounded-2xl bg-cardSubtle border border-borderMain">
                 <div className="text-[10px] uppercase tracking-wider font-bold text-textDim">What you&apos;re thinking</div>
-                <p className="text-xs text-textMain font-medium leading-snug mt-1">{lens.thinking}</p>
+                <p className="text-xs text-textMain font-medium leading-snug mt-1">{step.thinking}</p>
               </div>
               <div className="p-3 rounded-2xl bg-cardSubtle border border-borderMain">
                 <div className="text-[10px] uppercase tracking-wider font-bold text-textDim">What you need to do</div>
-                <p className="text-xs text-textMain font-medium leading-snug mt-1">{lens.need}</p>
+                <p className="text-xs text-textMain font-medium leading-snug mt-1">{step.need}</p>
               </div>
             </div>
             <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 mt-2">
               <div className="text-[10px] uppercase tracking-wider font-bold text-amber-800 dark:text-amber-300">Why this is better</div>
-              <p className="text-xs text-amber-950 dark:text-amber-100 font-medium leading-snug mt-1">{lens.whyBetter}</p>
+              <p className="text-xs text-amber-950 dark:text-amber-100 font-medium leading-snug mt-1">{step.better}</p>
             </div>
             <div className="mt-5 p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60">
               <div className="text-[10px] uppercase tracking-wider font-bold text-teal-800 dark:text-teal-300">The connective tissue</div>
-              <p className="text-sm font-semibold text-teal-950 dark:text-teal-100 mt-1">{lens.systemHelps}</p>
+              <p className="text-sm font-semibold text-teal-950 dark:text-teal-100 mt-1">{step.outcome}</p>
             </div>
           </div>
 
