@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   RoleView,
   TeacherSubView,
@@ -583,15 +583,12 @@ const AppContent: React.FC = () => {
 
   // Filter pupils by teacher's classroom (Room 4 / Year 5) to match classroom hub
   const teacherRoom = child?.room_name || 'Room 4';
-  const visiblePupils = useMemo(() => {
-    if (activeView === 'teacher') {
-      const roomPupils = pupils.filter(
-        (p) => (p.room_name && p.room_name === teacherRoom) || p.year_group === 'Year 5'
-      );
-      return roomPupils.length > 0 ? roomPupils : pupils;
-    }
-    return pupils;
-  }, [pupils, activeView, child?.room_name, teacherRoom]);
+  const teacherClassPupils = activeView === 'teacher'
+    ? pupils.filter((p) => (p.room_name && p.room_name === teacherRoom) || p.year_group === 'Year 5')
+    : pupils;
+  const visiblePupils = (activeView === 'teacher' && teacherClassPupils.length > 0)
+    ? teacherClassPupils
+    : pupils;
 
   return (
     <div className="min-h-screen bg-[#F7FAFB] dark:bg-[#0B132B] text-[#1A3A4A] dark:text-[#E2E8F0] flex font-sans transition-colors duration-200">
