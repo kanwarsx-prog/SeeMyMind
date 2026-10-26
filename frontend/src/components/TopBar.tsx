@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCheck, Menu, Sparkles, Maximize2, Minimize2 } from 'lucide-react';
+import { UserCheck, Menu, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Child } from '../types';
 
 interface TopBarProps {
@@ -17,8 +17,8 @@ interface TopBarProps {
   overviewLabel?: string;
   onSelectChild?: (childId: string) => void;
   onToggleMobileMenu?: () => void;
-  isFocusMode?: boolean;
-  onToggleFocusMode?: () => void;
+  isSidebarHidden?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -32,8 +32,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   overviewLabel,
   onSelectChild,
   onToggleMobileMenu,
-  isFocusMode = false,
-  onToggleFocusMode,
+  isSidebarHidden = false,
+  onToggleSidebar,
 }) => {
   const hasPupilsSelector = Boolean(pupils && pupils.length > 1 && onSelectChild);
 
@@ -85,21 +85,17 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Side: Primary Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {onToggleFocusMode && (
+          {onToggleSidebar && (
             <button
-              onClick={onToggleFocusMode}
+              onClick={onToggleSidebar}
               type="button"
-              className={`hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
-                isFocusMode
-                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300/70 dark:border-amber-800'
-                  : 'bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 text-textDim hover:text-teal border border-borderMain hover:border-teal/40'
-              }`}
-              title={isFocusMode ? 'Exit classroom focus mode' : 'Enter classroom focus mode'}
-              aria-label={isFocusMode ? 'Exit classroom focus mode' : 'Enter classroom focus mode'}
-              aria-pressed={isFocusMode}
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 bg-cardSubtle hover:bg-teal-50 dark:hover:bg-teal-950/50 text-textDim hover:text-teal border border-borderMain hover:border-teal/40"
+              title={isSidebarHidden ? 'Show left sidebar' : 'Hide left sidebar'}
+              aria-label={isSidebarHidden ? 'Show left sidebar' : 'Hide left sidebar'}
+              aria-pressed={isSidebarHidden}
             >
-              {isFocusMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-              <span>{isFocusMode ? 'Exit Focus' : 'Focus Mode'}</span>
+              {isSidebarHidden ? <PanelLeftOpen className="w-3.5 h-3.5" /> : <PanelLeftClose className="w-3.5 h-3.5" />}
+              <span>{isSidebarHidden ? 'Show sidebar' : 'Hide sidebar'}</span>
             </button>
           )}
 
