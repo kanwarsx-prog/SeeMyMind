@@ -144,58 +144,6 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Level View Switcher: Classroom Hub vs 1:1 Support Focus vs Adapted Pathways */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-cardBg p-1.5 sm:p-2 rounded-2xl border border-borderMain shadow-xs">
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-          <button
-            onClick={() => handleTabChange('matrix')}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
-              activeTab === 'matrix'
-                ? 'bg-teal text-white shadow-xs'
-                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
-            }`}
-          >
-            <span>🏫</span>
-            <span>{child?.room_name || 'Room 4'} Classroom Hub</span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('focused')}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
-              activeTab === 'focused'
-                ? 'bg-teal text-white shadow-xs'
-                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
-            }`}
-          >
-            <span>🧒</span>
-            <span>
-              {activeTab === 'focused'
-                ? `${pupilName} (1:1 Focus)`
-                : '1:1 Pupil Focus'}
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('pathways')}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer flex-1 sm:flex-initial ${
-              activeTab === 'pathways'
-                ? 'bg-teal text-white shadow-xs'
-                : 'text-textDim hover:text-textMain hover:bg-cardSubtle'
-            }`}
-          >
-            <span>📚</span>
-            <span>Adapted Lesson Pathways</span>
-          </button>
-        </div>
-
-        <div className="text-[11px] text-textDim font-medium px-3 hidden lg:block">
-          {activeTab === 'matrix'
-            ? 'Whole-class differentiated adaptations'
-            : activeTab === 'pathways'
-            ? 'National Curriculum scaffolding & 1:1 TA protocols'
-            : 'Personalized EHCP interventions'}
-        </div>
-      </div>
 
       {activeTab === 'matrix' && (
         <ClassSendMatrix
