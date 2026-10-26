@@ -297,6 +297,14 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
                   <span>Classroom Inclusion Partner</span>
                 )}
               </p>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Context-aware
+                </span>
+                <span className="text-[9px] text-textDim">·</span>
+                <span className="text-[9px] text-textDim font-medium">Human review stays in control</span>
+              </div>
             </div>
           </div>
 
@@ -323,7 +331,7 @@ export const NoyaCopilotDrawer: React.FC<NoyaCopilotDrawerProps> = ({
         </div>
 
         {/* Message Thread (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-appBg/30">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-canvas/30">
           {messages.map((msg, msgIdx) => (
             <div
               key={msg.id}

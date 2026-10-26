@@ -603,7 +603,7 @@ const AppContent: React.FC = () => {
     : pupils;
 
   return (
-    <div className="min-h-screen bg-[#F7FAFB] dark:bg-[#0B132B] text-[#1A3A4A] dark:text-[#E2E8F0] flex font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-canvas text-textMain flex font-sans transition-colors duration-200">
       <Sidebar
         activeView={activeView}
         currentUser={currentUser}

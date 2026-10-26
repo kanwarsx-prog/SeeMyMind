@@ -395,12 +395,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-950/65 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 lg:w-64 bg-sidebarBg text-sidebarPrimary h-screen max-h-screen flex flex-col justify-between border-r border-sidebarBorder shadow-2xl select-none transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:z-30 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[min(20rem,calc(100vw-1.5rem))] lg:w-64 bg-sidebarBg text-sidebarPrimary h-screen max-h-screen flex flex-col justify-between border-r border-sidebarBorder rounded-r-3xl lg:rounded-none shadow-2xl select-none transform transition-transform duration-300 ease-out lg:translate-x-0 lg:z-30 pb-[env(safe-area-inset-bottom)] ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -424,7 +424,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white flex items-center justify-center cursor-pointer transition-colors"
+              className="lg:hidden w-11 h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white flex items-center justify-center cursor-pointer transition-colors touch-manipulation"
               title="Close menu"
             >
               <X className="w-4 h-4" />
@@ -476,7 +476,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       item.action?.();
                       onCloseMobile?.();
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer ${
+                    className={`w-full min-h-11 flex items-center gap-2.5 px-3 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer touch-manipulation ${
                       active
                         ? 'bg-sidebarActive text-sidebarActiveText shadow-sm font-bold'
                         : 'text-sidebarSecondary hover:text-sidebarPrimary hover:bg-sidebarHover'
