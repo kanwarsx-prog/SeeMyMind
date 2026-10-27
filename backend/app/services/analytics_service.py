@@ -612,7 +612,7 @@ class AnalyticsService:
                 "Weekly TA Hours Delivered",
                 "Delivery Compliance (%)",
             ])
-            audit = AnalyticsService.get_provision_audit(db, school_id)
+            audit = AnalyticsService.get_live_provision_audit(db, school_id)
             for b in audit.bands:
                 writer.writerow([
                     b.band,
@@ -648,7 +648,7 @@ class AnalyticsService:
                 "Average Recovery Time (mins)",
                 "Key Indicators",
             ])
-            strat_report = AnalyticsService.get_strategy_win_rates(db, school_id)
+            strat_report = AnalyticsService.get_live_strategy_win_rates(db, school_id)
             for s in strat_report.strategies:
                 writer.writerow([
                     s.title,
@@ -671,7 +671,7 @@ class AnalyticsService:
                 "Percentage Share (%)",
                 "Primary Environmental Examples",
             ])
-            triggers_rep = AnalyticsService.get_trigger_frequencies(db, school_id)
+            triggers_rep = AnalyticsService.get_live_trigger_frequencies(db, school_id)
             for t in triggers_rep.triggers:
                 writer.writerow([
                     t.label,
