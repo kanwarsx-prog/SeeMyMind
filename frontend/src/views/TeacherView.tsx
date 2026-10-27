@@ -146,6 +146,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   const handoverTimeFormatted = handoverDate
     ? handoverDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
+  const todayHandover = isHandoverToday ? effectiveHandover : null;
 
   const handleAcknowledge = async () => {
     if (!effectiveHandover || !onAcknowledgeHandover) return;
@@ -339,14 +340,14 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
               <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Sleep Quality</div>
                 <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
-                  {effectiveHandover?.sleep_quality || 'Restless (woke at 4am)'}
+                  {todayHandover?.sleep_quality || 'Not received today'}
                 </div>
               </div>
 
               <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Morning Mood</div>
                 <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
-                  {effectiveHandover?.morning_mood || 'Anxious / Apprehensive'}
+                  {todayHandover?.morning_mood || 'Not received today'}
                 </div>
               </div>
 

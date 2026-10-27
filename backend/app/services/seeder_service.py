@@ -131,6 +131,21 @@ class SeederService:
                         acknowledged_at=now.replace(hour=8, minute=35, second=0, microsecond=0),
                     )
                 )
+            else:
+                # Refresh only rows owned by this repeatable demo snapshot.
+                # Real staff-recorded handovers must remain untouched.
+                demo_transition = handover.transition_log
+                if demo_transition:
+                    handover.event_time = now.replace(hour=8, minute=20, second=0, microsecond=0)
+                    handover.summary = arrival_note
+                    handover.status = "Acknowledged"
+                    demo_transition.sleep_quality = item["sleep"]
+                    demo_transition.morning_mood = item["mood"]
+                    demo_transition.breakfast_eaten = item["breakfast"]
+                    demo_transition.medication_given = item["medication"]
+                    demo_transition.special_notes_for_day = arrival_note
+                    demo_transition.acknowledged_by_staff = True
+                    demo_transition.acknowledged_at = now.replace(hour=8, minute=35, second=0, microsecond=0)
 
             observation_title = f"Demo classroom observation {today.isoformat()}"
             observation_event = (
