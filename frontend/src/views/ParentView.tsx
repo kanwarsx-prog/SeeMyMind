@@ -20,8 +20,6 @@ import {
   Send,
   CheckCircle2,
   Sparkles,
-  Pill,
-  Award,
   Copy,
   Check,
   Calendar,
@@ -57,7 +55,6 @@ export const ParentView: React.FC<ParentViewProps> = ({
   onSubmitHandover,
   onAskNoya,
   activeTab: propActiveTab,
-  onTabChange,
 }) => {
   const normalizeTab = (tab?: string): 'today' | 'wins' | 'health' => {
     if (tab === 'wins') return 'wins';
@@ -79,11 +76,6 @@ export const ParentView: React.FC<ParentViewProps> = ({
       }
     }
   }, [propActiveTab]);
-
-  const handleTabSelect = (tab: 'today' | 'wins' | 'health') => {
-    setActiveTab(tab);
-    onTabChange?.(tab);
-  };
 
   // Decompression bridge data
   const [bridge, setBridge] = useState<DecompressionBridgeResponse | null>(null);
@@ -386,59 +378,6 @@ export const ParentView: React.FC<ParentViewProps> = ({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 3. Streamlined 3-Tab Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-borderMain scrollbar-none">
-        <button
-          onClick={() => handleTabSelect('today')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer min-h-[42px] ${
-            activeTab === 'today'
-              ? 'bg-teal text-white shadow-xs font-bold'
-              : 'bg-cardBg text-textDim hover:text-textMain hover:bg-cardSubtle border border-borderMain font-semibold'
-          }`}
-        >
-          <Sun className={`w-4 h-4 ${activeTab === 'today' ? 'text-white' : 'text-amber-500'}`} />
-          <span>Today&apos;s Daily Loop</span>
-          {bridge && (
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-              activeTab === 'today' ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200'
-            }`}>
-              {bridge.battery_percentage}% Battery
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => handleTabSelect('wins')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer min-h-[42px] ${
-            activeTab === 'wins'
-              ? 'bg-teal text-white shadow-xs font-bold'
-              : 'bg-cardBg text-textDim hover:text-textMain hover:bg-cardSubtle border border-borderMain font-semibold'
-          }`}
-        >
-          <Award className={`w-4 h-4 ${activeTab === 'wins' ? 'text-white' : 'text-gold'}`} />
-          <span>Wins &amp; Strengths</span>
-          {wins.length > 0 && (
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-              activeTab === 'wins' ? 'bg-amber-300 text-teal-950' : 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200'
-            }`}>
-              {wins.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => handleTabSelect('health')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer min-h-[42px] ${
-            activeTab === 'health'
-              ? 'bg-teal text-white shadow-xs font-bold'
-              : 'bg-cardBg text-textDim hover:text-textMain hover:bg-cardSubtle border border-borderMain font-semibold'
-          }`}
-        >
-          <Pill className={`w-4 h-4 ${activeTab === 'health' ? 'text-white' : 'text-purple-600 dark:text-purple-400'}`} />
-          <span>Health &amp; Doctor Reports</span>
-        </button>
       </div>
 
       {/* ======================================================== */}
