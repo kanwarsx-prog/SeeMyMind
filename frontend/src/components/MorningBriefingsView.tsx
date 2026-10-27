@@ -7,11 +7,13 @@ import { DecompressionBridgeCard } from './DecompressionBridgeCard';
 interface MorningBriefingsViewProps {
   onSelectPupil: (pupilId: string) => void;
   onOpenObservationModal?: () => void;
+  roomName?: string;
 }
 
 export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
   onSelectPupil,
   onOpenObservationModal,
+  roomName,
 }) => {
   const [matrixData, setMatrixData] = useState<ClassroomMatrixData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +23,11 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
   const [loadingBridge, setLoadingBridge] = useState(false);
 
   useEffect(() => {
-    api.getClassMatrix('room-4')
+    if (!roomName) {
+      setLoading(false);
+      return;
+    }
+    api.getClassMatrix(roomName)
       .then((data) => {
         setMatrixData(data);
         const initialAck: Record<string, { acknowledged: boolean; time: string }> = {};
@@ -37,7 +43,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
       })
       .catch((err) => console.error('Failed to load morning briefings cohort:', err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [roomName]);
 
   const handleAcknowledge = async (pupilId: string, handoverId?: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -73,7 +79,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
     return (
       <div className="card p-12 text-center text-gray-500 space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
-        <div className="text-xs font-semibold">Loading Room 4 Morning Briefings...</div>
+        <div className="text-xs font-semibold">Loading morning briefings...</div>
       </div>
     );
   }
@@ -92,7 +98,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
           <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-lg sm:text-xl font-serif font-bold text-navy dark:text-white flex items-center gap-2">
               <Sun className="w-5 h-5 text-amber-500" />
-              <span>{matrixData?.room_name || 'Room 4'} Morning Arrival Briefings</span>
+              <span>{matrixData?.room_name || roomName || 'Classroom'} Morning Arrival Briefings</span>
             </h2>
             <span className="text-xs text-textDim dark:text-slate-400 font-medium">
               {matrixData?.year_group?.startsWith('Year') ? matrixData.year_group : `Year ${matrixData?.year_group || '5'}`} · Lead: <strong>{matrixData?.lead_teacher || 'Ms Clara Johnson'}</strong> · TA: <strong>{matrixData?.assigned_ta || 'Melissa Grant'}</strong>
@@ -170,7 +176,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                         </span>
                       )}
                       <span className="text-[11px] font-medium text-textDim dark:text-slate-400">
-                        {pupil.year_group?.startsWith('Year') ? pupil.year_group : `Year ${pupil.year_group || '5'}`} · {matrixData?.room_name || 'Room 4'}
+                        {pupil.year_group || 'Year group not set'} · {matrixData?.room_name || roomName || 'Classroom'}
                       </span>
                     </div>
                     <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
@@ -316,7 +322,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
             {loadingBridge ? (
               <div className="p-8 text-center text-textDim text-xs space-y-2">
                 <div className="w-6 h-6 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
-                <div>Synthesizing today&apos;s adult logs from Room 4...</div>
+                <div>Synthesizing today&apos;s adult logs from {roomName || 'the classroom'}...</div>
               </div>
             ) : previewBridge ? (
               <DecompressionBridgeCard bridge={previewBridge} childName={previewPupil.name} />

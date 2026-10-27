@@ -32,6 +32,8 @@ interface TeacherViewProps {
     worked: boolean;
     notes: string;
   }) => Promise<void>;
+  teacherRoom?: string;
+  teacherYearGroup?: string;
 }
 
 const cleanBriefingText = (text?: string): string => {
@@ -61,6 +63,8 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
   onOpenWorksheet,
   onLogMilestone,
   onLogDeEscalation,
+  teacherRoom,
+  teacherYearGroup,
 }) => {
   const [activeTab, setActiveTab] = useState<TeacherSubView>(activeSubView || 'matrix');
   const [provisionSummary, setProvisionSummary] = useState<ClassroomProvisionSummary | null>(null);
@@ -73,11 +77,12 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
   React.useEffect(() => {
     if (activeTab === 'provision_map' && !provisionSummary) {
-      api.getClassroomProvisionMap('Room 4')
+      if (!teacherRoom) return;
+      api.getClassroomProvisionMap(teacherRoom)
         .then(setProvisionSummary)
         .catch((err) => console.error('Failed to load classroom provision map:', err));
     }
-  }, [activeTab, provisionSummary]);
+  }, [activeTab, provisionSummary, teacherRoom]);
 
   React.useEffect(() => {
     if (child?.id) {
@@ -169,6 +174,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             handleTabChange('focused');
           }}
           isSupplyModalOpen={isSupplyModalOpen}
+          roomName={teacherRoom}
           onCloseSupplyModal={onCloseSupplyModal}
         />
       )}
@@ -180,7 +186,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
               onClick={() => handleTabChange('matrix')}
               className="text-xs font-bold text-teal hover:text-teal-dark flex items-center gap-1.5 cursor-pointer"
             >
-              ← Return to Room 4 Classroom Overview
+              Return to {teacherRoom || 'Classroom'} Overview
             </button>
           </div>
           <ClassroomProvisionMapModal
@@ -200,6 +206,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             handleTabChange('focused');
           }}
           onOpenObservationModal={onOpenObservationModal}
+          roomName={teacherRoom}
         />
       )}
 
@@ -238,7 +245,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                       EHCP Active
                     </span>
                     <span className="text-[11px] font-medium text-textDim dark:text-slate-400">
-                      {child?.year_group?.startsWith('Year') ? child.year_group : `Year ${child?.year_group || '5'}`} · {child?.room_name || 'Room 4'}
+                      {child?.year_group || teacherYearGroup || 'Year group not set'} · {child?.room_name || teacherRoom || 'Classroom'}
                     </span>
                   </div>
                   <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
@@ -547,7 +554,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                   {pupilName} {child?.last_name || ''} - Learning Pathways & Scaffolding
                 </h3>
                 <span className="text-[10px] font-bold text-teal dark:text-teal-300 bg-teal/10 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal/20">
-                  {child?.room_name || 'Room 4'} · {child?.year_group || 'Year 5'}
+                  {child?.room_name || teacherRoom || 'Classroom'} · {child?.year_group || teacherYearGroup || 'Year group not set'}
                 </span>
               </div>
               <div className="text-xs text-textDim dark:text-slate-400 mt-0.5">
@@ -606,7 +613,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             <DecompressionBridgeCard bridge={bridge} childName={pupilName} />
           ) : (
             <div className="p-8 text-center text-textDim text-xs">
-              Synthesizing today&apos;s adult logs from Room 4...
+              Synthesizing today&apos;s adult logs from {teacherRoom || 'the classroom'}...
             </div>
           )}
         </div>

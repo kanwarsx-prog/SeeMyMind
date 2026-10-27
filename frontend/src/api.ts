@@ -45,6 +45,7 @@ import {
   LessonPathwayResponse,
   PupilCurriculumProgressResponse,
   AIRunAuditItem,
+  DemoPersona,
 } from './types';
 
 const API_BASE =
@@ -83,6 +84,12 @@ const getHeaders = (extra: Record<string, string> = {}) => {
 };
 
 export const api = {
+  async getDemoPersonas(): Promise<DemoPersona[]> {
+    const res = await fetch(`${API_BASE}/auth/demo-personas`);
+    if (!res.ok) throw new Error('Unable to load demo personas.');
+    return res.json();
+  },
+
   // Pupils
   async getPupils(): Promise<Child[]> {
     const res = await fetch(`${API_BASE}/pupils/`, { headers: getHeaders() });
@@ -577,7 +584,7 @@ export const api = {
     return res.json();
   },
 
-  async getClassMatrix(roomName: string = 'room-4'): Promise<ClassroomMatrixData> {
+  async getClassMatrix(roomName: string): Promise<ClassroomMatrixData> {
     const res = await fetch(`${API_BASE}/pupils/classrooms/${roomName}/matrix`, {
       headers: getHeaders(),
     });
@@ -774,7 +781,7 @@ export const api = {
     return res.json();
   },
 
-  async getClassroomProvisionMap(roomName: string = 'Room 4'): Promise<ClassroomProvisionSummary> {
+  async getClassroomProvisionMap(roomName: string): Promise<ClassroomProvisionSummary> {
     const res = await fetch(`${API_BASE}/analytics/classroom-provision/${encodeURIComponent(roomName)}`, {
       headers: getHeaders(),
     });

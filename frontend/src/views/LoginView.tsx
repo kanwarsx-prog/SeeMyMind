@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../api';
-import { UserProfile } from '../types';
+import { DemoPersona, UserProfile } from '../types';
 import { Sparkles, GraduationCap, ShieldCheck, HeartHandshake, User, Users, Lock, ArrowRight, KeyRound, Building2 } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 
@@ -13,6 +13,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
   const [tab, setTab] = useState<'portal' | 'pupil'>('portal');
   const [loading, setLoading] = useState(false);
   const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
+  const [demoPersonas, setDemoPersonas] = useState<DemoPersona[]>([]);
+  const [demoPersonasLoading, setDemoPersonasLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Demo Mode visibility (hidden by default unless ?demo=true or #demo in URL)
@@ -35,6 +37,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
   // Token input for direct invitation entry
   const [manualToken, setManualToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
+
+  React.useEffect(() => {
+    if (!showDemoMode || demoPersonas.length > 0) return;
+    setDemoPersonasLoading(true);
+    api.getDemoPersonas()
+      .then(setDemoPersonas)
+      .catch((err) => setError(err.message || 'Unable to load demo personas.'))
+      .finally(() => setDemoPersonasLoading(false));
+  }, [showDemoMode, demoPersonas.length]);
 
   const handlePortalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +106,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
     setPupilPin((prev) => prev.slice(0, -1));
   };
 
-  const demoPersonas = [
+  /* Legacy local persona catalogue removed. Demo personas are backend-owned. const legacyDemoPersonas = [
     {
       role: 'admin',
       name: 'Dr. Alistair Vance',
@@ -156,7 +167,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
       badge: '🤝 TA View',
       desc: 'Key transition schedule & quick classroom notes (<30s)',
     },
-  ];
+  ]; */
+
+  const personaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+    building: Building2,
+    'graduation-cap': GraduationCap,
+    shield: ShieldCheck,
+    'heart-handshake': HeartHandshake,
+    user: User,
+    users: Users,
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between selection:bg-teal selection:text-white relative overflow-hidden">
@@ -659,8 +679,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-              {demoPersonas.map((p) => {
-                const Icon = p.icon;
+              {demoPersonasLoading ? (
+                <div className="sm:col-span-2 lg:col-span-3 p-8 rounded-2xl bg-slate-800/60 border border-slate-700 text-center text-xs text-slate-400">
+                  Loading demo personas...
+                </div>
+              ) : demoPersonas.length === 0 ? (
+                <div className="sm:col-span-2 lg:col-span-3 p-8 rounded-2xl bg-slate-800/60 border border-slate-700 text-center text-xs text-slate-400">
+                  Demo personas are unavailable. Please try again shortly.
+                </div>
+              ) : demoPersonas.map((p) => {
+                const Icon = personaIcons[p.icon] || User;
                 const isCurrentLoading = demoLoadingRole === p.role;
                 return (
                   <button
@@ -687,7 +715,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenInvi
                     </div>
 
                     <p className="text-[11px] text-slate-400 leading-snug line-clamp-2 mb-2">
-                      {p.desc}
+                      {p.description}
                     </p>
 
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 pt-1 border-t border-slate-700/50">

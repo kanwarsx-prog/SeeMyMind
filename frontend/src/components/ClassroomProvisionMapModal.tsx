@@ -44,7 +44,7 @@ export const ClassroomProvisionMapModal: React.FC<ClassroomProvisionMapModalProp
     return (
       <div className="card p-12 text-center text-gray-500 space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
-        <div className="text-xs font-semibold">Loading Room 4 Termly Provision Map & Graduated Response...</div>
+        <div className="text-xs font-semibold">Loading termly provision map and graduated response...</div>
       </div>
     );
   }

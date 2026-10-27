@@ -15,12 +15,14 @@ interface ClassSendMatrixProps {
   onSelectPupil?: (pupilId: string) => void;
   isSupplyModalOpen?: boolean;
   onCloseSupplyModal?: () => void;
+  roomName?: string;
 }
 
 export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
   onSelectPupil,
   isSupplyModalOpen,
   onCloseSupplyModal,
+  roomName,
 }) => {
   const [matrixData, setMatrixData] = useState<ClassroomMatrixData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -33,7 +35,11 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
   };
 
   useEffect(() => {
-    api.getClassMatrix('room-4')
+    if (!roomName) {
+      setLoading(false);
+      return;
+    }
+    api.getClassMatrix(roomName)
       .then((data) => {
         setMatrixData(data);
       })
@@ -43,13 +49,13 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [roomName]);
 
   if (loading) {
     return (
       <div className="card p-12 text-center text-gray-500 space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-teal border-t-transparent animate-spin mx-auto" />
-        <div className="text-xs font-semibold">Loading Room 4 Classroom Overview...</div>
+        <div className="text-xs font-semibold">Loading classroom overview...</div>
       </div>
     );
   }
@@ -99,7 +105,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-lg sm:text-xl font-serif font-bold text-navy dark:text-white flex items-center gap-2">
-              <span>{matrixData?.room_name || 'Room 4'} Classroom Overview</span>
+              <span>{matrixData?.room_name || roomName || 'Classroom'} Overview</span>
             </h2>
             <span className="text-xs text-textDim dark:text-slate-400 font-medium">
               {matrixData?.year_group?.startsWith('Year') ? matrixData.year_group : `Year ${matrixData?.year_group || '5'}`} · Lead: <strong>{matrixData?.lead_teacher || 'Ms Clara Johnson'}</strong> · TA: <strong>{matrixData?.assigned_ta || 'Melissa Grant'}</strong>
@@ -304,7 +310,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
               <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <strong className="block font-bold">Important note for supply / cover teachers:</strong>
-                SEND pupils in Room 4 thrive on predictable routines. Please follow the individual de-escalation tips below before calling on-call behavior support.
+                SEND pupils in this classroom thrive on predictable routines. Please follow the individual de-escalation tips below before calling on-call behavior support.
               </div>
             </div>
 

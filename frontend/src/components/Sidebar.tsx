@@ -61,6 +61,8 @@ interface SidebarProps {
   onToggleSidebar?: () => void;
   onOpenTour?: () => void;
   onOpenAIAudit?: () => void;
+  teacherRoom?: string;
+  teacherYearGroup?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -79,6 +81,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleSidebar,
   onOpenTour,
   onOpenAIAudit,
+  teacherRoom,
+  teacherYearGroup,
 }) => {
   const scrollTo = (id: string) => {
     setTimeout(() => {
@@ -94,13 +98,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       av: 'MJ',
       name: currentUser?.full_name || 'Ms Clara Johnson',
       roleTitle: 'Classroom Teacher',
-      sub: 'Year 5 · Room 4',
+      sub: `${teacherYearGroup ? `${teacherYearGroup} · ` : ''}${teacherRoom || 'Classroom'}`,
       bg: '#5E4D9A',
       icon: GraduationCap,
       navItems: [
         {
           id: 'room4-matrix',
-          label: 'Room 4 Classroom Overview',
+          label: `${teacherRoom || 'Classroom'} Overview`,
           icon: Layers,
           action: () => {
             onSelectNav?.('room4-matrix');

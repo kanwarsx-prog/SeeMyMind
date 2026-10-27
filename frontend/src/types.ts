@@ -423,6 +423,17 @@ export interface UserProfile {
   theme_preference?: 'light' | 'dark' | 'system';
 }
 
+export interface DemoPersona {
+  role: string;
+  name: string;
+  subtitle: string;
+  icon: string;
+  color: string;
+  text_color: string;
+  badge: string;
+  description: string;
+}
+
 export interface ClassroomPupilSummary {
   id: string;
   name: string;

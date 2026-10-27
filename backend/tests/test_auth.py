@@ -15,6 +15,23 @@ def test_demo_login_invalid_role(client):
     assert "Invalid demo role" in resp.json()["detail"]
 
 
+def test_demo_personas_are_backend_catalogue(client):
+    resp = client.get("/api/v1/auth/demo-personas")
+    assert resp.status_code == 200
+    personas = resp.json()
+    assert {persona["role"] for persona in personas} == {
+        "admin",
+        "senco",
+        "teacher",
+        "parent",
+        "child",
+        "ta",
+    }
+    teacher = next(persona for persona in personas if persona["role"] == "teacher")
+    assert teacher["name"] == "Ms Clara Johnson"
+    assert "Room 4" not in teacher["subtitle"]
+
+
 def test_login_staff_email_and_password(client):
     # Ensure SENCO account exists via demo login first
     client.post("/api/v1/auth/demo-login", json={"role": "senco"})

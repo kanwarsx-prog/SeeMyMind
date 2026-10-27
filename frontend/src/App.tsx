@@ -470,7 +470,7 @@ const AppContent: React.FC = () => {
       significance: data.worked ? 'Notable Win' : 'Routine Note',
       visibility: 'Shared',
       observation: {
-        activity_context: 'Classroom Support (Room 4)',
+        activity_context: `Classroom Support${child.room_name ? ` (${child.room_name})` : ''}`,
         strategy_used: data.strategyName,
         strategy_worked: data.worked,
         notes: data.notes,
@@ -524,16 +524,19 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Filter pupils by the selected teacher classroom context to match classroom hub
+  const teacherRoom = child?.room_name || pupils.find((p) => p.room_name)?.room_name || '';
+  const teacherYearGroup = child?.year_group || pupils.find((p) => p.year_group)?.year_group || '';
 
   const topBarConfig = {
     teacher: {
       title: `Good morning, ${currentUser.full_name} 👋`,
       subtitle: teacherSubView === 'matrix'
-        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${child?.room_name || 'Room 4'} (Year 5)`
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${teacherRoom || 'Classroom'}${teacherYearGroup ? ` (${teacherYearGroup})` : ''}`
         : teacherSubView === 'briefings'
-        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Room 4 Morning Arrival Briefings`
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${teacherRoom || 'Classroom'} Morning Arrival Briefings`
         : teacherSubView === 'provision_map'
-        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · Room 4 Termly SEND Provision Map`
+        ? `${currentUser.school_name || "St. Jude's Inclusive Academy"} · ${teacherRoom || 'Classroom'} Termly SEND Provision Map`
         : teacherSubView === 'pathways'
         ? `Adapted Lesson Pathways · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`
         : `Pupil Profile · ${child?.preferred_name || child?.first_name || 'Pupil'} ${child?.last_name || ''}`,
@@ -595,10 +598,8 @@ const AppContent: React.FC = () => {
     },
   }[activeView];
 
-  // Filter pupils by teacher's classroom (Room 4 / Year 5) to match classroom hub
-  const teacherRoom = child?.room_name || 'Room 4';
   const teacherClassPupils = activeView === 'teacher'
-    ? pupils.filter((p) => (p.room_name && p.room_name === teacherRoom) || p.year_group === 'Year 5')
+    ? pupils.filter((p) => teacherRoom ? p.room_name === teacherRoom : p.year_group === teacherYearGroup)
     : pupils;
   const visiblePupils = (activeView === 'teacher' && teacherClassPupils.length > 0)
     ? teacherClassPupils
@@ -622,6 +623,8 @@ const AppContent: React.FC = () => {
         onToggleSidebar={() => setIsSidebarHidden((prev) => !prev)}
         onOpenTour={() => setIsTourModalOpen(true)}
         onOpenAIAudit={() => setIsAITransparencyOpen(true)}
+        teacherRoom={teacherRoom}
+        teacherYearGroup={teacherYearGroup}
       />
 
       <main className={`ml-0 ${isSidebarHidden ? 'lg:ml-0' : 'lg:ml-64'} min-h-screen flex flex-col flex-1 w-full overflow-x-hidden bg-canvas text-textMain transition-[margin] duration-300`}>
@@ -686,6 +689,8 @@ const AppContent: React.FC = () => {
               onOpenWorksheet={handleOpenWorksheet}
               onLogMilestone={handleLogMilestone}
               onLogDeEscalation={handleLogDeEscalation}
+              teacherRoom={teacherRoom}
+              teacherYearGroup={teacherYearGroup}
             />
           )}
 

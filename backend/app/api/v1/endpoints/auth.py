@@ -53,6 +53,69 @@ DEMO_ACCOUNTS = {
     },
 }
 
+DEMO_PERSONAS = [
+    {
+        "role": "admin",
+        "name": "Dr. Alistair Vance",
+        "subtitle": "Platform Governance Lead",
+        "icon": "building",
+        "color": "from-indigo-600 to-slate-800",
+        "text_color": "text-indigo-400",
+        "badge": "Admin Hub",
+        "description": "Multi-school onboarding, persona provisioning and GDPR audit logs",
+    },
+    {
+        "role": "teacher",
+        "name": "Ms Clara Johnson",
+        "subtitle": "Classroom Teacher",
+        "icon": "graduation-cap",
+        "color": "from-purple-600 to-indigo-600",
+        "text_color": "text-purple-600",
+        "badge": "Teacher View",
+        "description": "Morning handovers, adapted lessons and visual task cards",
+    },
+    {
+        "role": "senco",
+        "name": "Ms Amara Okafor",
+        "subtitle": "SENCO and Inclusion Lead",
+        "icon": "shield",
+        "color": "from-teal to-teal-dark",
+        "text_color": "text-teal",
+        "badge": "SENCO View",
+        "description": "SEND register, statutory EHCPs, child registration and parent invites",
+    },
+    {
+        "role": "parent",
+        "name": "Dana Carter",
+        "subtitle": "Phoenix's Mum",
+        "icon": "heart-handshake",
+        "color": "from-amber-600 to-orange-600",
+        "text_color": "text-amber-600",
+        "badge": "Parent Hub",
+        "description": "Morning handovers, read receipts, tonight tips and learning wins",
+    },
+    {
+        "role": "child",
+        "name": "Phoenix Carter",
+        "subtitle": "Pupil Voice",
+        "icon": "user",
+        "color": "from-coral to-rose-600",
+        "text_color": "text-coral",
+        "badge": "Pupil Voice",
+        "description": "Daily emoji check-in, visual worksheets and celebrating wins",
+    },
+    {
+        "role": "ta",
+        "name": "Melissa Grant",
+        "subtitle": "Teaching Assistant and 1-to-1 Support",
+        "icon": "users",
+        "color": "from-emerald-600 to-teal",
+        "text_color": "text-emerald-600",
+        "badge": "TA View",
+        "description": "Key transition schedule and quick classroom notes under 30 seconds",
+    },
+]
+
 
 def _ensure_demo_entities(db: Session) -> tuple[models.School, models.Child]:
     """Ensure baseline school, secondary tenant, and demo accounts exist."""
@@ -304,6 +367,17 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             "theme_preference": getattr(user, "theme_preference", "system") or "system",
         },
     )
+
+
+@router.get(
+    "/demo-personas",
+    response_model=list[dict],
+    status_code=status.HTTP_200_OK,
+    summary="List available demo personas",
+)
+def get_demo_personas():
+    """Return the backend-owned persona catalogue used by the demo login screen."""
+    return DEMO_PERSONAS
 
 
 @router.post(
