@@ -52,6 +52,7 @@ const AppContent: React.FC = () => {
 
   // Modals state
   const [isObsModalOpen, setIsObsModalOpen] = useState(false);
+  const [observationChildId, setObservationChildId] = useState('');
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isWorksheetModalOpen, setIsWorksheetModalOpen] = useState(false);
@@ -344,13 +345,21 @@ const AppContent: React.FC = () => {
   };
 
   const handleLogObservation = async (eventData: any) => {
-    if (!child) return;
+    const observationChild = pupils.find((pupil) => pupil.id === observationChildId);
+    if (!observationChild) return;
     const newEvent = await api.logEvent({
       ...eventData,
-      child_id: child.id,
-      school_id: child.school_id,
+      child_id: observationChild.id,
+      school_id: observationChild.school_id,
     });
-    setTimeline([newEvent, ...timeline]);
+    if (observationChild.id === child?.id) {
+      setTimeline([newEvent, ...timeline]);
+    }
+  };
+
+  const openObservationModal = () => {
+    setObservationChildId('');
+    setIsObsModalOpen(true);
   };
 
   const handleAcknowledgeHandover = async (transitionId: string) => {
@@ -548,7 +557,7 @@ const AppContent: React.FC = () => {
           }
         : {
             label: 'Log Observation',
-            onClick: () => setIsObsModalOpen(true),
+            onClick: openObservationModal,
             icon: <Plus className="w-4 h-4" />,
           },
     },
@@ -584,7 +593,7 @@ const AppContent: React.FC = () => {
       subtitle: `1-to-1 Support Focus · ${child?.preferred_name || child?.first_name || 'Pupil'}${currentUser.school_name ? ` · ${currentUser.school_name}` : ""}`,
       actionButton: {
         label: 'Log Note',
-        onClick: () => setIsObsModalOpen(true),
+        onClick: openObservationModal,
         icon: <Plus className="w-4 h-4" />,
       },
     },
@@ -616,7 +625,7 @@ const AppContent: React.FC = () => {
         onSwitchPersona={handleLogout}
         onRegisterChild={() => setIsRegisterModalOpen(true)}
         onOpenWorksheet={handleOpenWorksheet}
-        onOpenObservationModal={() => setIsObsModalOpen(true)}
+        onOpenObservationModal={openObservationModal}
         isMobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
         isSidebarHidden={isSidebarHidden}
@@ -684,7 +693,7 @@ const AppContent: React.FC = () => {
               onSelectPupil={handleChildSelect}
               onRefreshBriefing={handleRefreshBriefing}
               onAcknowledgeHandover={handleAcknowledgeHandover}
-              onOpenObservationModal={() => setIsObsModalOpen(true)}
+              onOpenObservationModal={openObservationModal}
               onOpenIncidentModal={() => setIsIncidentModalOpen(true)}
               onOpenWorksheet={handleOpenWorksheet}
               onLogMilestone={handleLogMilestone}
@@ -741,7 +750,7 @@ const AppContent: React.FC = () => {
             <TaView
               child={child!}
               timeline={timeline}
-              onOpenObservationModal={() => setIsObsModalOpen(true)}
+              onOpenObservationModal={openObservationModal}
               onDirectLog={handleDirectLog}
               onOpenWorksheet={handleOpenWorksheet}
             />
@@ -765,7 +774,10 @@ const AppContent: React.FC = () => {
         isOpen={isObsModalOpen}
         onClose={() => setIsObsModalOpen(false)}
         onSubmit={handleLogObservation}
-        childName={child?.preferred_name || child?.first_name || 'Pupil'}
+        childName={pupils.find((pupil) => pupil.id === observationChildId)?.preferred_name || pupils.find((pupil) => pupil.id === observationChildId)?.first_name || 'Pupil'}
+        pupils={pupils}
+        selectedChildId={observationChildId}
+        onSelectChild={setObservationChildId}
       />
 
       <IncidentModal

@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ClassroomMatrixData, DecompressionBridgeResponse } from '../types';
 import { api } from '../api';
-import { CheckCircle2, Plus, ArrowRight, X, Sun } from 'lucide-react';
+import { CheckCircle2, ArrowRight, X, Sun } from 'lucide-react';
 import { DecompressionBridgeCard } from './DecompressionBridgeCard';
 
 interface MorningBriefingsViewProps {
   onSelectPupil: (pupilId: string) => void;
-  onOpenObservationModal?: () => void;
   roomName?: string;
 }
 
 export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
   onSelectPupil,
-  onOpenObservationModal,
   roomName,
 }) => {
   const [matrixData, setMatrixData] = useState<ClassroomMatrixData | null>(null);
@@ -134,15 +132,6 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
           </div>
         </div>
 
-        {onOpenObservationModal && (
-          <button
-            onClick={onOpenObservationModal}
-            className="flex items-center gap-1.5 bg-teal hover:bg-teal-dark text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer self-start md:self-auto"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Log Classroom Note</span>
-          </button>
-        )}
       </div>
 
       {/* Grid of Pupil Morning Briefing Cards */}

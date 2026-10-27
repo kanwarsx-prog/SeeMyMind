@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Sparkles } from 'lucide-react';
+import { Child } from '../types';
 
 interface ObservationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<void>;
   childName: string;
+  pupils: Child[];
+  selectedChildId: string;
+  onSelectChild: (childId: string) => void;
 }
 
 export const ObservationModal: React.FC<ObservationModalProps> = ({
@@ -13,6 +17,9 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
   onClose,
   onSubmit,
   childName,
+  pupils,
+  selectedChildId,
+  onSelectChild,
 }) => {
   const [title, setTitle] = useState('');
   const [context, setContext] = useState('Maths Lesson');
@@ -72,6 +79,24 @@ export const ObservationModal: React.FC<ObservationModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+          <div>
+            <label className="block text-xs font-semibold text-navy mb-1">Pupil</label>
+            <select
+              value={selectedChildId}
+              onChange={(e) => onSelectChild(e.target.value)}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-teal focus:ring-1 focus:ring-teal bg-white"
+              required
+            >
+              <option value="">Select a pupil</option>
+              {pupils.map((pupil) => (
+                <option key={pupil.id} value={pupil.id}>
+                  {pupil.full_name || `${pupil.first_name} ${pupil.last_name}`}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-gray-500 mt-1">This observation will be added to the selected pupil&apos;s timeline.</p>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-navy mb-1">Title / Headline</label>
             <input
