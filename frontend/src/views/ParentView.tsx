@@ -69,6 +69,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
     normalizeTab(propActiveTab)
   );
   const [showMorningEdit, setShowMorningEdit] = useState(false);
+  const [showSharedMoments, setShowSharedMoments] = useState(false);
 
   useEffect(() => {
     if (propActiveTab) {
@@ -593,18 +594,29 @@ export const ParentView: React.FC<ParentViewProps> = ({
           </div>
 
           {/* Shared Classroom Observations from Today */}
-          <div className="card p-5 space-y-3">
-            <div className="flex items-center justify-between border-b border-borderMain pb-2">
+          <div className="card overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowSharedMoments((current) => !current)}
+              className="w-full p-5 flex items-center justify-between gap-3 text-left hover:bg-cardSubtle/60 transition-colors cursor-pointer"
+              aria-expanded={showSharedMoments}
+            >
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-coral-dark" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-navy dark:text-white">
-                  Shared Moments from {child.room_name || 'Room 4'}
-                </h3>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy dark:text-white">
+                    Shared Moments from {child.room_name || 'Room 4'}
+                  </h3>
+                  <p className="text-[10px] text-textDim mt-1">{sharedEvents.length} shared records · today&apos;s activity and earlier context</p>
+                </div>
               </div>
-              <span className="text-[10px] text-textDim dark:text-slate-400">{sharedEvents.length} shared records · today&apos;s activity and earlier context</span>
-            </div>
+              <span className="flex items-center gap-2 text-[10px] font-semibold text-teal dark:text-mint whitespace-nowrap">
+                {showSharedMoments ? 'Hide records' : 'Show records'}
+                <span className={`text-base leading-none transition-transform ${showSharedMoments ? 'rotate-180' : ''}`}>⌄</span>
+              </span>
+            </button>
 
-            <div className="space-y-3">
+            {showSharedMoments && <div className="px-5 pb-5 space-y-3 border-t border-borderMain pt-4">
               {timeline.filter((e) => e.visibility === 'Shared').length === 0 ? (
                 <p className="text-xs text-textDim italic py-4 text-center">
                   No shared notes logged yet today. School is in session.
@@ -638,7 +650,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
                     </div>
                   ))
               )}
-            </div>
+            </div>}
           </div>
         </div>
       )}
