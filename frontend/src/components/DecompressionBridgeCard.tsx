@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { DecompressionBridgeResponse } from '../types';
 import {
-  Battery,
-  BatteryWarning,
-  BatteryCharging,
   Eye,
   Sparkles,
   VolumeX,
@@ -30,18 +27,6 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
 }) => {
   const [copied, setCopied] = useState(false);
   const [showClues, setShowClues] = useState(false);
-
-  const getBatteryIcon = (pct: number) => {
-    if (pct < 35) return <BatteryWarning className="w-6 h-6 text-rose-500 animate-pulse" />;
-    if (pct < 65) return <Battery className="w-6 h-6 text-amber-500" />;
-    return <BatteryCharging className="w-6 h-6 text-emerald-500" />;
-  };
-
-  const getBatteryGradient = (pct: number) => {
-    if (pct < 35) return 'from-rose-500 via-rose-400 to-amber-400';
-    if (pct < 65) return 'from-amber-500 via-yellow-400 to-emerald-400';
-    return 'from-emerald-500 to-teal-400';
-  };
 
   const getStepIcon = (iconType: string) => {
     switch (iconType) {
@@ -80,7 +65,7 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
               <span className="text-[11px] text-textDim dark:text-white/60">Pick-Up &amp; Evening Guide</span>
             </div>
             <h2 className="text-lg sm:text-xl font-serif font-bold text-navy dark:text-white mt-1">
-              {childName}&apos;s Afternoon Energy Level
+              {childName}&apos;s Recorded Evidence Today
             </h2>
           </div>
 
@@ -101,30 +86,18 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
           <div className="md:col-span-7 space-y-2.5">
             <div className="flex items-center justify-between text-xs font-semibold">
               <div className="flex items-center gap-2 text-textHead dark:text-white/90">
-                {getBatteryIcon(bridge.battery_percentage)}
+              <ShieldCheck className="w-6 h-6 text-teal" />
                 <span className="font-bold text-sm tracking-wide">
-                  {bridge.battery_status}
+                  {bridge.guidance_confidence}
                 </span>
               </div>
               <span className="text-base font-bold text-navy dark:text-white font-mono">
-                {bridge.battery_percentage}%
+                {bridge.guidance_basis.length} source{bridge.guidance_basis.length === 1 ? '' : 's'}
               </span>
             </div>
 
-            {/* Glowing Battery Progress Bar */}
-            <div className="w-full bg-slate-200/80 dark:bg-white/15 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-300 dark:border-white/20 shadow-inner">
-              <div
-                className={`h-full rounded-full bg-gradient-to-r ${getBatteryGradient(
-                  bridge.battery_percentage
-                )} transition-all duration-1000 shadow-sm`}
-                style={{ width: `${bridge.battery_percentage}%` }}
-              />
-            </div>
-
-            <div className="flex justify-between text-[10px] text-textDim dark:text-white/50 pt-0.5 font-medium">
-              <span>0% Needs Quiet</span>
-              <span>50% Steady</span>
-              <span>100% Calm &amp; Content</span>
+            <div className="text-[11px] text-textDim dark:text-white/60 pt-1">
+              This is a summary of recorded evidence, not a clinical energy score.
             </div>
           </div>
 
