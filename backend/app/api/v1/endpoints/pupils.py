@@ -219,7 +219,10 @@ def get_classroom_matrix(
                 "acknowledged_by_staff": bool(latest_handover.acknowledged_by_staff),
                 "acknowledged_at": latest_handover.acknowledged_at.strftime("%I:%M %p") if latest_handover.acknowledged_at else None,
                 "event_time": latest_handover.event.event_time.isoformat() if latest_handover.event else None,
-                "alerts": ["Noise Defenders in Bag", "Assembly 9:05am"] if p.first_name == "Phoenix" else [],
+                # Alerts must reflect recorded evidence. The UI derives current
+                # signals from the handover and timeline rather than inventing
+                # pupil-specific advice here.
+                "alerts": [],
             }
         else:
             handover_data = None

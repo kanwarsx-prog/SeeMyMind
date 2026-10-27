@@ -161,7 +161,41 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
   const ackTimeFormatted = effectiveHandover?.acknowledged_at
     ? new Date(effectiveHandover.acknowledged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '8:48am';
+    : null;
+
+  const today = new Date();
+  const isToday = (value?: string) => {
+    if (!value) return false;
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime()) && date.toDateString() === today.toDateString();
+  };
+
+  const currentEvents = timeline.filter((event) => isToday(event.event_time));
+  const supportSignals = [
+    ...(isHandoverToday && effectiveHandover ? [{
+      tone: 'amber',
+      title: `Home handover recorded${handoverTimeFormatted ? ` at ${handoverTimeFormatted}` : ''}`,
+      detail: [
+        effectiveHandover.morning_mood && `Mood: ${effectiveHandover.morning_mood}`,
+        effectiveHandover.sleep_quality && `Sleep: ${effectiveHandover.sleep_quality}`,
+        effectiveHandover.breakfast_eaten !== undefined && `Breakfast: ${effectiveHandover.breakfast_eaten ? 'eaten' : 'not eaten'}`,
+        effectiveHandover.medication_given !== undefined && `Medication: ${effectiveHandover.medication_given ? 'given' : 'not given'}`,
+        effectiveHandover.special_notes_for_day,
+      ].filter(Boolean).join(' · ') || 'A home handover was recorded without additional detail.',
+    }] : []),
+    ...currentEvents
+      .filter((event) => event.event_type !== 'Transition')
+      .slice(0, 4)
+      .map((event) => ({
+        tone: event.event_type === 'Incident' ? 'coral' : event.significance === 'Notable Win' ? 'green' : 'slate',
+        title: `${event.title}${event.event_time ? ` · ${new Date(event.event_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}`,
+        detail: [
+          event.summary,
+          event.observation?.activity_context,
+          event.observation?.strategy_used && `Strategy: ${event.observation.strategy_used}`,
+        ].filter(Boolean).join(' · '),
+      })),
+  ];
 
   return (
     <div className="space-y-6">
@@ -278,7 +312,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 ) : (
                   <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Acknowledged at {ackTimeFormatted}</span>
+                    <span>{ackTimeFormatted ? `Acknowledged at ${ackTimeFormatted}` : 'Handover acknowledged'}</span>
                   </div>
                 )}
 
@@ -408,7 +442,7 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
                 <span className="flex items-center gap-1.5 text-mint/80 font-medium">
                   <span>✓ Grounded in {pupilName}&apos;s latest home handover &amp; timeline logs</span>
                 </span>
-                <span className="text-[10px] text-white/40">CoP 6.44 Compliant</span>
+                <span className="text-[10px] text-white/40">Evidence cited in briefing</span>
               </div>
             )}
           </div>
@@ -422,8 +456,12 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-dark" />
                 <div>
-                  <h4 className="text-xs font-bold text-navy">Today's Support Alerts</h4>
-                  <p className="text-[10px] text-gray-500">Live signals synced from parent handover & sensory profile</p>
+                  <h4 className="text-xs font-bold text-navy">Today&apos;s Support Signals</h4>
+                  <p className="text-[10px] text-gray-500">
+                    {supportSignals.length > 0
+                      ? `${supportSignals.length} recorded signal${supportSignals.length === 1 ? '' : 's'} for ${pupilName}`
+                      : 'No current handover, incident, or observation evidence recorded'}
+                  </p>
                 </div>
               </div>
               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${alertsOpen ? 'rotate-180' : ''}`} />
@@ -431,24 +469,20 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
 
             {alertsOpen && (
               <div className="p-4 space-y-2.5 divide-y divide-gray-100 text-xs">
-                <div className="pt-2 first:pt-0 flex items-start gap-3">
-                  <span className="w-2 h-2 rounded-full bg-coral-dark mt-1.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-bold text-navy">9:05am Whole-School Assembly:</span> Sensory load is peak in the main hall. Noise defenders should be offered at classroom door before moving to the hall. Buddy pairing with Jake O'Brien active.
+                {supportSignals.length === 0 ? (
+                  <div className="py-3 text-gray-500 italic">
+                    Nothing needs attention from the records available today.
                   </div>
-                </div>
-                <div className="pt-2.5 flex items-start gap-3">
-                  <span className="w-2 h-2 rounded-full bg-amber-dark mt-1.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-bold text-navy">Restless Night (4:00am wake-up):</span> Dana reported disturbed sleep. Potential attention dip around 10:00am. Provide a 5-min movement pause if fidgeting escalates.
+                ) : supportSignals.map((signal, index) => (
+                  <div key={`${signal.title}-${index}`} className="pt-2.5 first:pt-0 flex items-start gap-3">
+                    <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      signal.tone === 'coral' ? 'bg-coral-dark' : signal.tone === 'amber' ? 'bg-amber-dark' : signal.tone === 'green' ? 'bg-emerald-600' : 'bg-slate-400'
+                    }`} />
+                    <div>
+                      <span className="font-bold text-navy">{signal.title}:</span> {signal.detail}
+                    </div>
                   </div>
-                </div>
-                <div className="pt-2.5 flex items-start gap-3">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600 mt-1.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-bold text-navy">Science Win Yesterday:</span> Demonstrated leadership in water density practical with Visual Task Cards. Strategy validated!
-                  </div>
-                </div>
+                ))}
               </div>
             )}
           </div>
