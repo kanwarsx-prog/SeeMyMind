@@ -306,6 +306,15 @@ export const ParentView: React.FC<ParentViewProps> = ({
     )
   );
 
+  const sharedEvents = timeline.filter((event) => event.visibility === 'Shared');
+  const todayKey = new Date().toDateString();
+
+  const formatEventDate = (eventTime: string) => new Date(eventTime).toLocaleDateString([], {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-10">
       {/* 1. Sibling Switcher Ribbon for Multi-Child Families */}
@@ -589,10 +598,10 @@ export const ParentView: React.FC<ParentViewProps> = ({
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-coral-dark" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-navy dark:text-white">
-                  Shared Moments from {child.room_name || 'Room 4'} Today
+                  Shared Moments from {child.room_name || 'Room 4'}
                 </h3>
               </div>
-              <span className="text-[10px] text-textDim dark:text-slate-400">Live teacher feed</span>
+              <span className="text-[10px] text-textDim dark:text-slate-400">{sharedEvents.length} shared records · today&apos;s activity and earlier context</span>
             </div>
 
             <div className="space-y-3">
@@ -605,9 +614,12 @@ export const ParentView: React.FC<ParentViewProps> = ({
                   .filter((e) => e.visibility === 'Shared')
                   .map((evt) => (
                     <div key={evt.id} className="p-3.5 rounded-xl bg-cardSubtle border border-borderMain space-y-1">
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-start justify-between gap-3 text-xs">
                         <span className="font-bold text-navy dark:text-white">{evt.title}</span>
-                        <span className="text-textDim dark:text-slate-400 text-[10px]">
+                        <span className="text-textDim dark:text-slate-400 text-[10px] text-right whitespace-nowrap">
+                          <span className={`block font-semibold ${new Date(evt.event_time).toDateString() === todayKey ? 'text-emerald-700 dark:text-emerald-300' : 'text-textDim'}`}>
+                            {new Date(evt.event_time).toDateString() === todayKey ? 'Today' : formatEventDate(evt.event_time)}
+                          </span>
                           {new Date(evt.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
