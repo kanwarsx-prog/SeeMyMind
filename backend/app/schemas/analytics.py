@@ -12,8 +12,13 @@ class SchoolAnalyticsOverview(BaseModel):
     total_weekly_ta_hours_delivered: float
     provision_delivery_rate: float  # Percentage (e.g. 96.2)
     overall_de_escalation_win_rate: float  # Percentage (e.g. 91.4)
+    de_escalation_observation_count: int
     total_incidents_this_term: int
     peak_vulnerability_window: str
+    peak_vulnerability_count: int
+    annual_reviews_recorded: int
+    annual_reviews_on_track: int
+    annual_reviews_missing: int
     annual_reviews_on_track_rate: float  # Percentage (e.g. 100.0)
 
 

@@ -188,10 +188,14 @@ export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
-              {overview?.overall_de_escalation_win_rate}%
+              {overview && overview.de_escalation_observation_count > 0
+                ? `${overview.overall_de_escalation_win_rate}%`
+                : 'Not recorded'}
             </span>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900/40">
-              +4.2% termly
+              {overview && overview.de_escalation_observation_count > 0
+                ? `${overview.de_escalation_observation_count} measured`
+                : 'No observations'}
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
@@ -209,14 +213,18 @@ export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-teal dark:text-teal-300">
-              {overview?.provision_delivery_rate}%
+              {provisionAudit && provisionAudit.total_allocated_ta_hours > 0
+                ? `${overview?.provision_delivery_rate}%`
+                : 'Not recorded'}
             </span>
             <span className="text-[10px] font-semibold text-textDim dark:text-slate-400">
               {provisionAudit ? `${provisionAudit.total_delivered_ta_hours.toFixed(1)}h / ${provisionAudit.total_allocated_ta_hours.toFixed(1)}h` : 'Not recorded'}
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            Recorded TA allocation and delivery for {overview?.ehcp_count || 0} EHCP pupils.
+            {provisionAudit && provisionAudit.total_allocated_ta_hours > 0
+              ? `Recorded TA allocation and delivery across ${provisionAudit.bands.reduce((total, band) => total + band.pupil_count, 0)} pupil allocations.`
+              : 'No TA allocation records are available.'}
           </p>
         </div>
 
@@ -234,7 +242,9 @@ export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps>
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            Derived from recorded incident timings only.
+            {overview && overview.peak_vulnerability_count > 0
+              ? `${overview.peak_vulnerability_count} recorded incident${overview.peak_vulnerability_count === 1 ? '' : 's'} at this peak time.`
+              : 'No incident timings are recorded.'}
           </p>
         </div>
 
@@ -248,14 +258,20 @@ export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-purple-800 dark:text-purple-300">
-              {overview?.annual_reviews_on_track_rate}%
+              {overview && overview.annual_reviews_recorded > 0
+                ? `${overview.annual_reviews_on_track_rate}%`
+                : 'Not recorded'}
             </span>
             <span className="text-[10px] font-bold text-purple-700 bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-900/40">
-              {overview?.annual_reviews_on_track_rate || 0}% on track
+              {overview && overview.annual_reviews_recorded > 0
+                ? `${overview.annual_reviews_on_track} of ${overview.annual_reviews_recorded} on track`
+                : 'No review dates'}
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            Based on recorded annual review dates. Missing dates are not counted as on track.
+            {overview && overview.annual_reviews_missing > 0
+              ? `${overview.annual_reviews_missing} active pupil${overview.annual_reviews_missing === 1 ? '' : 's'} have no review date recorded.`
+              : 'Based on recorded annual review dates.'}
           </p>
         </div>
       </div>

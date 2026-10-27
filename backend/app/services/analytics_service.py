@@ -1,6 +1,6 @@
 import csv
 import io
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -53,6 +53,17 @@ class AnalyticsService:
             if p.support_profile and p.support_profile.annual_review_due
         ]
         reviews_on_track = sum(1 for review_date in review_dates if review_date >= today)
+        incident_windows = Counter()
+        for incident in incidents:
+            event_time = incident.event.event_time if incident.event else None
+            if event_time:
+                incident_windows[(event_time.strftime("%A"), event_time.strftime("%H:00"))] += 1
+        if incident_windows:
+            (peak_day, peak_hour), peak_count = incident_windows.most_common(1)[0]
+            peak_window = f"{peak_day} {peak_hour}"
+        else:
+            peak_window = "No recorded incidents"
+        missing_review_dates = max(len(pupils) - len(review_dates), 0)
         school = db.query(models.School).filter(models.School.id == school_id).first() if school_id else db.query(models.School).first()
         return SchoolAnalyticsOverview(
             school_name=school.school_name if school else "Not recorded",
@@ -63,8 +74,13 @@ class AnalyticsService:
             total_weekly_ta_hours_delivered=delivered,
             provision_delivery_rate=round((delivered / allocated) * 100, 1) if allocated else 0.0,
             overall_de_escalation_win_rate=round((successful / len(observations)) * 100, 1) if observations else 0.0,
+            de_escalation_observation_count=len(observations),
             total_incidents_this_term=len(incidents),
-            peak_vulnerability_window="No recorded incidents" if not incidents else "See heatmap",
+            peak_vulnerability_window=peak_window,
+            peak_vulnerability_count=peak_count if incident_windows else 0,
+            annual_reviews_recorded=len(review_dates),
+            annual_reviews_on_track=reviews_on_track,
+            annual_reviews_missing=missing_review_dates,
             annual_reviews_on_track_rate=round((reviews_on_track / len(review_dates)) * 100, 1) if review_dates else 0.0,
         )
 

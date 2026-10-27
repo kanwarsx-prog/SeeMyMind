@@ -782,8 +782,13 @@ export interface SchoolAnalyticsOverview {
   total_weekly_ta_hours_delivered: number;
   provision_delivery_rate: number;
   overall_de_escalation_win_rate: number;
+  de_escalation_observation_count: number;
   total_incidents_this_term: number;
   peak_vulnerability_window: string;
+  peak_vulnerability_count: number;
+  annual_reviews_recorded: number;
+  annual_reviews_on_track: number;
+  annual_reviews_missing: number;
   annual_reviews_on_track_rate: number;
 }
 
