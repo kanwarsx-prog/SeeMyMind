@@ -853,7 +853,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
               <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-teal" />
-                  <h3 className="text-sm font-bold text-navy">Ask NOYA &bull; SEND Longitudinal Evidence Retrieval</h3>
+                  <h3 className="text-sm font-bold text-navy">Ask NOYA about recorded evidence</h3>
                 </div>
                 {onOpenCopilot && (
                   <button
@@ -907,36 +907,40 @@ export const SencoView: React.FC<SencoViewProps> = ({
               )}
             </div>
 
-            {/* Statutory EHCP Progress Section */}
+            {/* Recorded EHCP outcomes and provision */}
             <div className="card p-5">
               <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-purple-dark" />
-                  <h3 className="text-sm font-bold text-navy">EHCP Annual Review & Outcomes</h3>
+                  <h3 className="text-sm font-bold text-navy">Recorded EHCP outcomes</h3>
                 </div>
                 <span className="text-[10px] bg-purple-light text-purple-dark px-2 py-0.5 rounded-full font-bold">
-                  Section F Active
+                  {reviewPack ? `${reviewPack.section_e.length} outcomes` : 'Loading'}
                 </span>
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3 bg-gray-50 rounded-xl space-y-1">
-                  <div className="font-bold text-navy">Target 1: Sensory Regulation in Large Spaces</div>
-                  <p className="text-gray-600">Provision: Access to noise defenders & visual timetable for whole-school transitions.</p>
-                  <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1 pt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>On track &bull; 8 positive observation logs this term</span>
+                {reviewPack?.section_e.slice(0, 3).map((outcome) => (
+                  <div key={outcome.target_id} className="p-3 bg-gray-50 rounded-xl space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-bold text-navy">{outcome.title}</div>
+                      <span className={`text-[10px] font-bold whitespace-nowrap ${
+                        outcome.status === 'Needs Review' ? 'text-coral-dark' : 'text-emerald-700'
+                      }`}>
+                        {outcome.status}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{outcome.evidence_summary || 'No evidence summary recorded.'}</p>
+                    <div className="text-[10px] text-gray-400 pt-1">
+                      Last reviewed: {outcome.last_reviewed || 'Not recorded'}
+                    </div>
                   </div>
-                </div>
-
-                <div className="p-3 bg-gray-50 rounded-xl space-y-1">
-                  <div className="font-bold text-navy">Target 2: Peer Collaboration & Group Tasks</div>
-                  <p className="text-gray-600">Provision: Visual task breakdown strip for partner work in practical subjects.</p>
-                  <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1 pt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Demonstrated in Science practical (Water density task)</span>
+                ))}
+                {reviewPack && reviewPack.section_e.length === 0 && (
+                  <div className="p-4 rounded-xl border border-gray-100 bg-gray-50 text-xs text-gray-400 text-center">
+                    No EHCP outcomes have been recorded for this pupil yet.
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

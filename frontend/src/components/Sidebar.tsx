@@ -200,7 +200,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           id: 'assistant',
-          label: 'NOYA Longitudinal Query',
+          label: 'Evidence & Review',
           icon: Sparkles,
           action: () => {
             onSelectNav?.('assistant');

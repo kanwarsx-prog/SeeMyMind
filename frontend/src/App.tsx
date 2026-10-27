@@ -567,7 +567,7 @@ const AppContent: React.FC = () => {
         : sencoSubTab === 'staff_team'
         ? `Staff & Inclusion Directory · ${currentUser.full_name}`
         : sencoSubTab === 'assistant'
-        ? `NOYA Longitudinal Query · ${currentUser.full_name}`
+        ? `Evidence & Review · ${currentUser.full_name}`
         : sencoSubTab === 'reports_analytics'
         ? `SEND Reports & Analytics · ${currentUser.full_name}`
         : `Inclusion & SEND Caseload · ${currentUser.full_name}`,
