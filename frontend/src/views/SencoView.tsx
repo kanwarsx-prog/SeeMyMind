@@ -385,10 +385,10 @@ export const SencoView: React.FC<SencoViewProps> = ({
                         {child?.full_name || (child ? `${child.first_name} ${child.last_name}` : (reviewPack?.child_name || 'SEND Pupil'))}
                       </h3>
                       <span className="text-[10px] bg-purple-100 dark:bg-purple-400/20 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-400/30 px-2 py-0.5 rounded-full font-bold">
-                        Statutory EHCP
+                        {child?.support_profile?.has_ehcp ? 'Statutory EHCP' : 'SEN Support'}
                       </span>
                       <span className="text-[10px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">
-                        Review Due in 14 Days
+                        {reviewPack?.statutory_status || 'Evidence status unavailable'}
                       </span>
                     </div>
                     <p className="text-xs text-textDim dark:text-white/70 mt-0.5">
@@ -416,6 +416,17 @@ export const SencoView: React.FC<SencoViewProps> = ({
                 )}
                 <span>CAMHS Clinical Dossier</span>
               </button>
+
+              {onOpenCopilot && (
+                <button
+                  onClick={() => onOpenCopilot(`Review ${reviewPack?.child_name || 'this pupil'}'s EHCP evidence. Identify missing or weakly supported evidence, contradictions, and the next questions I should ask the pupil, family, and staff. Do not invent facts.`)}
+                  className="w-full sm:w-auto justify-center px-4 py-2.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer active:scale-95"
+                  title="Ask NOYA to audit evidence gaps and prepare review questions"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Review with NOYA</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setShowPackModal(true)}
@@ -449,8 +460,8 @@ export const SencoView: React.FC<SencoViewProps> = ({
                 <div className="text-[11px] text-gray-500 mt-0.5">Parent Handovers Received</div>
               </div>
               <div className="stat-card border-purple-dark">
-                <div className="font-serif text-2xl font-bold text-purple-dark">0</div>
-                <div className="text-[11px] text-gray-500 mt-0.5">Fixed-Term Exclusions</div>
+                  <div className="font-serif text-2xl font-bold text-purple-dark">{reviewPack.metrics.safeguarding_incidents}</div>
+                  <div className="text-[11px] text-gray-500 mt-0.5">Safeguarding Incidents</div>
               </div>
             </div>
           )}
@@ -468,7 +479,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
                     <h4 className="text-sm font-bold text-navy">Section A: Child & Parent Voice</h4>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal/10 text-teal font-bold">
-                    Co-Produced
+                    Evidence status
                   </span>
                 </div>
 
@@ -515,6 +526,11 @@ export const SencoView: React.FC<SencoViewProps> = ({
 
                 {reviewPack && (
                   <div className="space-y-2 text-xs">
+                    {reviewPack.section_e.length === 0 && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200">
+                        No active targets are recorded for this pupil.
+                      </div>
+                    )}
                     {reviewPack.section_e.map((out) => (
                       <div key={out.target_id} className="p-2.5 bg-cardSubtle rounded-xl border border-borderMain space-y-1">
                         <div className="flex items-center justify-between">
@@ -543,7 +559,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
                     <h4 className="text-sm font-bold text-navy dark:text-white">Section B: Special Educational Needs (4 Areas)</h4>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-light dark:bg-purple-950/50 text-purple-dark dark:text-purple-300 border border-purple-200/50 dark:border-purple-800/40 font-bold">
-                    Evidence Verified
+                    Linked evidence only
                   </span>
                 </div>
 
@@ -577,12 +593,17 @@ export const SencoView: React.FC<SencoViewProps> = ({
                     <h4 className="text-sm font-bold text-navy dark:text-white">Section F: Quantified Special Provision Delivered</h4>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40 font-bold">
-                    100% Tracked
+                    Recorded provision
                   </span>
                 </div>
 
                 {reviewPack && (
                   <div className="space-y-2 text-xs">
+                    {reviewPack.section_f.length === 0 && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200">
+                        No active provision or staff allocation is recorded for this pupil.
+                      </div>
+                    )}
                     {reviewPack.section_f.map((prov) => (
                       <div key={prov.provision_id} className="p-3 bg-cardSubtle rounded-xl border border-borderMain space-y-1">
                         <div className="flex items-center justify-between">

@@ -276,7 +276,7 @@ def get_school_provision_matrix(
 def get_annual_review_pack(child_id: UUID, db: Session = Depends(get_db)):
     """Generate or retrieve the statutory EHCP Annual Review Evidence Pack for a pupil."""
     try:
-        return AnnualReviewService.generate_annual_review_pack(db, child_id)
+        return AnnualReviewService.generate_evidence_review_pack(db, child_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

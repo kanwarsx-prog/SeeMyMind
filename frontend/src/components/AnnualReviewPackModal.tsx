@@ -115,7 +115,7 @@ export const AnnualReviewPackModal: React.FC<AnnualReviewPackModalProps> = ({
               </div>
               <div>
                 <span className="text-[10px] text-gray-400 uppercase font-bold block">Statutory Status</span>
-                <span className="font-bold text-emerald-700">Band 3 EHCP Active</span>
+                <span className="font-bold text-emerald-700">{pack.statutory_status}</span>
               </div>
             </div>
 
@@ -134,8 +134,8 @@ export const AnnualReviewPackModal: React.FC<AnnualReviewPackModalProps> = ({
                 <div className="text-[10px] text-gray-600 font-medium">Home Handovers Received</div>
               </div>
               <div className="p-3 bg-purple-light/40 border border-purple-200 rounded-xl text-center">
-                <div className="text-lg font-bold text-purple-dark">0</div>
-                <div className="text-[10px] text-gray-600 font-medium">Exclusions / Escalations</div>
+                <div className="text-lg font-bold text-purple-dark">{pack.metrics.safeguarding_incidents}</div>
+                <div className="text-[10px] text-gray-600 font-medium">Safeguarding Incidents</div>
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@ export const AnnualReviewPackModal: React.FC<AnnualReviewPackModalProps> = ({
               <div className="p-4 rounded-xl bg-amber-50/40 border border-amber-200 space-y-2">
                 <div className="font-bold text-navy flex items-center gap-1.5">
                   <HeartHandshake className="w-3.5 h-3.5 text-amber-dark" />
-                  <span>Parental Contribution (Dana Carter)</span>
+                  <span>Parent / Carer Contribution</span>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
                   {pack.section_a.parent_views}
@@ -346,12 +346,12 @@ export const AnnualReviewPackModal: React.FC<AnnualReviewPackModalProps> = ({
 
             <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-gray-500">
               <div>
-                <span className="font-bold text-navy block">{pack.senco_name || "Sarah Davies (NASENCo, NPQSL)"}</span>
+                <span className="font-bold text-navy block">{pack.senco_name || "Not recorded"}</span>
                 <span>Special Educational Needs Coordinator &bull; {pack.school_name || "Inclusive Academy"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] px-2.5 py-1 rounded-full bg-purple-light text-purple-dark font-bold">
-                  Statutory Submission Hash: #EHCP-AR-2026-PHOENIX
+                  Draft evidence view · human review required
                 </span>
               </div>
             </div>

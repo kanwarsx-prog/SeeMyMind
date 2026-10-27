@@ -293,6 +293,199 @@ class AnnualReviewService:
         )
 
     @staticmethod
+    def generate_evidence_review_pack(db: Session, child_id: UUID) -> AnnualReviewPackResponse:
+        """Build an evidence-only review view from records linked to one pupil.
+
+        Missing evidence is deliberately returned as a gap. This endpoint must not
+        manufacture statutory statements, outcomes, dates, or parent and pupil voice.
+        """
+        child = (
+            db.query(Child)
+            .options(joinedload(Child.support_profile))
+            .filter(Child.id == child_id)
+            .first()
+        )
+        if not child:
+            raise ValueError(f"Pupil with ID {child_id} not found")
+
+        events = (
+            db.query(ChildEvent)
+            .options(
+                joinedload(ChildEvent.observation),
+                joinedload(ChildEvent.transition_log),
+                joinedload(ChildEvent.child_check_in),
+                joinedload(ChildEvent.incident),
+            )
+            .filter(ChildEvent.child_id == child_id)
+            .order_by(ChildEvent.event_time.desc())
+            .all()
+        )
+        observations = [e for e in events if e.event_type == "Observation"]
+        transitions = [e for e in events if e.event_type == "Transition"]
+        incidents = [e for e in events if e.event_type == "Incident"]
+        measured_observations = [
+            e for e in observations if e.observation and e.observation.strategy_worked is not None
+        ]
+        wins = sum(1 for e in measured_observations if e.observation.strategy_worked is True)
+        rate = (
+            f"{int((wins / len(measured_observations)) * 100)}% ({wins}/{len(measured_observations)} recorded outcomes)"
+            if measured_observations else "Not enough recorded outcomes"
+        )
+        profile = child.support_profile
+        created_date = child.created_at.date() if child.created_at else datetime.now(UTC).date()
+        active_ehcp_days = max((datetime.now(UTC).date() - created_date).days, 0) if profile and profile.has_ehcp else 0
+
+        metrics = AnnualReviewMetrics(
+            total_evidence_observations=len(observations),
+            de_escalation_win_rate=rate,
+            morning_handovers_received=len(transitions),
+            safeguarding_incidents=sum(
+                1 for e in incidents if e.incident and e.incident.severity == "Safeguarding Incident"
+            ),
+            active_ehcp_days=active_ehcp_days,
+        )
+
+        def label(event: ChildEvent) -> str:
+            date_label = event.event_time.strftime("%d %b %Y") if event.event_time else "Date not recorded"
+            return f"{event.event_type} · {event.title} ({date_label})"
+
+        pupil_voice = next(
+            (e.child_check_in.voice_note_text for e in events if e.child_check_in and e.child_check_in.voice_note_text),
+            None,
+        )
+        parent_events = [
+            e for e in events if (e.reporter_type or "").lower() in {"parent", "carer", "guardian"}
+        ]
+        parent_voice = next((e.summary for e in parent_events if e.summary), None)
+        section_a = SectionAViews(
+            child_views=pupil_voice or "No pupil voice has been recorded for this review.",
+            child_aspirations="No pupil aspirations have been recorded for this review.",
+            parent_views=parent_voice or "No parent or carer contribution has been recorded for this review.",
+            parent_aspirations="No parent or carer aspirations have been recorded for this review.",
+            co_production_notes=(
+                f"Recorded sources: {len(events)} timeline events, {len(transitions)} transitions, "
+                f"and {len(observations)} observations. Confirm missing contributions before submission."
+            ),
+        )
+
+        areas = [
+            ("Cognition & Learning", ("learning", "math", "literacy", "memory", "processing", "dyslex", "dyscalcul")),
+            ("Communication & Interaction", ("communication", "language", "speech", "autism", "interaction", "social")),
+            ("Social, Emotional & Mental Health", ("semh", "anxiety", "emotion", "mental", "behaviour", "regulation")),
+            ("Sensory & Physical", ("sensory", "physical", "hearing", "vision", "motor", "noise", "medical")),
+        ]
+        profile_text = " ".join(
+            str(value or "") for value in (
+                profile.primary_need if profile else None,
+                profile.secondary_need if profile else None,
+                profile.summary if profile else None,
+                profile.sensory_profile if profile else None,
+            )
+        ).lower()
+        section_b = []
+        for area_name, keywords in areas:
+            matching = []
+            for event in observations:
+                observation = event.observation
+                event_text = " ".join(
+                    str(value or "") for value in (
+                        event.title, event.summary,
+                        observation.activity_context if observation else None,
+                        observation.notes if observation else None,
+                        observation.strengths_observed if observation else None,
+                    )
+                ).lower()
+                if any(keyword in event_text for keyword in keywords):
+                    matching.append(event)
+            profile_matches = any(keyword in profile_text for keyword in keywords)
+            section_b.append(SectionBNeed(
+                area_of_need=area_name,
+                statutory_summary=(
+                    f"Profile records reference: {profile.primary_need or 'an unspecified primary need'}."
+                    if profile_matches and profile else "No profile evidence is recorded for this area."
+                ),
+                observed_impact=next(
+                    (
+                        e.observation.notes or e.summary
+                        for e in matching
+                        if e.observation and (e.observation.notes or e.summary)
+                    ),
+                    "No observation impact has been recorded for this area.",
+                ),
+                evidence_count=len(matching),
+                citations=[label(e) for e in matching[:3]] or ["No linked evidence recorded"],
+            ))
+
+        targets = db.query(models.PupilTarget).filter(
+            models.PupilTarget.child_id == child_id,
+            models.PupilTarget.active.is_(True),
+        ).order_by(models.PupilTarget.created_at.desc()).all()
+        section_e = [SectionEOutcome(
+            target_id=str(target.id),
+            title=target.target_area,
+            category=target.apdr_stage,
+            status=target.review_outcome,
+            evidence_summary=target.review_notes or target.breakthrough_notes or "No linked evidence recorded for this target.",
+            last_reviewed=(target.updated_at or target.created_at).strftime("%d %b %Y"),
+        ) for target in targets]
+
+        allocations = db.query(models.StaffPupilAllocation).options(
+            joinedload(models.StaffPupilAllocation.staff_member)
+        ).filter(
+            models.StaffPupilAllocation.child_id == child_id,
+            models.StaffPupilAllocation.active.is_(True),
+        ).all()
+        section_f = []
+        for index, allocation in enumerate(allocations, start=1):
+            staff_name = (
+                f"{allocation.staff_member.first_name} {allocation.staff_member.last_name}"
+                if allocation.staff_member else "Staff member not recorded"
+            )
+            delivery_rate = (
+                f"{int((allocation.weekly_delivered_hours / allocation.weekly_allocated_hours) * 100)}% delivered"
+                if allocation.weekly_allocated_hours else "Delivery not recorded"
+            )
+            section_f.append(SectionFProvision(
+                provision_id=f"A-{index}",
+                title=allocation.role_type,
+                quantified_support=f"{allocation.weekly_allocated_hours:g} hours per week allocated to {staff_name}",
+                evidence_delivery_rate=delivery_rate,
+                strategies_used=[],
+                impact_notes="Delivery allocation is recorded. Review outcome evidence alongside observations.",
+            ))
+        for index, strategy in enumerate((profile.strategies if profile else []), start=len(section_f) + 1):
+            section_f.append(SectionFProvision(
+                provision_id=f"S-{index}",
+                title=strategy.custom_title or (strategy.strategy.title if strategy.strategy else "Support strategy"),
+                quantified_support="Quantity not recorded",
+                evidence_delivery_rate=strategy.effective_rating or "Effectiveness not recorded",
+                strategies_used=[strategy.custom_instructions],
+                impact_notes="Review linked observations to assess impact.",
+            ))
+
+        school = db.query(models.School).filter(models.School.id == child.school_id).first() if child.school_id else None
+        return AnnualReviewPackResponse(
+            child_id=child.id,
+            child_name=child.full_name or f"{child.first_name} {child.last_name}",
+            date_of_birth=child.date_of_birth.strftime("%d %B %Y") if child.date_of_birth else "Not recorded",
+            year_group=child.year_group or "Not recorded",
+            primary_need=(profile.primary_need if profile and profile.primary_need else "Not recorded"),
+            school_name=school.school_name if school else "Not recorded",
+            senco_name=(school.lead_senco_name if school and school.lead_senco_name else "Not recorded"),
+            review_date=datetime.now(UTC).strftime("%d %B %Y"),
+            statutory_status="Draft evidence view · human review required",
+            metrics=metrics,
+            section_a=section_a,
+            section_b=section_b,
+            section_e=section_e,
+            section_f=section_f,
+            senco_recommendations=(
+                "No statutory recommendation has been recorded. Use NOYA to identify evidence gaps and draft review questions; "
+                "a SENCO must review and approve any recommendation before submission."
+            ),
+        )
+
+    @staticmethod
     def get_school_provision_matrix(
         db: Session, school_id: UUID | None = None
     ) -> SchoolProvisionMatrixResponse:
