@@ -447,7 +447,52 @@ def demo_login(body: DemoLoginRequest, db: Session = Depends(get_db)):
             detail=f"Invalid demo role '{role}'. Expected one of: {list(DEMO_ACCOUNTS.keys())}",
         )
 
-    school, child = _ensure_demo_entities(db)
+    try:
+        school, child = _ensure_demo_entities(db)
+    except Exception as exc:
+        # A demo session should not be blocked by a non-essential seed row.
+        # This is especially important for persistent Render databases that
+        # may contain data created by an earlier schema revision.
+        print(f"Demo entity seed failed; using core fallback: {exc}")
+        db.rollback()
+        school = (
+            db.query(models.School)
+            .filter(models.School.school_reference == "SCH-STJUDES")
+            .first()
+        ) or db.query(models.School).first()
+        if not school:
+            school = models.School(
+                school_name="St. Jude's Inclusive Academy",
+                school_reference="SCH-STJUDES",
+                phase="Primary",
+                lead_senco_name="Ms Amara Okafor",
+            )
+            db.add(school)
+            db.flush()
+
+        child = (
+            db.query(models.Child)
+            .filter(
+                models.Child.first_name == "Phoenix",
+                models.Child.school_id == school.id,
+            )
+            .first()
+        )
+        if not child:
+            child = models.Child(
+                first_name="Phoenix",
+                last_name="Carter",
+                full_name="Phoenix Carter",
+                preferred_name="Phoenix",
+                date_of_birth=datetime(2015, 6, 15, tzinfo=UTC).date(),
+                sex="Male",
+                year_group="Year 5",
+                school_id=school.id,
+                active=True,
+            )
+            db.add(child)
+            db.flush()
+        db.commit()
     cfg = DEMO_ACCOUNTS[role]
     email = cfg["email"]
 
