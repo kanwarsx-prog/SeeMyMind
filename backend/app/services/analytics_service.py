@@ -228,7 +228,10 @@ class AnalyticsService:
 
     @staticmethod
     def get_school_overview(db: Session, school_id: UUID | None = None) -> SchoolAnalyticsOverview:
-        """Calculates macro-level SEND caseload, provision compliance, and intervention stats dynamically."""
+        """Backward-compatible alias for the evidence-backed overview."""
+        return AnalyticsService.get_live_school_overview(db, school_id)
+
+        """Legacy implementation retained below for historical reference."""
         # Query total active SEND pupils
         query = db.query(Child).filter(Child.active.is_(True))
         if school_id:
@@ -282,7 +285,10 @@ class AnalyticsService:
 
     @staticmethod
     def get_incident_heatmap(db: Session, school_id: UUID | None = None) -> IncidentHeatmapResponse:
-        """Aggregates behavioral incidents and dysregulations into a 5-day x 7-period heatmap matrix."""
+        """Backward-compatible alias for the evidence-backed heatmap."""
+        return AnalyticsService.get_live_incident_heatmap(db, school_id)
+
+        """Legacy implementation retained below for historical reference."""
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         day_keys = ["mon", "tue", "wed", "thu", "fri"]
 
@@ -403,7 +409,10 @@ class AnalyticsService:
 
     @staticmethod
     def get_trigger_frequencies(db: Session, school_id: UUID | None = None) -> TriggersReportResponse:
-        """Categorizes antecedent triggers into evidence-based neurodivergent vulnerability domains."""
+        """Backward-compatible alias for the evidence-backed trigger report."""
+        return AnalyticsService.get_live_trigger_frequencies(db, school_id)
+
+        """Legacy implementation retained below for historical reference."""
         triggers = [
             TriggerCategoryMetric(
                 category="sensory_acoustic",
@@ -466,7 +475,10 @@ class AnalyticsService:
 
     @staticmethod
     def get_strategy_win_rates(db: Session, school_id: UUID | None = None) -> StrategyEfficacyResponse:
-        """Computes empirical resolution success rates across in-flight de-escalation strategies."""
+        """Backward-compatible alias for the evidence-backed strategy report."""
+        return AnalyticsService.get_live_strategy_win_rates(db, school_id)
+
+        """Legacy implementation retained below for historical reference."""
         # Query real database observations to enrich sample sizes
         obs = (
             db.query(Observation)
@@ -550,7 +562,10 @@ class AnalyticsService:
 
     @staticmethod
     def get_provision_audit(db: Session, school_id: UUID | None = None) -> ProvisionAuditResponse:
-        """Audits high needs block funding bands and allocated vs delivered 1:1 TA hours."""
+        """Backward-compatible alias for the evidence-backed provision audit."""
+        return AnalyticsService.get_live_provision_audit(db, school_id)
+
+        """Legacy implementation retained below for historical reference."""
         bands = [
             FundingBandBreakdown(
                 band="Band 1 (Universal Support)",
