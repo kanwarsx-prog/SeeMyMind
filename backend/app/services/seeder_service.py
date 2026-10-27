@@ -93,12 +93,15 @@ class SeederService:
                 arrival.recording_method = "demo_seed"
                 arrival.notes = arrival_note
 
-            handover_title = f"Demo morning handover {today.isoformat()}"
+            handover_title = f"Morning Home Handover {today.isoformat()}"
             handover = (
                 db.query(models.ChildEvent)
                 .filter(
                     models.ChildEvent.child_id == child.id,
-                    models.ChildEvent.title == handover_title,
+                    models.ChildEvent.title.in_([
+                        handover_title,
+                        f"Demo morning handover {today.isoformat()}",
+                    ]),
                 )
                 .first()
             )
@@ -109,7 +112,7 @@ class SeederService:
                     event_time=now.replace(hour=8, minute=20, second=0, microsecond=0),
                     event_type="Transition",
                     reporter_type="Parent",
-                    reporter_name="Demo family handover",
+                    reporter_name="Parent / Carer",
                     title=handover_title,
                     summary=arrival_note,
                     significance="Routine" if arrival_status == "present" else "Concern",
@@ -137,6 +140,8 @@ class SeederService:
                 demo_transition = handover.transition_log
                 if demo_transition:
                     handover.event_time = now.replace(hour=8, minute=20, second=0, microsecond=0)
+                    handover.title = handover_title
+                    handover.reporter_name = "Parent / Carer"
                     handover.summary = arrival_note
                     handover.status = "Acknowledged"
                     demo_transition.sleep_quality = item["sleep"]
@@ -147,12 +152,15 @@ class SeederService:
                     demo_transition.acknowledged_by_staff = True
                     demo_transition.acknowledged_at = now.replace(hour=8, minute=35, second=0, microsecond=0)
 
-            observation_title = f"Demo classroom observation {today.isoformat()}"
+            observation_title = f"Classroom Observation {today.isoformat()}"
             observation_event = (
                 db.query(models.ChildEvent)
                 .filter(
                     models.ChildEvent.child_id == child.id,
-                    models.ChildEvent.title == observation_title,
+                    models.ChildEvent.title.in_([
+                        observation_title,
+                        f"Demo classroom observation {today.isoformat()}",
+                    ]),
                 )
                 .first()
             )
@@ -183,6 +191,9 @@ class SeederService:
                         notes=arrival_note,
                     )
                 )
+            else:
+                observation_event.title = observation_title
+                observation_event.reporter_name = ta.first_name + " " + ta.last_name
 
         db.flush()
 

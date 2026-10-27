@@ -3,7 +3,7 @@
 -- Run this script in the Supabase SQL Editor whenever you want a coherent
 -- current-day demo state. It is intentionally limited to the four named demo
 -- pupils and only refreshes rows marked recording_method = 'demo_seed' or
--- reporter_name = 'Demo family handover'. Real staff-recorded rows are left
+-- source markers such as recording_method = 'demo_seed'. Real staff-recorded rows are left
 -- untouched.
 
 BEGIN;
@@ -120,7 +120,11 @@ BEGIN
         INTO handover_event_id
         FROM child_events
         WHERE child_id = pupil.id
-          AND title = 'Demo morning handover ' || today_date::text
+          AND title IN (
+              'Demo morning handover ' || today_date::text,
+              'Morning Home Handover ' || today_date::text
+          )
+          AND reporter_name IN ('Demo family handover', 'Parent / Carer')
         LIMIT 1;
 
         IF handover_event_id IS NULL THEN
@@ -133,8 +137,8 @@ BEGIN
             VALUES (
                 handover_event_id, pupil.id, pupil.school_id,
                 date_trunc('day', now_utc) + interval '8 hours 20 minutes',
-                'Transition', 'Parent', 'Demo family handover',
-                'Demo morning handover ' || today_date::text,
+                'Transition', 'Parent', 'Parent / Carer',
+                'Morning Home Handover ' || today_date::text,
                 arrival_note,
                 CASE WHEN arrival_status = 'present' THEN 'Routine' ELSE 'Concern' END,
                 'Shared', 'Acknowledged', now_utc, now_utc
@@ -147,7 +151,12 @@ BEGIN
                 status = 'Acknowledged',
                 updated_at = now_utc
             WHERE id = handover_event_id
-              AND reporter_name = 'Demo family handover';
+              AND reporter_name IN ('Demo family handover', 'Parent / Carer');
+            UPDATE child_events
+            SET title = 'Morning Home Handover ' || today_date::text,
+                reporter_name = 'Parent / Carer',
+                updated_at = now_utc
+            WHERE id = handover_event_id;
         END IF;
 
         UPDATE transition_logs
@@ -207,7 +216,7 @@ DECLARE
     strategy_worked BOOLEAN;
     should_incident BOOLEAN;
 BEGIN
-    FOR day_offset IN 1..14 LOOP
+    FOR day_offset IN 0..14 LOOP
         day_date := ((timezone('utc', now()))::date - day_offset);
 
         IF extract(isodow FROM day_date) BETWEEN 1 AND 5 THEN
@@ -256,7 +265,7 @@ BEGIN
                     CASE WHEN pupil.first_name = 'Archie' AND day_offset % 4 = 0 THEN 'late' ELSE 'present' END,
                     day_start + make_interval(hours => 8 + CASE WHEN pupil.first_name = 'Archie' AND day_offset % 4 = 0 THEN 1 ELSE 0 END,
                                                mins => 42 + ((day_offset * 7) % 16)),
-                    'Demo seed', 'teacher', 'demo_seed', arrival_note, now_utc, now_utc
+                    'Clara Johnson', 'teacher', 'demo_seed', arrival_note, now_utc, now_utc
                 )
                 ON CONFLICT (child_id, arrival_date) DO UPDATE
                 SET status = EXCLUDED.status,
@@ -272,7 +281,11 @@ BEGIN
                 INTO handover_event_id
                 FROM child_events
                 WHERE child_id = pupil.id
-                  AND title = 'Demo morning handover ' || day_date::text
+                  AND title IN (
+                      'Demo morning handover ' || day_date::text,
+                      'Morning Home Handover ' || day_date::text
+                  )
+                  AND reporter_name IN ('Demo family handover', 'Parent / Carer')
                 LIMIT 1;
 
                 IF handover_event_id IS NULL THEN
@@ -285,13 +298,19 @@ BEGIN
                     VALUES (
                         handover_event_id, pupil.id, pupil.school_id,
                         day_start + interval '8 hours 20 minutes', 'Transition',
-                        'Parent', 'Demo family handover',
-                        'Demo morning handover ' || day_date::text,
+                        'Parent', 'Parent / Carer',
+                        'Morning Home Handover ' || day_date::text,
                         arrival_note,
                         CASE WHEN pupil_mood IN ('Tired', 'Worried') THEN 'Concern' ELSE 'Routine' END,
                         'Shared', 'Acknowledged', now_utc, now_utc
                     );
                 END IF;
+
+                UPDATE child_events
+                SET title = 'Morning Home Handover ' || day_date::text,
+                    reporter_name = 'Parent / Carer',
+                    updated_at = now_utc
+                WHERE id = handover_event_id;
 
                 INSERT INTO transition_logs (
                     id, event_id, transition_type, sleep_quality, morning_mood,
@@ -339,7 +358,11 @@ BEGIN
                 INTO observation_event_id
                 FROM child_events
                 WHERE child_id = pupil.id
-                  AND title = 'Demo classroom observation ' || day_date::text
+                  AND title IN (
+                      'Demo classroom observation ' || day_date::text,
+                      'Classroom Observation ' || day_date::text
+                  )
+                  AND reporter_name IN ('Demo seed', 'Melissa Grant')
                 LIMIT 1;
 
                 IF observation_event_id IS NULL THEN
@@ -352,13 +375,19 @@ BEGIN
                     VALUES (
                         observation_event_id, pupil.id, pupil.school_id,
                         day_start + interval '11 hours 15 minutes', 'Observation',
-                        'TA', 'Demo seed',
-                        'Demo classroom observation ' || day_date::text,
+                        'TA', 'Melissa Grant',
+                        'Classroom Observation ' || day_date::text,
                         observation_summary,
                         CASE WHEN strategy_worked THEN 'Notable Win' ELSE 'Concern' END,
                         'Shared', 'Logged', now_utc, now_utc
                     );
                 END IF;
+
+                UPDATE child_events
+                SET title = 'Classroom Observation ' || day_date::text,
+                    reporter_name = 'Melissa Grant',
+                    updated_at = now_utc
+                WHERE id = observation_event_id;
 
                 INSERT INTO observations (
                     id, event_id, activity_context, engagement_level, strategy_used,
@@ -391,7 +420,11 @@ BEGIN
                     INTO incident_event_id
                     FROM child_events
                     WHERE child_id = pupil.id
-                      AND title = 'Demo recorded regulation incident ' || day_date::text
+                      AND title IN (
+                          'Demo recorded regulation incident ' || day_date::text,
+                          'Regulation Incident ' || day_date::text
+                      )
+                      AND reporter_name IN ('Demo seed', 'Clara Johnson')
                     LIMIT 1;
 
                     IF incident_event_id IS NULL THEN
@@ -404,12 +437,18 @@ BEGIN
                         VALUES (
                             incident_event_id, pupil.id, pupil.school_id,
                             day_start + interval '10 hours 25 minutes', 'Incident',
-                            'Teacher', 'Demo seed',
-                            'Demo recorded regulation incident ' || day_date::text,
+                            'Teacher', 'Clara Johnson',
+                            'Regulation Incident ' || day_date::text,
                             'A recorded transition or task demand increased regulation needs; the pupil recovered with their agreed support.',
                             'Concern', 'Shared', 'Reviewed', now_utc, now_utc
                         );
                     END IF;
+
+                    UPDATE child_events
+                    SET title = 'Regulation Incident ' || day_date::text,
+                        reporter_name = 'Clara Johnson',
+                        updated_at = now_utc
+                    WHERE id = incident_event_id;
 
                     INSERT INTO behavioural_incidents (
                         id, event_id, location, severity, antecedent, behaviour,
@@ -456,7 +495,7 @@ LEFT JOIN child_arrivals ca
    AND ca.arrival_date = (timezone('utc', now()))::date
 LEFT JOIN child_events ce
     ON ce.child_id = c.id
-   AND ce.title = 'Demo morning handover ' || (timezone('utc', now()))::date::text
+   AND ce.title = 'Morning Home Handover ' || (timezone('utc', now()))::date::text
 LEFT JOIN transition_logs tl ON tl.event_id = ce.id
 WHERE (c.first_name, c.last_name) IN (
     ('Phoenix', 'Carter'), ('Archie', 'Watson'),
@@ -472,6 +511,8 @@ SELECT
     COUNT(*) FILTER (WHERE ce.event_type = 'Observation' AND o.strategy_worked = true) AS successful_observations
 FROM child_events ce
 LEFT JOIN observations o ON o.event_id = ce.id
-WHERE ce.title LIKE 'Demo %'
+WHERE ce.title LIKE 'Morning Home Handover %'
+   OR ce.title LIKE 'Classroom Observation %'
+   OR ce.title LIKE 'Regulation Incident %'
   AND ce.event_time >= (timezone('utc', now()))::date - 14
   AND ce.event_time < (timezone('utc', now()))::date + 1;
