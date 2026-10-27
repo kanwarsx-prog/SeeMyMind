@@ -50,9 +50,9 @@ import {
 
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? '/api/v1'
-    : 'https://see-my-mind.onrender.com/api/v1');
+  (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? 'http://127.0.0.1:8000/api/v1'
+    : '/api/v1');
 
 let activeRole = 'senco';
 let activeToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('smm_auth_token') : null;
