@@ -29,6 +29,7 @@ class ChildBase(BaseModel):
     date_of_birth: date
     sex: str = "Prefer not to say"
     year_group: str | None = None
+    room_name: str | None = None
     school_id: UUID | None = None
     active: bool = True
 
