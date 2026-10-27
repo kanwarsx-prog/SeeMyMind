@@ -444,7 +444,13 @@ export interface ClassroomPupilSummary {
   has_ehcp: boolean;
   support_tier: string;
   readiness_status: string;
-  readiness_level: 'green' | 'amber' | 'red';
+  readiness_level: 'green' | 'amber' | 'red' | 'unknown';
+  arrival?: {
+    status: 'present' | 'late' | 'absent' | 'unknown';
+    arrival_date: string;
+    arrived_at?: string | null;
+    recorded_by_name?: string | null;
+  };
   primary_triggers: string[];
   sensory_calming_tools: string[];
   buddy_pairing?: string;

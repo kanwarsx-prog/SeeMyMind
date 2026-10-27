@@ -62,3 +62,29 @@ def test_log_de_escalation_observation(client, db_session):
     assert data["title"] == payload["title"]
     assert data["observation"]["strategy_worked"] is True
     assert data["observation"]["strategy_used"] == "Acoustic Shelter + 5-Min Visual Timer"
+
+
+def test_record_daily_arrival_is_idempotent(client, db_session):
+    client.post("/api/v1/auth/demo-login", json={"role": "teacher"})
+    child = db_session.query(Child).filter(Child.first_name == "Phoenix").first()
+    assert child is not None
+
+    payload = {"status": "present", "recording_method": "staff"}
+    first = client.post(
+        f"/api/v1/arrivals/children/{child.id}",
+        json=payload,
+        headers={"X-User-Role": "teacher"},
+    )
+    assert first.status_code == 201
+    first_data = first.json()
+    assert first_data["status"] == "present"
+    assert first_data["arrival_date"]
+
+    second = client.post(
+        f"/api/v1/arrivals/children/{child.id}",
+        json={"status": "late", "recording_method": "staff"},
+        headers={"X-User-Role": "teacher"},
+    )
+    assert second.status_code == 201
+    assert second.json()["id"] == first_data["id"]
+    assert second.json()["status"] == "late"

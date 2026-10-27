@@ -592,6 +592,19 @@ export const api = {
     return res.json();
   },
 
+  async recordArrival(childId: string, status: 'present' | 'late' | 'absent' | 'unknown' = 'present') {
+    const res = await fetch(`${API_BASE}/arrivals/children/${childId}`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ status, recording_method: 'staff' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to record arrival');
+    }
+    return res.json();
+  },
+
   async getAnnualReviewPack(childId: string): Promise<AnnualReviewPackResponse> {
     const res = await fetch(`${API_BASE}/pupils/${childId}/annual-review-pack`, {
       headers: getHeaders(),

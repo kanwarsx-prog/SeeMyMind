@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     admin,
     analytics,
+    arrivals,
     auth,
     documents,
     health,
@@ -38,5 +39,8 @@ api_router.include_router(
 )
 api_router.include_router(
     analytics.router, prefix="/analytics", tags=["Reporting & Analytics"]
+)
+api_router.include_router(
+    arrivals.router, prefix="/arrivals", tags=["Daily Arrival Records"]
 )
 

@@ -27,6 +27,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
   const [matrixData, setMatrixData] = useState<ClassroomMatrixData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showSupplyModal, setShowSupplyModal] = useState<boolean>(false);
+  const [recordingArrival, setRecordingArrival] = useState<string | null>(null);
 
   const isSupplyOpen = isSupplyModalOpen !== undefined ? isSupplyModalOpen : showSupplyModal;
   const handleCloseSupply = () => {
@@ -62,6 +63,9 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
 
   const cohort = matrixData?.cohort || [];
   const cautionPupils = cohort.filter((p) => p.readiness_level === 'amber' || p.readiness_level === 'red');
+  const presentCount = cohort.filter((p) => p.arrival?.status === 'present' || p.arrival?.status === 'late').length;
+  const awaitingArrivalCount = cohort.filter((p) => !p.arrival || p.arrival.status === 'unknown').length;
+  const awaitingCheckInCount = cohort.filter((p) => p.readiness_level === 'unknown').length;
   const greenPupils = cohort.filter((p) => p.readiness_level === 'green');
   const ehcpCount = matrixData?.ehcp_count ?? cohort.filter((p) => p.has_ehcp).length;
 
@@ -78,6 +82,16 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
   };
 
   const getPupilBattery = (pupil: ClassroomPupilSummary) => {
+    if (pupil.readiness_level === 'unknown') {
+      return {
+        pct: 0,
+        color: 'bg-slate-300 dark:bg-slate-700',
+        textColor: 'text-slate-600 dark:text-slate-400',
+        zone: 'Awaiting update',
+        ring: 'ring-2 ring-slate-300 dark:ring-slate-700 ring-offset-2 dark:ring-offset-slate-900',
+        badge: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+      };
+    }
     if (pupil.readiness_level === 'amber' || pupil.readiness_level === 'red') {
       return {
         pct: 55,
@@ -159,7 +173,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span>
-              <strong>Morning Scan Complete:</strong> All {cohort.length} SEND learners arrived in Green Regulation Zone.
+              <strong>Morning status:</strong> {presentCount} arrived today, {awaitingArrivalCount} awaiting arrival recording, {awaitingCheckInCount} awaiting home check-in.
             </span>
           </div>
           <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold hidden sm:inline">
@@ -246,6 +260,46 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
                       style={{ width: `${battery.pct}%` }}
                     />
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 rounded-xl border border-borderMain bg-cardSubtle px-2.5 py-2 text-[10.5px]">
+                  <span className="text-textDim dark:text-slate-400">
+                    {pupil.arrival?.status === 'present' || pupil.arrival?.status === 'late'
+                      ? `Arrived${pupil.arrival.arrived_at ? ` ${new Date(pupil.arrival.arrived_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`
+                      : 'Arrival not recorded today'}
+                  </span>
+                  {pupil.arrival?.status !== 'present' && pupil.arrival?.status !== 'late' && (
+                    <button
+                      type="button"
+                      disabled={recordingArrival === pupil.id}
+                      onClick={async (event) => {
+                        event.stopPropagation();
+                        setRecordingArrival(pupil.id);
+                        try {
+                          const arrival = await api.recordArrival(pupil.id, 'present');
+                          setMatrixData((current) => current ? {
+                            ...current,
+                            cohort: current.cohort.map((item) => item.id === pupil.id ? {
+                              ...item,
+                              arrival: {
+                                status: 'present',
+                                arrival_date: arrival.arrival_date,
+                                arrived_at: arrival.arrived_at,
+                                recorded_by_name: arrival.recorded_by_name,
+                              },
+                            } : item),
+                          } : current);
+                        } catch (error) {
+                          console.error('Failed to record pupil arrival:', error);
+                        } finally {
+                          setRecordingArrival(null);
+                        }
+                      }}
+                      className="rounded-lg bg-teal px-2 py-1 font-bold text-white hover:bg-teal-dark disabled:opacity-50"
+                    >
+                      {recordingArrival === pupil.id ? 'Saving...' : 'Mark arrived'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Visual Sensory & Regulation Kit Chips */}

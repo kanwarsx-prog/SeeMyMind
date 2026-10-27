@@ -7,6 +7,7 @@ from app.models.ai_noya import (
     RAGSourceDocument,
 )
 from app.models.audit import AuditLog
+from app.models.arrival import ChildArrival
 from app.models.auth import ChildAccount, Invitation, User
 from app.models.base import TimestampedUUIDModel
 from app.models.curriculum import CurriculumUnitModel
@@ -36,6 +37,7 @@ __all__ = [
     "AIRun",
     "AcademicYear",
     "AuditLog",
+    "ChildArrival",
     "Base",
     "BehaviouralIncident",
     "Child",

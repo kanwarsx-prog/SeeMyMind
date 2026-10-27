@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,6 +8,7 @@ from app import models
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.pupil import Child
+from app.models.arrival import ChildArrival
 from app.models.support import ChildSupportProfile
 from app.schemas.annual_review import AnnualReviewPackResponse, SchoolProvisionMatrixResponse
 from app.schemas.pupil import ChildCreate, ChildResponse
@@ -119,16 +121,27 @@ def get_classroom_matrix(
         primary_need = (prof and prof.primary_need) or "SEND Support"
         secondary_need = (prof and prof.secondary_need) or "Sensory Processing"
 
-        # Check latest handover for morning readiness
+        today = datetime.now(UTC).date()
+        today_arrival = (
+            db.query(ChildArrival)
+            .filter(ChildArrival.child_id == p.id, ChildArrival.arrival_date == today)
+            .first()
+        )
+
+        # Only today's handover can contribute to today's readiness state.
         latest_handover = (
             db.query(models.TransitionLog)
             .join(models.ChildEvent)
             .filter(models.ChildEvent.child_id == p.id)
+            .filter(models.ChildEvent.event_time >= datetime.combine(today, datetime.min.time(), tzinfo=UTC))
             .order_by(models.ChildEvent.event_time.desc())
             .first()
         )
 
-        if latest_handover and latest_handover.breakfast_eaten is False:
+        if not latest_handover:
+            readiness_status = "Awaiting today's home check-in"
+            readiness_level = "unknown"
+        elif latest_handover.breakfast_eaten is False:
             readiness_status = "Restless sleep (4am), Skipped breakfast ⚠️"
             readiness_level = "amber"
         elif latest_handover and latest_handover.morning_mood:
@@ -271,6 +284,12 @@ def get_classroom_matrix(
             "support_tier": "Statutory EHCP" if has_ehcp else "SEN Support (K)",
             "readiness_status": readiness_status,
             "readiness_level": readiness_level,
+            "arrival": {
+                "status": today_arrival.status if today_arrival else "unknown",
+                "arrival_date": str(today_arrival.arrival_date) if today_arrival else str(today),
+                "arrived_at": today_arrival.arrived_at.isoformat() if today_arrival and today_arrival.arrived_at else None,
+                "recorded_by_name": today_arrival.recorded_by_name if today_arrival else None,
+            },
             "primary_triggers": triggers,
             "sensory_calming_tools": tools,
             "buddy_pairing": buddy,
