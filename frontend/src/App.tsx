@@ -723,6 +723,7 @@ const AppContent: React.FC = () => {
                 setActiveNavId(tab);
               }}
               onSubmitHandover={handleSubmitHandover}
+              onAskNoya={handleOpenCopilot}
             />
           )}
 

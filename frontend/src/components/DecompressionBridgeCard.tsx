@@ -20,11 +20,13 @@ import {
 interface DecompressionBridgeCardProps {
   bridge: DecompressionBridgeResponse;
   childName?: string;
+  onAskNoya?: () => void;
 }
 
 export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = ({
   bridge,
   childName = 'Phoenix',
+  onAskNoya,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showClues, setShowClues] = useState(false);
@@ -139,23 +141,36 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
         </div>
       </div>
 
-      {/* 2. Tonight's Step-by-Step Calming Steps (Prominently Placed for Fast Access at Pick-Up) */}
+      {/* 2. Evidence-led home-time guidance */}
       <div className="card p-5 space-y-4 border border-teal/20 bg-gradient-to-b from-cardBg to-mint/5 dark:from-cardBg dark:to-cardBg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-borderMain pb-2.5">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-dark dark:text-amber-300" />
-              <h3 className="text-sm font-bold text-navy dark:text-white">Tonight&apos;s Calming Steps</h3>
+              <h3 className="text-sm font-bold text-navy dark:text-white">Recorded Support Signals</h3>
             </div>
             <p className="text-xs text-textDim dark:text-slate-300 mt-0.5">
-              Targeted arrival steps for {childName} based on today&apos;s energy.
+              What today&apos;s records support for {childName}. This is not a clinical prescription.
             </p>
           </div>
-          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-teal/10 dark:bg-teal-500/20 text-teal-dark dark:text-teal-300 self-start sm:self-auto">
-            Ready for 3:15 PM Pick-Up
-          </span>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-teal/10 dark:bg-teal-500/20 text-teal-dark dark:text-teal-300">
+              {bridge.guidance_confidence}
+            </span>
+            {onAskNoya && (
+              <button
+                type="button"
+                onClick={onAskNoya}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-teal text-white text-[10px] font-bold hover:bg-teal-dark transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3" />
+                Explain with NOYA
+              </button>
+            )}
+          </div>
         </div>
 
+        {bridge.decompression_recipe.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {bridge.decompression_recipe.map((step) => (
             <div
@@ -180,9 +195,14 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
             </div>
           ))}
         </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-cardSubtle border border-borderMain text-xs text-textDim">
+            No pupil-specific support step has been recorded as effective today. Ask NOYA to explain the available evidence, or wait for a staff or home note.
+          </div>
+        )}
 
-        {/* Calming evening activities */}
-        <div className="p-3 rounded-xl bg-teal-50/60 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50 text-xs space-y-1.5">
+        {/* Recorded strategy options */}
+        {bridge.recommended_evening_activities.length > 0 && <div className="p-3 rounded-xl bg-teal-50/60 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/50 text-xs space-y-1.5">
           <div className="font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5 text-xs">
             <span>✨ Screen-Free Recovery Ideas</span>
           </div>
@@ -194,7 +214,13 @@ export const DecompressionBridgeCard: React.FC<DecompressionBridgeCardProps> = (
               </div>
             ))}
           </div>
-        </div>
+        </div>}
+
+        {bridge.guidance_basis.length > 0 && (
+          <div className="text-[10px] text-textDim border-t border-borderMain pt-2">
+            Based on: {bridge.guidance_basis.join(' · ')}
+          </div>
+        )}
       </div>
 
       {/* 3. Progressive Disclosure: Classroom Clues & Energy Details */}

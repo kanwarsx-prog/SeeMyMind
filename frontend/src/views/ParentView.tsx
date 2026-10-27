@@ -42,6 +42,7 @@ interface ParentViewProps {
   timeline: ChildEvent[];
   latestHandover?: TransitionLogDetail | null;
   onSubmitHandover: (data: any) => Promise<void>;
+  onAskNoya?: (query?: string) => void;
   activeTab?: ParentTabKey;
   onTabChange?: (tab: 'today' | 'wins' | 'health') => void;
 }
@@ -54,6 +55,7 @@ export const ParentView: React.FC<ParentViewProps> = ({
   timeline,
   latestHandover,
   onSubmitHandover,
+  onAskNoya,
   activeTab: propActiveTab,
   onTabChange,
 }) => {
@@ -569,7 +571,11 @@ export const ParentView: React.FC<ParentViewProps> = ({
                 <p className="text-xs">Synthesizing adult observations from Room 4...</p>
               </div>
             ) : bridge ? (
-              <DecompressionBridgeCard bridge={bridge} childName={childName} />
+              <DecompressionBridgeCard
+                bridge={bridge}
+                childName={childName}
+                onAskNoya={() => onAskNoya?.(`Explain today's recorded support evidence for ${childName}. Only use cited home handover, classroom observation, incident, and approved support-profile records. Do not invent clinical or dietary advice.`)}
+              />
             ) : (
               <div className="card p-8 text-center text-gray-500">
                 <p className="text-xs">Home-time tips will appear as classroom notes arrive.</p>

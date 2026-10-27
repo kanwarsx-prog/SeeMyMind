@@ -35,6 +35,8 @@ class DecompressionBridgeResponse(BaseModel):
     adult_observation_clues: list[AdultClue]
     decompression_recipe: list[DecompressionStep]
     recommended_evening_activities: list[str]
+    guidance_confidence: str
+    guidance_basis: list[str]
     generated_at: datetime
 
 

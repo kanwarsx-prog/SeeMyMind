@@ -77,6 +77,7 @@ class ParentHubService:
         draining_factors: list[str] = []
         recharging_factors: list[str] = []
         adult_clues: list[AdultClue] = []
+        successful_strategies: list[tuple[str, str, str]] = []
 
         today = datetime.now(timezone.utc).date()
         today_events = [e for e in events if e.event_time.date() == today]
@@ -120,6 +121,14 @@ class ParentHubService:
                     recharging_factors.append(
                         f"Effective strategy in class: {obs.strategy_used or 'Visual support'}"
                     )
+                    if obs.strategy_used:
+                        successful_strategies.append(
+                            (
+                                obs.strategy_used,
+                                obs.activity_context or "classroom activity",
+                                event.summary,
+                            )
+                        )
                     adult_clues.append(
                         AdultClue(
                             source=event.reporter_name or teacher_name,
@@ -147,45 +156,13 @@ class ParentHubService:
                     )
                 )
 
-        # Contextual adult clues if minimal records exist today
+        # Do not manufacture baseline clues when today's evidence is absent.
         fname = child.first_name or "Your child"
-        if len(adult_clues) < 2:
-            past_events = [e for e in events if e.event_time.date() < today]
-            if past_events:
-                pe = past_events[0]
-                pe_date = "Yesterday" if pe.event_time.date() == (today - timedelta(days=1)) else pe.event_time.strftime("%d %b")
-                adult_clues.append(
-                    AdultClue(
-                        source=pe.reporter_name or teacher_name,
-                        role=f"{pe.reporter_type} ({pe_date})",
-                        time=pe.event_time.strftime("%I:%M %p").lstrip("0"),
-                        observation=f"{pe.title}: {pe.summary}",
-                        significance="Recent longitudinal baseline",
-                        marker_type="Historical Context",
-                    )
-                )
-            if len(adult_clues) < 2:
-                adult_clues.append(
-                    AdultClue(
-                        source=teacher_name,
-                        role="Classroom Baseline",
-                        time="Today",
-                        observation=f"Standard sensory adjustments active for {fname}. No escalations logged today.",
-                        significance="Regulated baseline",
-                        marker_type="Baseline Observation",
-                    )
-                )
 
         if not draining_factors:
-            draining_factors = [
-                "Acoustic load during period transitions",
-                "Cognitive fatigue from sustained visual focus",
-            ]
+            draining_factors = ["No draining factor recorded today."]
         if not recharging_factors:
-            recharging_factors = [
-                "Sensory accommodations maintained in class",
-                "Quiet reading breaks available in Room 4",
-            ]
+            recharging_factors = ["No recharging strategy recorded as effective today."]
 
         # Clamp battery percentage between 15% and 95%
         battery = max(18, min(battery, 92))
@@ -196,18 +173,16 @@ class ParentHubService:
             battery_color = "rose"
             masking_level = "High Masking Detected"
             masking_explanation = (
-                f"Adult observations show {fname} exerted intense internal control to meet classroom "
-                "demands today despite broken sleep. At school they looked compliant, but their sensory "
-                "tank is empty. The 'after-school restraint collapse' often occurs the moment they enter "
-                "the safety of home."
+                f"The current evidence suggests a high support need for {fname}. "
+                "This is an operational signal, not a clinical assessment."
             )
         elif battery < 65:
             battery_status = "Moderate Sensory Load (Amber Zone)"
             battery_color = "amber"
             masking_level = "Moderate Masking"
             masking_explanation = (
-                f"{fname} managed well through scheduled sensory breaks, but social and acoustic demands "
-                "have drained significant reserves. Gentle quiet time upon arrival is strongly recommended."
+                f"The current evidence suggests a moderate support need for {fname}. "
+                "Review the recorded observations before choosing an evening adjustment."
             )
         else:
             battery_status = "Resilient & Stable (Green Zone)"
@@ -215,56 +190,44 @@ class ParentHubService:
             masking_level = "Low Masking / Open Expression"
             if len(today_events) == 0 and not latest_transition_event:
                 masking_explanation = (
-                    f"No negative sensory incidents or fatigue markers have been recorded for {fname} today. "
-                    "Social battery is estimated at a healthy baseline."
+                    f"No current home, classroom, or incident evidence is available for {fname} today."
                 )
             else:
                 masking_explanation = (
-                    f"{fname} experienced consistent regulation, positive peer engagement, and manageable sensory conditions."
+                    f"Today's recorded evidence for {fname} includes classroom or home signals. "
+                    "Use the cited observations rather than treating this as a clinical rating."
                 )
 
-        # Build tonight's home arrival decompression recipe
-        recipe = [
-            DecompressionStep(
-                step=1,
-                title="Zero-Demand Doorway",
-                subtitle="First 10 Minutes",
-                description="Do not ask 'How was your day?' at pickup or at the front door. Offer a silent hug, a warm drink, or simply carry his schoolbag without conversation.",
-                icon_type="Door",
-                tag="Safe Harbour",
-            ),
-            DecompressionStep(
-                step=2,
-                title="Sensory Dimming & Low Stimulus",
-                subtitle="Minutes 10 - 25",
-                description="Turn off bright overhead kitchen lights. Encourage noise defenders or soft lo-fi background audio to reset the auditory system after noisy school halls.",
-                icon_type="VolumeX",
-                tag="Acoustic Reset",
-            ),
-            DecompressionStep(
-                step=3,
-                title="Oral & Proprioceptive Snack",
-                subtitle="Minutes 25 - 35",
-                description="Offer crunchy salty pretzels, toast, or cold water through a sports straw. Chewing and sucking provide heavy work that grounds dysregulated nervous systems.",
-                icon_type="Coffee",
-                tag="Proprioceptive Input",
-            ),
-            DecompressionStep(
-                step=4,
-                title="Uninterrupted Special Interest Flow",
-                subtitle="Minutes 35 - 75",
-                description="Allow 30-45 minutes of solitary robotics video game design or Lego building. This dopamine recharge restores executive functioning before dinner or bath time.",
-                icon_type="Gamepad2",
-                tag="Joy & Autonomy",
-            ),
-        ]
+        # Only surface strategies that were recorded as effective today. NOYA
+        # can interpret this evidence on demand, but this service must not
+        # invent clinical, dietary, or sensory prescriptions.
+        recipe = []
+        for index, (strategy, context, summary) in enumerate(successful_strategies[:4], start=1):
+            icon_type = "VolumeX" if "noise" in strategy.lower() else "Coffee" if "movement" in strategy.lower() else "Sparkles"
+            recipe.append(
+                DecompressionStep(
+                    step=index,
+                    title=strategy,
+                    subtitle=f"Recorded in {context}",
+                    description=f"Recorded as effective today. Evidence note: {summary}",
+                    icon_type=icon_type,
+                    tag="Observed effective",
+                )
+            )
 
         recommended_activities = [
-            "Co-building Lego spaceships with zero performance pressure",
-            "Weighted lap blanket (10-15 mins) on the sofa",
-            "Audiobook listening with dim warm bedside lighting",
-            "Warm sensory bath with soothing bubbles before sleep",
+            f"If comfortable at home, consider the recorded {strategy} strategy."
+            for strategy, _, _ in successful_strategies[:3]
         ]
+        guidance_basis = []
+        if latest_transition_event:
+            guidance_basis.append(f"Home handover recorded at {latest_transition_event.event_time.strftime('%H:%M')}")
+        guidance_basis.extend(
+            f"{event.reporter_type} observation at {event.event_time.strftime('%H:%M')}"
+            for event in today_events
+            if event.event_type in ("Observation", "Incident")
+        )
+        guidance_confidence = "No current evidence" if not guidance_basis else "Evidence available; review before acting"
 
         return DecompressionBridgeResponse(
             child_id=child.id,
@@ -279,6 +242,8 @@ class ParentHubService:
             adult_observation_clues=adult_clues,
             decompression_recipe=recipe,
             recommended_evening_activities=recommended_activities,
+            guidance_confidence=guidance_confidence,
+            guidance_basis=guidance_basis,
             generated_at=datetime.now(UTC),
         )
 

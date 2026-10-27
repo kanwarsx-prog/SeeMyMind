@@ -600,6 +600,8 @@ export interface DecompressionBridgeResponse {
   adult_observation_clues: AdultClue[];
   decompression_recipe: DecompressionStep[];
   recommended_evening_activities: string[];
+  guidance_confidence: string;
+  guidance_basis: string[];
   generated_at: string;
 }
 
