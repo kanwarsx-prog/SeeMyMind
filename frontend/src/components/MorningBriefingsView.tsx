@@ -282,7 +282,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                     ))
                   ) : (
                     <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-cardSubtle text-textDim border border-borderMain">
-                      Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Assigned peer'}</strong>
+                      Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Buddy not assigned'}</strong>
                     </span>
                   )}
                 </div>

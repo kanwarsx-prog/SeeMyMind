@@ -324,7 +324,7 @@ export const ClassSendMatrix: React.FC<ClassSendMatrixProps> = ({
                 <div className="pt-2 border-t border-borderMain flex items-center justify-between text-[11px] text-textDim dark:text-slate-400">
                   <span className="flex items-center gap-1">
                     <HeartHandshake className="w-3.5 h-3.5 text-teal dark:text-teal-300" />
-                    <span>Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Jake'}</strong></span>
+                    <span>Buddy: <strong className="text-navy dark:text-white">{pupil.buddy_pairing || 'Buddy not assigned'}</strong></span>
                   </span>
                   <span className="text-[10px] font-medium">
                     {pupil.has_ehcp ? '1:1 TA Active' : 'Universal Scaffolding'}

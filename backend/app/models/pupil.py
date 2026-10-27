@@ -16,6 +16,7 @@ class Child(TimestampedUUIDModel):
     sex = Column(String(20), nullable=False)  # "Male", "Female", "Other", "Prefer not to say"
     year_group = Column(String(50), nullable=True)  # e.g. "Year 4", "Year 10"
     room_name = Column(String(50), default=None, nullable=True, index=True)
+    buddy_name = Column(String(140), default=None, nullable=True)
     school_id = Column(
         UUID(as_uuid=True), ForeignKey("schools.id", ondelete="SET NULL"), nullable=True, index=True
     )

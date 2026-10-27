@@ -55,6 +55,11 @@ async def lifespan(app: FastAPI):
                 )
                 conn.execute(
                     text(
+                        "ALTER TABLE children ADD COLUMN IF NOT EXISTS buddy_name VARCHAR(140);"
+                    )
+                )
+                conn.execute(
+                    text(
                         "CREATE INDEX IF NOT EXISTS ix_children_room_name ON children (room_name);"
                     )
                 )

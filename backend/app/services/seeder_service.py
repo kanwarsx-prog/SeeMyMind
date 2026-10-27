@@ -112,6 +112,7 @@ class SeederService:
                 "sex": "Male",
                 "year_group": "Year 5",
                 "room_name": "Room 4",
+                "buddy_name": "Jake O'Brien",
                 "has_ehcp": True,
                 "primary_need": "Autism Spectrum Condition & ADHD",
                 "secondary_need": "Sensory Processing (Acoustic >78 dB)",
@@ -130,6 +131,7 @@ class SeederService:
                 "sex": "Male",
                 "year_group": "Year 5",
                 "room_name": "Room 4",
+                "buddy_name": "Leo Chen",
                 "has_ehcp": True,
                 "primary_need": "ADHD & Working Memory Delay",
                 "secondary_need": "Kinesthetic Sensory Seeking",
@@ -147,6 +149,7 @@ class SeederService:
                 "sex": "Female",
                 "year_group": "Year 5",
                 "room_name": "Room 4",
+                "buddy_name": "Sophie Taylor",
                 "has_ehcp": False,
                 "primary_need": "SEMH & Dyscalculia",
                 "secondary_need": "Performance Anxiety & Acoustic Sensitivity",
@@ -163,6 +166,7 @@ class SeederService:
                 "sex": "Male",
                 "year_group": "Year 5",
                 "room_name": "Room 4",
+                "buddy_name": "Chloe Evans",
                 "has_ehcp": False,
                 "primary_need": "Speech, Language & Communication (SLCN)",
                 "secondary_need": "Expressive Language Processing Delay",
@@ -194,6 +198,7 @@ class SeederService:
                     sex=p_spec["sex"],
                     year_group=p_spec["year_group"],
                     room_name=p_spec["room_name"],
+                    buddy_name=p_spec.get("buddy_name"),
                     school_id=school.id,
                     active=True,
                 )
@@ -202,6 +207,7 @@ class SeederService:
             else:
                 child.room_name = p_spec["room_name"]
                 child.year_group = p_spec["year_group"]
+                child.buddy_name = p_spec.get("buddy_name")
                 db.flush()
 
             pupils_map[p_spec["first_name"]] = child

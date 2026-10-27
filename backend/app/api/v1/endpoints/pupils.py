@@ -165,7 +165,6 @@ def get_classroom_matrix(
                 "Tactile under-desk putty",
                 "Water bottle on desk",
             ]
-            buddy = "Jake O'Brien"
             subj_acc = {
                 "maths": "Visual-spatial gradient slope hook; avoid algebraic overload; provide calculator for basic arithmetic.",
                 "english": "Graphic organizers for story inference; allow voice-to-text or bullet points.",
@@ -178,7 +177,6 @@ def get_classroom_matrix(
                 "Resistance band on chair legs",
                 "Desk movement break token",
             ]
-            buddy = "Leo Chen"
             subj_acc = {
                 "maths": "Chunk tasks into 3-question sprints; movement pause between exercises.",
                 "english": "Highlighter tape for key text; scaffolded sentence stems.",
@@ -191,7 +189,6 @@ def get_classroom_matrix(
                 "Sketchbook cooling corner",
                 "Traffic light communication card",
             ]
-            buddy = "Sophie Taylor"
             subj_acc = {
                 "maths": "No unprompted public questioning; provide 2 minutes advance warning before asking for response.",
                 "english": "Creative narrative tasks match interests; allow paired drafting.",
@@ -204,7 +201,6 @@ def get_classroom_matrix(
                 "10-second processing time pause",
                 "Speech therapy prompt keyring",
             ]
-            buddy = "Chloe Evans"
             subj_acc = {
                 "maths": "Dual-coded visual representations of mathematical symbols; pre-teach vocabulary.",
                 "english": "Visual story-mountain map; pre-printed word bank with pictures.",
@@ -247,7 +243,7 @@ def get_classroom_matrix(
             },
             "primary_triggers": triggers,
             "sensory_calming_tools": tools,
-            "buddy_pairing": buddy,
+            "buddy_pairing": p.buddy_name,
             "subject_accommodations": subj_acc,
             "handover": handover_data,
         })

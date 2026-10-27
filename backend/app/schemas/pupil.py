@@ -30,6 +30,7 @@ class ChildBase(BaseModel):
     sex: str = "Prefer not to say"
     year_group: str | None = None
     room_name: str | None = None
+    buddy_name: str | None = None
     school_id: UUID | None = None
     active: bool = True
 
