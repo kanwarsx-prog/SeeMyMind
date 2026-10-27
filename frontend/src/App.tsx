@@ -646,7 +646,13 @@ const AppContent: React.FC = () => {
           title={topBarConfig.title}
           subtitle={topBarConfig.subtitle}
           actionButton={topBarConfig.actionButton}
-          pupils={currentUser.role === 'parent' || currentUser.role === 'senco' || currentUser.role === 'teacher' ? visiblePupils : undefined}
+          pupils={
+            currentUser.role === 'parent' || currentUser.role === 'senco' || currentUser.role === 'teacher'
+              ? activeView === 'senco' && sencoSubTab === 'reports_analytics'
+                ? undefined
+                : visiblePupils
+              : undefined
+          }
           overviewLabel={
             activeView === 'teacher'
               ? '👥 All Pupils'

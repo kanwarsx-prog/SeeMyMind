@@ -115,6 +115,9 @@ export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
               Live recorded data
             </span>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
+              Whole-school scope
+            </span>
           </div>
           <p className="text-xs text-textDim dark:text-slate-400 mt-1">
             Live school evidence with clear gaps where records are incomplete.
