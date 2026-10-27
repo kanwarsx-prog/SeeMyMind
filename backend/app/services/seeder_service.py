@@ -8,6 +8,170 @@ from app.core.security import get_password_hash
 
 class SeederService:
     @staticmethod
+    def seed_demo_day_snapshot(
+        db: Session,
+        school: models.School,
+        pupils: dict[str, models.Child],
+        teacher: models.StaffMember,
+        ta: models.StaffMember,
+    ) -> None:
+        """Create one realistic, repeatable current-day snapshot for each demo pupil.
+
+        This keeps the demo useful after the longitudinal history is established,
+        while never duplicating or overwriting staff-recorded entries.
+        """
+        now = datetime.now(UTC)
+        today = now.date()
+        snapshot = {
+            "Phoenix": {
+                "arrival": ("present", 8, 42, "Arrived with visual timetable and headphones ready."),
+                "mood": "Calm",
+                "sleep": "Good",
+                "breakfast": True,
+                "medication": True,
+                "strategy": "Visual Task Strip / 5-Min Timer",
+                "context": "Independent Maths Task",
+                "worked": True,
+                "observation": "Completed a three-step visual maths task with one prompt.",
+            },
+            "Archie": {
+                "arrival": ("late", 9, 3, "Late arrival recorded by classroom staff; settled after movement break."),
+                "mood": "High energy",
+                "sleep": "Restless",
+                "breakfast": True,
+                "medication": None,
+                "strategy": "Purposeful Movement Break",
+                "context": "Morning Literacy",
+                "worked": True,
+                "observation": "Returned to the task after a two-minute movement break and visual countdown.",
+            },
+            "Riya": {
+                "arrival": ("present", 8, 51, "Calm handover; requested a quiet seat before maths."),
+                "mood": "Calm",
+                "sleep": "Good",
+                "breakfast": True,
+                "medication": None,
+                "strategy": "Fraction Bar Models",
+                "context": "Maths Small Group",
+                "worked": True,
+                "observation": "Attempted four fraction questions using visual manipulatives.",
+            },
+            "Leo": {
+                "arrival": ("present", 8, 47, "Used the visual arrival card and joined the morning check-in."),
+                "mood": "Ready",
+                "sleep": "Good",
+                "breakfast": True,
+                "medication": None,
+                "strategy": "Visual Prompt Cards",
+                "context": "Science Discussion",
+                "worked": True,
+                "observation": "Contributed one hypothesis using a visual communication prompt.",
+            },
+        }
+
+        for name, child in pupils.items():
+            item = snapshot[name]
+            arrival_status, arrival_hour, arrival_minute, arrival_note = item["arrival"]
+            arrival = (
+                db.query(models.ChildArrival)
+                .filter(
+                    models.ChildArrival.child_id == child.id,
+                    models.ChildArrival.arrival_date == today,
+                )
+                .first()
+            )
+            if not arrival:
+                arrival = models.ChildArrival(child_id=child.id, arrival_date=today)
+                db.add(arrival)
+            if not arrival.recorded_by or arrival.recording_method == "demo_seed":
+                arrival.school_id = school.id
+                arrival.status = arrival_status
+                arrival.arrived_at = now.replace(hour=arrival_hour, minute=arrival_minute, second=0, microsecond=0)
+                arrival.recorded_by = teacher.id
+                arrival.recorded_by_name = teacher.first_name + " " + teacher.last_name
+                arrival.recorded_by_role = "teacher"
+                arrival.recording_method = "demo_seed"
+                arrival.notes = arrival_note
+
+            handover_title = f"Demo morning handover {today.isoformat()}"
+            handover = (
+                db.query(models.ChildEvent)
+                .filter(
+                    models.ChildEvent.child_id == child.id,
+                    models.ChildEvent.title == handover_title,
+                )
+                .first()
+            )
+            if not handover:
+                handover = models.ChildEvent(
+                    child_id=child.id,
+                    school_id=school.id,
+                    event_time=now.replace(hour=8, minute=20, second=0, microsecond=0),
+                    event_type="Transition",
+                    reporter_type="Parent",
+                    reporter_name="Demo family handover",
+                    title=handover_title,
+                    summary=arrival_note,
+                    significance="Routine" if arrival_status == "present" else "Concern",
+                    visibility="Shared",
+                    status="Acknowledged",
+                )
+                db.add(handover)
+                db.flush()
+                db.add(
+                    models.TransitionLog(
+                        event_id=handover.id,
+                        transition_type="Morning Handover (Home)",
+                        sleep_quality=item["sleep"],
+                        morning_mood=item["mood"],
+                        breakfast_eaten=item["breakfast"],
+                        medication_given=item["medication"],
+                        special_notes_for_day=arrival_note,
+                        acknowledged_by_staff=True,
+                        acknowledged_at=now.replace(hour=8, minute=35, second=0, microsecond=0),
+                    )
+                )
+
+            observation_title = f"Demo classroom observation {today.isoformat()}"
+            observation_event = (
+                db.query(models.ChildEvent)
+                .filter(
+                    models.ChildEvent.child_id == child.id,
+                    models.ChildEvent.title == observation_title,
+                )
+                .first()
+            )
+            if not observation_event:
+                observation_event = models.ChildEvent(
+                    child_id=child.id,
+                    school_id=school.id,
+                    event_time=now.replace(hour=10, minute=15, second=0, microsecond=0),
+                    event_type="Observation",
+                    reporter_type="TA",
+                    reporter_name=ta.first_name + " " + ta.last_name,
+                    title=observation_title,
+                    summary=item["observation"],
+                    significance="Notable Win" if item["worked"] else "Routine",
+                    visibility="Shared",
+                    status="Logged",
+                )
+                db.add(observation_event)
+                db.flush()
+                db.add(
+                    models.Observation(
+                        event_id=observation_event.id,
+                        activity_context=item["context"],
+                        engagement_level="High" if item["worked"] else "Engaged with Support",
+                        strategy_used=item["strategy"],
+                        strategy_worked=item["worked"],
+                        strengths_observed=item["observation"],
+                        notes=arrival_note,
+                    )
+                )
+
+        db.flush()
+
+    @staticmethod
     def seed_longitudinal_demo_data(db: Session, force_refresh: bool = False) -> dict:
         """Seeds or updates the complete 30-day longitudinal SEND telemetry for St. Jude's
         Inclusive Academy (Room 4 cohort).
@@ -269,7 +433,7 @@ class SeederService:
         phoenix = pupils_map["Phoenix"]
         archie = pupils_map["Archie"]
         riya = pupils_map["Riya"]
-        leo = pupils_map["Leo"]
+        leo_campbell = pupils_map["Leo"]
 
         # 4. Guardian for Phoenix
         guardian = db.query(models.Guardian).filter(models.Guardian.email == "dana.carter@example.com").first()
@@ -306,9 +470,9 @@ class SeederService:
             )
 
         # Sibling: Leo Carter (Year 3) linked to Dana Carter
-        leo = db.query(models.Child).filter(models.Child.first_name == "Leo", models.Child.last_name == "Carter").first()
-        if not leo:
-            leo = models.Child(
+        leo_sibling = db.query(models.Child).filter(models.Child.first_name == "Leo", models.Child.last_name == "Carter").first()
+        if not leo_sibling:
+            leo_sibling = models.Child(
                 school_id=school.id,
                 first_name="Leo",
                 last_name="Carter",
@@ -320,11 +484,11 @@ class SeederService:
                 room_name="Room 2",
                 active=True,
             )
-            db.add(leo)
+            db.add(leo_sibling)
             db.flush()
 
             leo_profile = models.ChildSupportProfile(
-                child_id=leo.id,
+                child_id=leo_sibling.id,
                 primary_need="Speech, Language and Communication Needs (SLCN)",
                 secondary_need="Sensory Processing Sensitivity",
                 has_ehcp=False,
@@ -336,7 +500,7 @@ class SeederService:
         leo_link = (
             db.query(models.ChildGuardianLink)
             .filter(
-                models.ChildGuardianLink.child_id == leo.id,
+                models.ChildGuardianLink.child_id == leo_sibling.id,
                 models.ChildGuardianLink.guardian_id == guardian.id,
             )
             .first()
@@ -344,7 +508,7 @@ class SeederService:
         if not leo_link:
             db.add(
                 models.ChildGuardianLink(
-                    child_id=leo.id,
+                child_id=leo_sibling.id,
                     guardian_id=guardian.id,
                     parental_responsibility=True,
                     emergency_contact=True,
@@ -444,7 +608,7 @@ class SeederService:
                 "Volunteered fraction answer during small group session.",
             ),
             (
-                leo.id,
+                leo_campbell.id,
                 "Speech, Language & Peer Scaffolding",
                 "Use visual prompt cards and paired peer scaffolding to contribute to group science discussions",
                 "Contributes at least 1 hypothesis per lesson",
@@ -676,6 +840,14 @@ class SeederService:
                     parent_notified=True,
                 )
             )
+
+        SeederService.seed_demo_day_snapshot(
+            db=db,
+            school=school,
+            pupils={"Phoenix": phoenix, "Archie": archie, "Riya": riya, "Leo": leo_campbell},
+            teacher=teacher,
+            ta=ta,
+        )
 
         db.commit()
 
