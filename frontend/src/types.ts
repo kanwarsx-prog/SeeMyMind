@@ -552,7 +552,7 @@ export interface ProvisionMapPupil {
   assigned_ta: string;
   annual_review_due: string;
   days_until_review: number;
-  review_status: 'overdue' | 'due_soon' | 'scheduled';
+  review_status: 'overdue' | 'due_soon' | 'scheduled' | 'not_recorded';
 }
 
 export interface SchoolProvisionMatrixResponse {

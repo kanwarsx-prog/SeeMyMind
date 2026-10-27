@@ -671,13 +671,13 @@ export const SencoView: React.FC<SencoViewProps> = ({
             </div>
             <div className="stat-card border border-gray-100 border-l-4 border-l-emerald-600">
               <div className="font-serif text-2xl font-bold text-emerald-800">
-                {provisionMatrix ? `${provisionMatrix.total_ta_hours_weekly.toFixed(0)}h` : '0h'}
+                {provisionMatrix ? `${provisionMatrix.total_ta_hours_weekly.toFixed(1)}h` : 'Not recorded'}
               </div>
               <div className="text-[10px] text-gray-600 mt-0.5">1:1 TA Hours / Week</div>
             </div>
             <div className="stat-card border border-gray-100 border-l-4 border-l-amber-500">
               <div className="font-serif text-2xl font-bold text-amber-800">
-                {provisionMatrix?.high_needs_funding_total || '£0'}
+                {provisionMatrix?.high_needs_funding_total || 'Not recorded'}
               </div>
               <div className="text-[10px] text-gray-600 mt-0.5">High Needs Block Funding</div>
             </div>
@@ -812,7 +812,9 @@ export const SencoView: React.FC<SencoViewProps> = ({
                                   ? '⚠️ Overdue'
                                   : p.review_status === 'due_soon'
                                   ? `⚠️ Due in ${p.days_until_review}d`
-                                  : `In ${p.days_until_review}d`}
+                                  : p.review_status === 'scheduled'
+                                  ? `In ${p.days_until_review}d`
+                                  : 'Review date not recorded'}
                               </span>
                               <span className="text-[11px] text-gray-400 dark:text-slate-400">{p.annual_review_due}</span>
                             </div>
@@ -1034,7 +1036,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
                       <div className="flex justify-between font-bold text-navy">
                         <span>{p.name} ({p.year_group})</span>
                         <span className={`text-[10px] font-semibold ${p.review_status === 'due_soon' ? 'text-coral-dark' : 'text-emerald-700'}`}>
-                          {p.review_status === 'due_soon' ? '⚠️ Review Due Soon' : 'Active'}
+                          {p.review_status === 'due_soon' ? '⚠️ Review Due Soon' : p.review_status === 'not_recorded' ? 'Review date not recorded' : 'Active'}
                         </span>
                       </div>
                       <p className="text-gray-500 text-[11px]">{p.primary_need} &bull; {p.support_tier} &bull; Key Worker: {p.assigned_ta}</p>

@@ -486,6 +486,79 @@ class AnnualReviewService:
         )
 
     @staticmethod
+    def get_live_school_provision_matrix(
+        db: Session, school_id: UUID | None = None
+    ) -> SchoolProvisionMatrixResponse:
+        """Return only provision records that exist for the selected school."""
+        school = db.query(models.School).filter(models.School.id == school_id).first() if school_id else None
+        if not school:
+            school = db.query(models.School).first()
+
+        pupils_query = db.query(Child).options(joinedload(Child.support_profile)).filter(Child.active.is_(True))
+        if school:
+            pupils_query = pupils_query.filter(Child.school_id == school.id)
+        children = pupils_query.order_by(Child.last_name, Child.first_name).all()
+        today = datetime.now(UTC).date()
+        mapped_pupils = []
+        total_ta_hours = 0.0
+        reviews_soon = 0
+
+        for child in children:
+            profile = child.support_profile
+            has_ehcp = bool(profile and profile.has_ehcp)
+            allocation = db.query(models.StaffPupilAllocation).options(
+                joinedload(models.StaffPupilAllocation.staff_member)
+            ).filter(
+                models.StaffPupilAllocation.child_id == child.id,
+                models.StaffPupilAllocation.active.is_(True),
+            ).first()
+            ta_hours = allocation.weekly_allocated_hours if allocation else 0.0
+            total_ta_hours += ta_hours
+            assigned_ta = (
+                f"{allocation.staff_member.first_name} {allocation.staff_member.last_name}"
+                if allocation and allocation.staff_member else "Not allocated"
+            )
+            review_due = profile.annual_review_due if profile else None
+            if review_due:
+                days_until_review = (review_due - today).days
+                review_status = "overdue" if days_until_review < 0 else "due_soon" if days_until_review <= 30 else "scheduled"
+                if 0 <= days_until_review <= 30:
+                    reviews_soon += 1
+                review_due_label = review_due.strftime("%d %b %Y")
+            else:
+                days_until_review = 0
+                review_status = "not_recorded"
+                review_due_label = "Not recorded"
+
+            mapped_pupils.append(ProvisionMapPupil(
+                id=str(child.id),
+                name=child.full_name or f"{child.first_name} {child.last_name}",
+                year_group=child.year_group or "Not recorded",
+                primary_need=profile.primary_need if profile and profile.primary_need else "Not recorded",
+                support_tier="Statutory EHCP" if has_ehcp else "SEN Support (K)",
+                funding_band=allocation.funding_source if allocation and allocation.funding_source else "Not recorded",
+                allocated_ta_hours=ta_hours,
+                assigned_ta=assigned_ta,
+                annual_review_due=review_due_label,
+                days_until_review=days_until_review,
+                review_status=review_status,
+            ))
+
+        ehcp_count = sum(1 for pupil in mapped_pupils if pupil.support_tier == "Statutory EHCP")
+        return SchoolProvisionMatrixResponse(
+            school_name=school.school_name if school else "Not recorded",
+            academic_year="Not recorded",
+            lead_senco=school.lead_senco_name if school and school.lead_senco_name else "Not recorded",
+            total_send_count=len(mapped_pupils),
+            ehcp_count=ehcp_count,
+            sen_support_count=len(mapped_pupils) - ehcp_count,
+            total_ta_hours_weekly=total_ta_hours,
+            high_needs_funding_total="Not recorded",
+            reviews_due_next_30_days=reviews_soon,
+            pupils=mapped_pupils,
+        )
+
+    @staticmethod
     def get_school_provision_matrix(
         db: Session, school_id: UUID | None = None
     ) -> SchoolProvisionMatrixResponse:

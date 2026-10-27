@@ -269,7 +269,7 @@ def get_school_provision_matrix(
     db: Session = Depends(get_db),
 ):
     """Retrieve the whole-school SEND provision and funding distribution matrix."""
-    return AnnualReviewService.get_school_provision_matrix(db, school_id=current_user.school_id)
+    return AnnualReviewService.get_live_school_provision_matrix(db, school_id=current_user.school_id)
 
 
 @router.get("/{child_id}/annual-review-pack", response_model=AnnualReviewPackResponse)
