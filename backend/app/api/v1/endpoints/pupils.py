@@ -222,56 +222,11 @@ def get_classroom_matrix(
                 "special_notes_for_day": latest_handover.special_notes_for_day or "",
                 "acknowledged_by_staff": bool(latest_handover.acknowledged_by_staff),
                 "acknowledged_at": latest_handover.acknowledged_at.strftime("%I:%M %p") if latest_handover.acknowledged_at else None,
+                "event_time": latest_handover.event.event_time.isoformat() if latest_handover.event else None,
                 "alerts": ["Noise Defenders in Bag", "Assembly 9:05am"] if p.first_name == "Phoenix" else [],
             }
-        elif p.first_name == "Phoenix":
-            handover_data = {
-                "id": f"mock-{p.id}",
-                "sleep_quality": "Restless (woke in night at 4am)",
-                "morning_mood": "Anxious / Apprehensive",
-                "breakfast_eaten": True,
-                "medication_given": True,
-                "special_notes_for_day": "lost his soft toy yesterday; please give him one",
-                "acknowledged_by_staff": False,
-                "acknowledged_at": None,
-                "alerts": ["Noise Defenders in Bag", "Assembly 9:05am"],
-            }
-        elif p.first_name == "Archie":
-            handover_data = {
-                "id": f"mock-{p.id}",
-                "sleep_quality": "Woke early (5:30am)",
-                "morning_mood": "High Physical Energy",
-                "breakfast_eaten": True,
-                "medication_given": True,
-                "special_notes_for_day": "Full of energy this morning; movement breaks planned.",
-                "acknowledged_by_staff": True,
-                "acknowledged_at": "08:42 AM",
-                "alerts": ["Movement Break Pass"],
-            }
-        elif p.first_name == "Riya":
-            handover_data = {
-                "id": f"mock-{p.id}",
-                "sleep_quality": "Interrupted sleep (6am)",
-                "morning_mood": "Quiet & Sensitive",
-                "breakfast_eaten": True,
-                "medication_given": False,
-                "special_notes_for_day": "A bit anxious about maths; reminded her of cooling corner.",
-                "acknowledged_by_staff": True,
-                "acknowledged_at": "08:48 AM",
-                "alerts": ["Cooling Corner Token"],
-            }
         else:
-            handover_data = {
-                "id": f"mock-{p.id}",
-                "sleep_quality": "Solid 8.5 hrs",
-                "morning_mood": "Calm & Regulated",
-                "breakfast_eaten": True,
-                "medication_given": False,
-                "special_notes_for_day": "Smooth morning routine at home.",
-                "acknowledged_by_staff": True,
-                "acknowledged_at": "08:35 AM",
-                "alerts": [],
-            }
+            handover_data = None
 
         cohort.append({
             "id": str(p.id),

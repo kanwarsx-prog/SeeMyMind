@@ -325,6 +325,7 @@ export interface ClassroomMorningHandover {
   special_notes_for_day: string;
   acknowledged_by_staff: boolean;
   acknowledged_at?: string | null;
+  event_time?: string | null;
   alerts?: string[];
 }
 

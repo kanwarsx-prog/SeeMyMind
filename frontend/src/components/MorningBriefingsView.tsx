@@ -35,7 +35,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
           if (p.handover) {
             initialAck[p.id] = {
               acknowledged: p.handover.acknowledged_by_staff,
-              time: p.handover.acknowledged_at || '08:48 AM',
+              time: p.handover.acknowledged_at || '',
             };
           }
         });
@@ -53,7 +53,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
       [pupilId]: { acknowledged: true, time: nowTime },
     }));
 
-    if (handoverId && !handoverId.startsWith('mock-')) {
+    if (handoverId) {
       try {
         await api.acknowledgeTransition(handoverId);
       } catch (err) {
@@ -85,8 +85,9 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
   }
 
   const cohort = matrixData?.cohort || [];
+  const currentNotesCount = cohort.filter((p) => Boolean(p.handover)).length;
   const unacknowledgedCount = cohort.filter((p) => {
-    const ack = acknowledgedMap[p.id]?.acknowledged ?? p.handover?.acknowledged_by_staff ?? true;
+    const ack = acknowledgedMap[p.id]?.acknowledged ?? p.handover?.acknowledged_by_staff ?? false;
     return !ack;
   }).length;
 
@@ -111,7 +112,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
           {/* Quick Status Chips */}
           <div className="flex items-center gap-2 mt-2.5 flex-wrap">
             <span className="px-2.5 py-1 rounded-xl bg-teal/10 dark:bg-teal-950/60 border border-teal/20 dark:border-teal-800/40 text-teal dark:text-teal-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <span>👥 {cohort.length} Cohort Notes</span>
+              <span>👥 {currentNotesCount} Current Notes</span>
             </span>
 
             {unacknowledgedCount > 0 ? (
@@ -119,10 +120,15 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <span>{unacknowledgedCount} Awaiting Acknowledgment</span>
               </span>
-            ) : (
+            ) : currentNotesCount === cohort.length ? (
               <span className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>All Notes Acknowledged</span>
+                <span>All Current Notes Acknowledged</span>
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>{cohort.length - currentNotesCount} Awaiting Today&apos;s Check-In</span>
               </span>
             )}
           </div>
@@ -143,9 +149,9 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
       <div className="grid grid-cols-1 gap-4 sm:gap-5">
         {cohort.map((pupil) => {
           const handover = pupil.handover;
-          const isAckState = acknowledgedMap[pupil.id]?.acknowledged ?? handover?.acknowledged_by_staff ?? true;
-          const ackTime = acknowledgedMap[pupil.id]?.time || handover?.acknowledged_at || '08:48 AM';
-          const isCaution = pupil.readiness_level === 'amber' || pupil.readiness_level === 'red' || !isAckState;
+          const isAckState = Boolean(handover) && (acknowledgedMap[pupil.id]?.acknowledged ?? handover?.acknowledged_by_staff ?? false);
+          const ackTime = acknowledgedMap[pupil.id]?.time || handover?.acknowledged_at || '';
+          const isCaution = pupil.readiness_level === 'amber' || pupil.readiness_level === 'red' || !handover || !isAckState;
 
           return (
             <div
@@ -187,7 +193,11 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
 
                 {/* Top Action Buttons */}
                 <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
-                  {!isAckState ? (
+                  {!handover ? (
+                    <div className="text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                      Awaiting today&apos;s home check-in
+                    </div>
+                  ) : !isAckState ? (
                     <button
                       onClick={(e) => handleAcknowledge(pupil.id, handover?.id, e)}
                       className="px-3.5 py-1.5 bg-teal hover:bg-teal-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -223,14 +233,14 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                 <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Sleep Quality</div>
                   <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
-                    {handover?.sleep_quality || 'Solid 8.5 hrs uninterrupted'}
+                    {handover?.sleep_quality || 'Not received today'}
                   </div>
                 </div>
 
                 <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Morning Mood</div>
                   <div className="text-xs font-bold text-navy dark:text-white mt-0.5 truncate">
-                    {handover?.morning_mood || 'Calm & Focused'}
+                    {handover?.morning_mood || 'Not received today'}
                   </div>
                 </div>
 
@@ -248,7 +258,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                   <div className={`text-xs font-bold mt-0.5 ${
                     handover?.medication_given ? 'text-teal dark:text-teal-300' : 'text-slate-600 dark:text-slate-400'
                   }`}>
-                    {handover?.medication_given ? '💊 Taken at 8:30am' : 'None Required'}
+                    {!handover ? 'Not received today' : handover?.medication_given ? 'Taken at 8:30am' : 'None Required'}
                   </div>
                 </div>
               </div>
@@ -260,7 +270,7 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                     {pupil.name.includes('Phoenix') ? "Mum's Note: " : "Home Note: "}
                   </span>
                   <span className="italic">
-                    &quot;{handover?.special_notes_for_day || (pupil.name.includes('Phoenix') ? 'lost his soft toy yesterday; please give him one' : 'Smooth morning routine at home; ready for school.')}&quot;
+                    {handover?.special_notes_for_day ? <>&quot;{handover.special_notes_for_day}&quot;</> : <span className="text-amber-700 dark:text-amber-300">No home note received today.</span>}
                   </span>
                 </div>
 
