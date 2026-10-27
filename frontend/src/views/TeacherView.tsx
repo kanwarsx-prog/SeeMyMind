@@ -206,7 +206,6 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             }
             handleTabChange('focused');
           }}
-          onOpenObservationModal={onOpenObservationModal}
           roomName={teacherRoom}
         />
       )}
