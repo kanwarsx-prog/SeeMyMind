@@ -23,7 +23,11 @@ import {
 } from '../types';
 import { SenInformationReportModal } from './SenInformationReportModal';
 
-export const AnalyticsReportsDashboard: React.FC = () => {
+interface AnalyticsReportsDashboardProps {
+  onAskNoya?: (query: string) => void;
+}
+
+export const AnalyticsReportsDashboard: React.FC<AnalyticsReportsDashboardProps> = ({ onAskNoya }) => {
   const [overview, setOverview] = useState<SchoolAnalyticsOverview | null>(null);
   const [heatmap, setHeatmap] = useState<IncidentHeatmapResponse | null>(null);
   const [triggersReport, setTriggersReport] = useState<TriggersReportResponse | null>(null);
@@ -109,28 +113,38 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               <span>SEND Operational Reports & Evidence Analytics</span>
             </h2>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal/10 text-teal dark:text-teal-300 font-semibold border border-teal/20">
-              Autumn & Spring Terms
+              Live recorded data
             </span>
           </div>
           <p className="text-xs text-textDim dark:text-slate-400 mt-1">
-            Empirical longitudinal analytics for Local Authority panels, Ofsted compliance, and multi-agency CAMHS evidence.
+            Live school evidence with clear gaps where records are incomplete.
           </p>
         </div>
 
         {/* Actions: Statutory Report & CSV Exports */}
         <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+          {onAskNoya && (
+            <button
+              onClick={() => onAskNoya('Audit these live school analytics. Explain which patterns are supported by recorded evidence, which data is missing, and what the SENCO should verify next. Do not invent trends or recommendations.')}
+              className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border border-teal-200"
+              title="Ask NOYA to interpret the recorded analytics and identify gaps"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Explain with NOYA</span>
+            </button>
+          )}
           <button
             onClick={handleOpenReportModal}
             disabled={loadingReport}
             className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-navy hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow disabled:opacity-60"
-            title="Generate official statutory report complying with Regulation 51 & Schedule 1 SEND Regulations 2014"
+            title="Prepare a draft statutory report preview for human review"
           >
             {loadingReport ? (
               <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <FileText className="w-3.5 h-3.5 text-teal" />
             )}
-            <span>{loadingReport ? 'Compiling Pack...' : 'Statutory SEN Report (Reg 51)'}</span>
+            <span>{loadingReport ? 'Compiling Pack...' : 'Draft Statutory Report'}</span>
           </button>
 
           <button
@@ -181,7 +195,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            142 successful resolutions via visual & low-demand strategies.
+              {strategyReport?.strategies.reduce((total, strategy) => total + strategy.successful_resolutions, 0) || 0} successful recorded outcomes.
           </p>
         </div>
 
@@ -198,11 +212,11 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               {overview?.provision_delivery_rate}%
             </span>
             <span className="text-[10px] font-semibold text-textDim dark:text-slate-400">
-              178.0h / 185.0h
+              {provisionAudit ? `${provisionAudit.total_delivered_ta_hours.toFixed(1)}h / ${provisionAudit.total_allocated_ta_hours.toFixed(1)}h` : 'Not recorded'}
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            Legally quantified 1:1 TA hours verified across 12 EHCPs.
+            Recorded TA allocation and delivery for {overview?.ehcp_count || 0} EHCP pupils.
           </p>
         </div>
 
@@ -216,11 +230,11 @@ export const AnalyticsReportsDashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-lg font-bold text-amber-900 dark:text-amber-300 truncate">
-              Wed 10:30 AM
+              {overview?.peak_vulnerability_window || 'Not recorded'}
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            Recess corridor squeeze & medication dip window cluster.
+            Derived from recorded incident timings only.
           </p>
         </div>
 
@@ -237,11 +251,11 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               {overview?.annual_reviews_on_track_rate}%
             </span>
             <span className="text-[10px] font-bold text-purple-700 bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-900/40">
-              0 Overdue
+              {overview?.annual_reviews_on_track_rate || 0}% on track
             </span>
           </div>
           <p className="text-[11px] text-textSub dark:text-slate-400 leading-tight">
-            All 12 Section 44 Annual Review packs scheduled within legal windows.
+            Based on recorded annual review dates. Missing dates are not counted as on track.
           </p>
         </div>
       </div>
@@ -255,7 +269,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               <span>Time-of-Day Stress & Incident Heatmap (Whole School)</span>
             </h3>
             <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-              Correlating schedule moments against daily stress points to deploy TA support where it helps most.
+              Recorded incident timings by weekday and school-day window.
             </p>
           </div>
           <div className="flex items-center gap-3 text-[11px]">
@@ -339,7 +353,10 @@ export const AnalyticsReportsDashboard: React.FC = () => {
         <div className="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-900/40 flex items-start gap-3">
           <Sparkles className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
           <div className="text-xs text-teal-950 dark:text-teal-200 leading-relaxed">
-            <strong className="font-bold">Operational Insight:</strong> Over <strong>42% of school-wide incidents and distress</strong> cluster within two distinct transition windows: <strong>Morning Recess (10:30–11:00 AM)</strong> due to noisy crowded corridors and mid-morning energy dips, and <strong>Thursday Lunch Hall (12:30 PM)</strong>. Having TA support near the doorway 5 minutes prior to the bell prevents most escalations.
+            <strong className="font-bold">Recorded pattern:</strong>{' '}
+            {heatmap?.total_incidents
+              ? `${heatmap.total_incidents} incidents are recorded. The highest recorded window is ${heatmap.peak_window}. Use NOYA to explore the evidence before changing staffing.`
+              : 'No incidents are recorded for this school, so no operational pattern can be inferred yet.'}
           </div>
         </div>
       </div>
@@ -354,7 +371,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               <span>Classroom Triggers Breakdown</span>
             </h3>
             <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
-              Identified triggers across 57 documented classroom incident notes this academic year.
+              {triggersReport?.total_recorded_triggers || 0} trigger records grouped from incident antecedents.
             </p>
           </div>
 
@@ -450,7 +467,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
                         )}
                       </div>
                       <span className="text-[10px] text-textDim dark:text-slate-400 font-medium">
-                        {strat.category} · Avg recovery {strat.avg_recovery_minutes} mins
+                        {strat.category} · {strat.avg_recovery_minutes ? `Avg recovery ${strat.avg_recovery_minutes} mins` : 'Recovery time not recorded'}
                       </span>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -497,7 +514,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-navy dark:text-white flex items-center gap-2">
               <Layers className="w-4 h-4 text-teal" />
-              <span>Statutory High Needs Funding Band & Provision Audit (Section F Compliance)</span>
+              <span>Recorded Provision & Allocation Audit</span>
             </h3>
             <p className="text-xs text-textDim dark:text-slate-400 mt-0.5">
               Comparing legally mandated 1:1 TA hours against logged classroom delivery across High Needs funding tiers.
@@ -558,7 +575,7 @@ export const AnalyticsReportsDashboard: React.FC = () => {
               <tr className="border-t-2 border-borderMain font-bold bg-cardSubtle/80 text-textMain dark:text-white">
                 <td className="py-2.5 px-3">School-Wide Total</td>
                 <td className="py-2.5 px-3 text-center text-textDim">-</td>
-                <td className="py-2.5 px-3 text-center">34 Pupils</td>
+                <td className="py-2.5 px-3 text-center">{overview?.total_send_pupils || 0} Pupils</td>
                 <td className="py-2.5 px-3 text-center text-teal dark:text-teal-300 font-mono">
                   {provisionAudit?.total_high_needs_funding}
                 </td>

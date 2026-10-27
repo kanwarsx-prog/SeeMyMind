@@ -1,5 +1,6 @@
 import csv
 import io
+from collections import defaultdict
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -22,6 +23,193 @@ from app.schemas.analytics import (
 
 
 class AnalyticsService:
+    @staticmethod
+    def get_live_school_overview(db: Session, school_id: UUID | None = None) -> SchoolAnalyticsOverview:
+        """Calculate overview metrics from recorded pupils, events, and allocations only."""
+        query = db.query(Child).filter(Child.active.is_(True))
+        if school_id:
+            query = query.filter(Child.school_id == school_id)
+        pupils = query.all()
+        child_ids = [p.id for p in pupils]
+        ehcp_count = sum(1 for p in pupils if p.support_profile and p.support_profile.has_ehcp)
+
+        incident_query = db.query(BehaviouralIncident).join(ChildEvent)
+        observation_query = db.query(Observation).join(ChildEvent)
+        allocation_query = db.query(models.StaffPupilAllocation).filter(models.StaffPupilAllocation.active.is_(True))
+        if school_id:
+            incident_query = incident_query.filter(ChildEvent.school_id == school_id)
+            observation_query = observation_query.filter(ChildEvent.school_id == school_id)
+            allocation_query = allocation_query.filter(models.StaffPupilAllocation.child_id.in_(child_ids)) if child_ids else allocation_query.filter(False)
+        incidents = incident_query.all()
+        observations = observation_query.filter(Observation.strategy_worked.isnot(None)).all()
+        allocations = allocation_query.all()
+        allocated = sum(a.weekly_allocated_hours for a in allocations)
+        delivered = sum(a.weekly_delivered_hours for a in allocations)
+        successful = sum(1 for o in observations if o.strategy_worked is True)
+        today = datetime.now(UTC).date()
+        review_dates = [
+            p.support_profile.annual_review_due
+            for p in pupils
+            if p.support_profile and p.support_profile.annual_review_due
+        ]
+        reviews_on_track = sum(1 for review_date in review_dates if review_date >= today)
+        school = db.query(models.School).filter(models.School.id == school_id).first() if school_id else db.query(models.School).first()
+        return SchoolAnalyticsOverview(
+            school_name=school.school_name if school else "Not recorded",
+            total_send_pupils=len(pupils),
+            ehcp_count=ehcp_count,
+            sen_support_count=len(pupils) - ehcp_count,
+            total_weekly_ta_hours_allocated=allocated,
+            total_weekly_ta_hours_delivered=delivered,
+            provision_delivery_rate=round((delivered / allocated) * 100, 1) if allocated else 0.0,
+            overall_de_escalation_win_rate=round((successful / len(observations)) * 100, 1) if observations else 0.0,
+            total_incidents_this_term=len(incidents),
+            peak_vulnerability_window="No recorded incidents" if not incidents else "See heatmap",
+            annual_reviews_on_track_rate=round((reviews_on_track / len(review_dates)) * 100, 1) if review_dates else 0.0,
+        )
+
+    @staticmethod
+    def get_live_incident_heatmap(db: Session, school_id: UUID | None = None) -> IncidentHeatmapResponse:
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        day_keys = ["mon", "tue", "wed", "thu", "fri"]
+        slots = [
+            ("arrival", "Arrival & Registration", "08:45 - 09:15", 8, 9),
+            ("period_1", "Period 1 (Core Academic)", "09:15 - 10:30", 9, 10),
+            ("morning_recess", "Morning Recess", "10:30 - 11:00", 10, 11),
+            ("period_2", "Period 2 (Mid-Day)", "11:00 - 12:30", 11, 12),
+            ("lunch", "Lunch & Unstructured Play", "12:30 - 13:30", 12, 13),
+            ("period_3", "Period 3 (Afternoon Session)", "13:30 - 15:00", 13, 15),
+            ("dismissal", "Dismissal & Transition Home", "15:00 - 15:30", 15, 16),
+        ]
+        counts = {slot[0]: {key: 0 for key in day_keys} for slot in slots}
+        query = db.query(BehaviouralIncident).join(ChildEvent)
+        if school_id:
+            query = query.filter(ChildEvent.school_id == school_id)
+        incidents = query.all()
+        for incident in incidents:
+            event_time = incident.event.event_time if incident.event else None
+            if not event_time or event_time.weekday() > 4:
+                continue
+            hour = event_time.hour
+            slot_id = next((slot[0] for slot in slots if slot[3] <= hour < slot[4]), None)
+            if slot_id:
+                counts[slot_id][day_keys[event_time.weekday()]] += 1
+        period_slots = []
+        peak_count = 0
+        peak_window = "No recorded incidents"
+        for slot_id, label, window, _, _ in slots:
+            slot_counts = counts[slot_id]
+            total = sum(slot_counts.values())
+            for day_key, value in slot_counts.items():
+                if value > peak_count:
+                    peak_count = value
+                    peak_window = f"{days[day_keys.index(day_key)]} {window}"
+            period_slots.append(HeatmapPeriodSlot(
+                period_id=slot_id,
+                period_label=label,
+                time_window=window,
+                incident_counts=slot_counts,
+                total_count=total,
+                intensity="high" if total >= 5 else "medium" if total >= 3 else "low" if total else "none",
+            ))
+        return IncidentHeatmapResponse(
+            days=days, day_keys=day_keys, periods=period_slots,
+            total_incidents=len(incidents), peak_window=peak_window,
+        )
+
+    @staticmethod
+    def get_live_trigger_frequencies(db: Session, school_id: UUID | None = None) -> TriggersReportResponse:
+        categories = {
+            "sensory_acoustic": ("Acoustic & Sensory Overload", ("noise", "sound", "crowd", "light", "sensory")),
+            "unstructured_transitions": ("Unstructured & Sudden Transitions", ("transition", "corridor", "assembly", "change")),
+            "demand_fatigue": ("Demand Fatigue & Cognitive Overload", ("demand", "task", "work", "question", "learning")),
+            "physiological_depletion": ("Physiological Depletion", ("sleep", "breakfast", "food", "medication", "tired")),
+            "social_communication": ("Social Communication & Peer Friction", ("peer", "social", "communication", "playground")),
+        }
+        grouped = {key: [] for key in categories}
+        query = db.query(BehaviouralIncident).join(ChildEvent)
+        if school_id:
+            query = query.filter(ChildEvent.school_id == school_id)
+        for incident in query.all():
+            text = " ".join((incident.antecedent or "", incident.behaviour or "")).lower()
+            category = next((key for key, (_, words) in categories.items() if any(word in text for word in words)), "social_communication")
+            grouped[category].append(incident.antecedent or "Antecedent not recorded")
+        total = sum(len(items) for items in grouped.values())
+        return TriggersReportResponse(
+            total_recorded_triggers=total,
+            triggers=[TriggerCategoryMetric(
+                category=key,
+                label=label,
+                count=len(grouped[key]),
+                percentage=round((len(grouped[key]) / total) * 100, 1) if total else 0.0,
+                primary_antecedent_examples=grouped[key][:3],
+            ) for key, (label, _) in categories.items() if grouped[key]],
+        )
+
+    @staticmethod
+    def get_live_strategy_win_rates(db: Session, school_id: UUID | None = None) -> StrategyEfficacyResponse:
+        query = db.query(Observation).join(ChildEvent).filter(Observation.strategy_used.isnot(None))
+        if school_id:
+            query = query.filter(ChildEvent.school_id == school_id)
+        grouped = defaultdict(list)
+        for observation in query.all():
+            grouped[observation.strategy_used].append(observation)
+        metrics = []
+        for title, attempts in grouped.items():
+            measured = [item for item in attempts if item.strategy_worked is not None]
+            wins = sum(1 for item in measured if item.strategy_worked is True)
+            metrics.append(StrategyWinRateMetric(
+                strategy_id=title.lower().replace(" ", "_")[:80],
+                title=title,
+                category="Recorded strategy",
+                total_attempts=len(measured),
+                successful_resolutions=wins,
+                win_rate_percentage=round((wins / len(measured)) * 100, 1) if measured else 0.0,
+                avg_recovery_minutes=0,
+                recommended_for=["Recorded activity context only"],
+            ))
+        metrics.sort(key=lambda item: item.win_rate_percentage, reverse=True)
+        total_attempts = sum(item.total_attempts for item in metrics)
+        total_wins = sum(item.successful_resolutions for item in metrics)
+        return StrategyEfficacyResponse(
+            overall_win_rate=round((total_wins / total_attempts) * 100, 1) if total_attempts else 0.0,
+            total_strategies_evaluated=len(metrics), strategies=metrics,
+        )
+
+    @staticmethod
+    def get_live_provision_audit(db: Session, school_id: UUID | None = None) -> ProvisionAuditResponse:
+        query = db.query(models.StaffPupilAllocation).filter(models.StaffPupilAllocation.active.is_(True))
+        if school_id:
+            child_ids = [row.id for row in db.query(Child.id).filter(Child.school_id == school_id, Child.active.is_(True)).all()]
+            query = query.filter(models.StaffPupilAllocation.child_id.in_(child_ids)) if child_ids else query.filter(False)
+        allocations = query.all()
+        grouped = defaultdict(list)
+        for allocation in allocations:
+            grouped[allocation.funding_source or "Funding source not recorded"].append(allocation)
+        bands = [FundingBandBreakdown(
+            band=band,
+            annual_amount_per_pupil="Not recorded",
+            pupil_count=len(items),
+            total_funding="Not recorded",
+            weekly_ta_hours_allocated=sum(item.weekly_allocated_hours for item in items),
+            weekly_ta_hours_delivered=sum(item.weekly_delivered_hours for item in items),
+            delivery_compliance_percentage=round(
+                (sum(item.weekly_delivered_hours for item in items) / sum(item.weekly_allocated_hours for item in items)) * 100, 1
+            ) if sum(item.weekly_allocated_hours for item in items) else 0.0,
+        ) for band, items in grouped.items()]
+        allocated = sum(item.weekly_allocated_hours for item in allocations)
+        delivered = sum(item.weekly_delivered_hours for item in allocations)
+        school = db.query(models.School).filter(models.School.id == school_id).first() if school_id else db.query(models.School).first()
+        return ProvisionAuditResponse(
+            school_name=school.school_name if school else "Not recorded",
+            academic_year="Not recorded",
+            total_high_needs_funding="Not recorded",
+            total_allocated_ta_hours=allocated,
+            total_delivered_ta_hours=delivered,
+            overall_compliance_rate=round((delivered / allocated) * 100, 1) if allocated else 0.0,
+            bands=bands,
+        )
+
     @staticmethod
     def get_school_overview(db: Session, school_id: UUID | None = None) -> SchoolAnalyticsOverview:
         """Calculates macro-level SEND caseload, provision compliance, and intervention stats dynamically."""

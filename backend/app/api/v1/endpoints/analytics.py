@@ -29,7 +29,7 @@ def get_analytics_overview(
     current_user: models.User = Depends(require_roles(["senco", "admin", "teacher", "ta"])),
 ):
     """Retrieve school-wide macro analytics, caseload counts, and provision delivery rates."""
-    return AnalyticsService.get_school_overview(db, school_id=current_user.school_id)
+    return AnalyticsService.get_live_school_overview(db, school_id=current_user.school_id)
 
 
 @router.get("/incidents/heatmap", response_model=IncidentHeatmapResponse)
@@ -38,7 +38,7 @@ def get_incident_heatmap(
     current_user: models.User = Depends(require_roles(["senco", "admin", "teacher", "ta"])),
 ):
     """Retrieve 5-day x 7-period incident and dysregulation heatmap matrix."""
-    return AnalyticsService.get_incident_heatmap(db, school_id=current_user.school_id)
+    return AnalyticsService.get_live_incident_heatmap(db, school_id=current_user.school_id)
 
 
 @router.get("/incidents/triggers", response_model=TriggersReportResponse)
@@ -47,7 +47,7 @@ def get_trigger_frequencies(
     current_user: models.User = Depends(require_roles(["senco", "admin", "teacher", "ta"])),
 ):
     """Retrieve frequency breakdown of antecedent triggers across neurodivergent vulnerability domains."""
-    return AnalyticsService.get_trigger_frequencies(db, school_id=current_user.school_id)
+    return AnalyticsService.get_live_trigger_frequencies(db, school_id=current_user.school_id)
 
 
 @router.get("/strategies/win-rates", response_model=StrategyEfficacyResponse)
@@ -56,7 +56,7 @@ def get_strategy_win_rates(
     current_user: models.User = Depends(require_roles(["senco", "admin", "teacher", "ta"])),
 ):
     """Retrieve ranked empirical resolution success rates across de-escalation strategies."""
-    return AnalyticsService.get_strategy_win_rates(db, school_id=current_user.school_id)
+    return AnalyticsService.get_live_strategy_win_rates(db, school_id=current_user.school_id)
 
 
 @router.get("/provision/audit", response_model=ProvisionAuditResponse)
@@ -65,7 +65,7 @@ def get_provision_audit(
     current_user: models.User = Depends(require_roles(["senco", "admin", "teacher", "ta"])),
 ):
     """Retrieve High Needs Block funding band audit and weekly 1:1 TA hours allocated vs delivered."""
-    return AnalyticsService.get_provision_audit(db, school_id=current_user.school_id)
+    return AnalyticsService.get_live_provision_audit(db, school_id=current_user.school_id)
 
 
 @router.get("/export/csv")

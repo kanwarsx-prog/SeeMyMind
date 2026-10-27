@@ -1755,7 +1755,7 @@ export const SencoView: React.FC<SencoViewProps> = ({
       {/* ============================================================== */}
       {activeTab === 'reports_analytics' && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <AnalyticsReportsDashboard />
+          <AnalyticsReportsDashboard onAskNoya={onOpenCopilot} />
         </div>
       )}
     </div>
