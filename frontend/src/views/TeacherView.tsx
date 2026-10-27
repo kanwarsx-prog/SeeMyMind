@@ -8,6 +8,7 @@ import { ClassroomProvisionMapModal } from '../components/ClassroomProvisionMapM
 import { MorningBriefingsView } from '../components/MorningBriefingsView';
 import { DecompressionBridgeCard } from '../components/DecompressionBridgeCard';
 import { AbcTooltip } from '../components/AbcTooltip';
+import { MarkdownText } from '../components/MarkdownText';
 import { api } from '../api';
 
 interface TeacherViewProps {
@@ -383,8 +384,8 @@ export const TeacherView: React.FC<TeacherViewProps> = ({
             </div>
 
             {briefing ? (
-              <div className="text-xs text-white/90 leading-relaxed space-y-2 whitespace-pre-line font-normal">
-                {cleanBriefingText(briefing.summary_markdown)}
+              <div className="font-normal">
+                <MarkdownText content={cleanBriefingText(briefing.summary_markdown)} darkSurface />
               </div>
             ) : (
               <div className="py-4 text-center space-y-3">
