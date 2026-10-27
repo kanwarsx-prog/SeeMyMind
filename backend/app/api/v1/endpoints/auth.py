@@ -256,8 +256,58 @@ def _ensure_demo_entities(db: Session) -> tuple[models.School, models.Child]:
         db.add_all([log1, log2, log3])
         db.flush()
 
-    # Ensure longitudinal multi-pupil telemetry and Room 4 allocations exist
-    SeederService.seed_longitudinal_demo_data(db)
+    # Ensure longitudinal multi-pupil telemetry and Room 4 allocations exist.
+    # Demo authentication must remain usable if an older Render database has
+    # one incompatible telemetry row.  The core school/pupil records above are
+    # still enough to issue a valid session while the seed failure is logged.
+    try:
+        SeederService.seed_longitudinal_demo_data(db)
+    except Exception as exc:
+        print(f"Demo telemetry seed skipped after recoverable error: {exc}")
+        db.rollback()
+
+        school = (
+            db.query(models.School)
+            .filter(models.School.school_reference == "SCH-STJUDES")
+            .first()
+        ) or db.query(models.School).first()
+        child = (
+            db.query(models.Child)
+            .filter(
+                models.Child.first_name == "Phoenix",
+                models.Child.school_id == school.id if school else False,
+            )
+            .first()
+            if school
+            else None
+        )
+
+        if not school:
+            school = models.School(
+                school_name="St. Jude's Inclusive Academy",
+                school_reference="SCH-STJUDES",
+                phase="Primary",
+                lead_senco_name="Ms Amara Okafor",
+            )
+            db.add(school)
+            db.flush()
+
+        if not child:
+            child = models.Child(
+                first_name="Phoenix",
+                last_name="Carter",
+                full_name="Phoenix Carter",
+                preferred_name="Phoenix",
+                date_of_birth=datetime(2015, 6, 15, tzinfo=UTC).date(),
+                sex="Male",
+                year_group="Year 5",
+                school_id=school.id,
+                active=True,
+            )
+            db.add(child)
+            db.flush()
+
+        db.commit()
 
     return school, child
 
