@@ -247,9 +247,11 @@ export const MorningBriefingsView: React.FC<MorningBriefingsViewProps> = ({
                 <div className="bg-cardSubtle p-2.5 rounded-xl border border-borderMain">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-textDim dark:text-slate-400">Breakfast</div>
                   <div className={`text-xs font-bold mt-0.5 ${
-                    handover?.breakfast_eaten === false ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'
+                    handover?.breakfast_eaten === false ? 'text-rose-700 dark:text-rose-400' : handover?.breakfast_eaten === true ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'
                   }`}>
-                    {handover?.breakfast_eaten === false ? '⚠️ Skipped (Dip Risk)' : '🥣 Eaten'}
+                    {!handover || handover.breakfast_eaten === null || handover.breakfast_eaten === undefined
+                      ? 'Not received today'
+                      : handover.breakfast_eaten ? 'Eaten' : 'Skipped (Dip Risk)'}
                   </div>
                 </div>
 

@@ -320,8 +320,8 @@ export interface ClassroomMorningHandover {
   id: string;
   sleep_quality: string;
   morning_mood: string;
-  breakfast_eaten: boolean;
-  medication_given: boolean;
+  breakfast_eaten: boolean | null;
+  medication_given: boolean | null;
   special_notes_for_day: string;
   acknowledged_by_staff: boolean;
   acknowledged_at?: string | null;
