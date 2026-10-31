@@ -6,7 +6,7 @@
 </html>
 <style>
   footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-  footer .brand{font:700 19px Georgia,serif;color:#fff;text-decoration:none}
+  .brand{display:inline-flex;align-items:center;gap:11px}.brand::before{content:'';display:inline-block;width:34px;height:34px;flex:0 0 34px;background:url('assets/logos/01 SeeMyMind_Logo_NoText@4x.png') center/contain no-repeat}footer .brand::before{background-image:url('assets/logos/02 SeeMyMind_Logo_NoText_Outlined@4x.png')}footer .brand{font:700 19px Georgia,serif;color:#fff;text-decoration:none}
   footer .footer-nav{display:flex;align-items:center;gap:18px}
   footer .footer-nav a{color:#fff;text-decoration:none}
   @media(max-width:760px){footer .wrap{align-items:flex-start;flex-direction:column}footer .footer-nav{flex-wrap:wrap}}
